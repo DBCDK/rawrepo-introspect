@@ -37,7 +37,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 module.exports = {
-    entry: './app/index.js',
+    entry: './src/index.js',
 
     output: {
         path: PATHS.build,

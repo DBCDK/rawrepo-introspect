@@ -5,7 +5,7 @@
 
 import React from "react";
 
-class RawrepoIntrospectGUI extends React.Component {
+class RawrepoIntrospectRecordView extends React.Component {
 
     constructor(props) {
         super(props);
@@ -13,12 +13,12 @@ class RawrepoIntrospectGUI extends React.Component {
 
     render() {
         return (
-            <div className="container-fluid">
-                <h2>Hello world!</h2>
+            <div>
+                <p/>
+                Post
             </div>
         )
     }
-
 }
 
-export default RawrepoIntrospectGUI;
+export default RawrepoIntrospectRecordView;
