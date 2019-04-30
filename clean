@@ -1,0 +1,6 @@
+echo "### cleaning rawrepo-introspect project ###"
+
+mvn clean
+git pull --ff-only
+docker rm -f rawrepo-introspect &>/dev/null || true
+exit 0
