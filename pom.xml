@@ -54,6 +54,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skip.install>true</skip.install>
+        <microprofile.version>1.2</microprofile.version>
     </properties>
 
     <pluginRepositories>
@@ -96,6 +97,21 @@
             <version>${serviceutils.version}</version>
         </dependency>
         <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>rawrepo-record-service-connector</artifactId>
+            <version>1.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>stopwatch</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-marc</artifactId>
+            <version>1.3-SNAPSHOT</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
@@ -124,6 +140,12 @@
             <artifactId>jersey-common</artifactId>
             <version>${jersey.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+            <version>${microprofile.version}</version> <!-- version 1.2 available since Payara v4.1.2.181 -->
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
