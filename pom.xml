@@ -48,7 +48,6 @@
         <org.apache.email.version>1.5</org.apache.email.version>
         <org.bouncycastle.mail.version>1.57</org.bouncycastle.mail.version>
         <org.bouncycastle.provider.version>1.57</org.bouncycastle.provider.version>
-        <perf4j.version>0.9.16</perf4j.version>
         <postgresql.driver.version>9.4-1206-jdbc41</postgresql.driver.version>
         <serviceutils.version>0.1-SNAPSHOT</serviceutils.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -85,11 +84,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>log4j-over-slf4j</artifactId>
             <version>${slf4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.perf4j</groupId>
-            <artifactId>perf4j</artifactId>
-            <version>${perf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
