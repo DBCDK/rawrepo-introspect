@@ -1,0 +1,3 @@
+echo "### Stopping rawrepo-introspect docker ###"
+
+docker stop rawrepo-introspect || exit 1

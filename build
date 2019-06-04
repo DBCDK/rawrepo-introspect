@@ -1,0 +1,13 @@
+case "$1" in
+    docker)
+        echo "### building rawrepo-introspect docker ###"
+        docker build . -t rawrepo-introspect || exit 1
+        ;;
+
+    *)
+        echo "### building rawrepo-introspect project ###"
+        echo "### Look for build artifacts in target/ ###"
+
+        mvn package -Dmaven.test.skip=true || exit 1
+        ;;
+esac

@@ -1,0 +1,3 @@
+echo "### testing rawrepo-introspect project ###"
+
+mvn verify || exit 1
