@@ -5,8 +5,12 @@
 
 import React from "react";
 import {Tab, Tabs} from "react-bootstrap";
+import RawrepoIntrospectRecordSelector from './rawrepo-introspect-record-selector';
 import RawrepoIntrospectRecordView from './rawrepo-introspect-record-view';
 import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view';
+
+const request = require('superagent');
+const queryString = require('query-string');
 
 class RawrepoIntrospectGUI extends React.Component {
 
@@ -14,43 +18,93 @@ class RawrepoIntrospectGUI extends React.Component {
         super(props);
 
         this.state = {
-            key: 1
+            view: 'record',
+            bibliographicRecordId: null,
+            agencyId: null,
+            agencyIdList: []
         };
 
         this.handleSelect = this.handleSelect.bind(this);
+        this.onChangeBibliographicRecordId = this.onChangeBibliographicRecordId.bind(this);
+        this.onChangeAgencyId = this.onChangeAgencyId.bind(this);
+
+        this.findAgenciesForBibliographicRecordId = this.findAgenciesForBibliographicRecordId.bind(this);
     }
 
-    handleSelect(key) {
-        this.setState({key});
+    componentDidMount() {
+        const queryParams = queryString.parse(location.search);
+
+        if (queryParams.view === undefined) {
+            console.log("View missing - setting default");
+            queryParams.view = 'record';
+            location.search = queryString.stringify(queryParams);
+        }
+
+        if (queryParams.bibliographicRecordId !== undefined) {
+            this.findAgenciesForBibliographicRecordId(queryParams.bibliographicRecordId);
+        }
     }
 
-    static renderRecord() {
-        return (<div><p/><RawrepoIntrospectRecordView/></div>);
+    handleSelect(view) {
+        this.setState({view: view});
     }
 
-    static renderRelations() {
-        return (<div><p/><RawrepoIntrospectRelationsView/></div>);
+    onChangeBibliographicRecordId(event) {
+        const bibliographicRecordId = event.target.value;
+
+        this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
+    }
+
+    findAgenciesForBibliographicRecordId(bibliographicRecordId) {
+        if (8 < bibliographicRecordId.length < 9) {
+            this.setState({bibliographicRecordId: bibliographicRecordId});
+            request
+                .get('/api/v1/agencies-for/' + bibliographicRecordId)
+                .then(res => {
+                    console.log(res.body);
+                    this.setState({agencyIdList: res.body});
+                })
+                .catch(err => {
+                    alert(err.message);
+                });
+        }
+    }
+
+    onChangeAgencyId(event) {
+        const agencyId = event.target.value;
+        const queryParams = queryString.parse(location.search);
+
+        queryParams.bibliographicRecordId = this.state.bibliographicRecordId;
+        queryParams.agencyId = agencyId;
+        location.search = queryString.stringify(queryParams);
     }
 
     render() {
+        const queryParams = queryString.parse(location.search);
+
         return (
             <div className="container-fluid">
                 <h2>Rawrepo Introspect</h2>
                 <hr/>
-                <div>a</div>
-                <div>b</div>
-                <div>c</div>
-                <Tabs activeKey={this.state.key}
-                      onSelect={this.handleSelect}
-                      animation={false}
-                      id="tabs">
-                    <Tab eventKey={1} title="Post">
-                        {RawrepoIntrospectGUI.renderRecord()}
-                    </Tab>
-                    <Tab eventKey={2} title="Relationer">
-                        {RawrepoIntrospectGUI.renderRelations()}
-                    </Tab>
-                </Tabs>
+                <div><RawrepoIntrospectRecordSelector
+                    onChangeBibliographicRecordId={this.onChangeBibliographicRecordId}
+                    onChangeAgencyId={this.onChangeAgencyId}
+                    bibliographicRecordId={queryParams.bibliographicRecordId}
+                    agencyIdList={this.state.agencyIdList}
+                    agencyId={queryParams.agencyId}/></div>
+                <div>
+                    <Tabs activeKey={this.state.view}
+                          onSelect={this.handleSelect}
+                          animation={false}
+                          id="tabs">
+                        <Tab eventKey={'record'} title="Post">
+                            <div><p/><RawrepoIntrospectRecordView/></div>
+                        </Tab>
+                        <Tab eventKey={'relations'} title="Relationer">
+                            <div><p/><RawrepoIntrospectRelationsView/></div>
+                        </Tab>
+                    </Tabs>
+                </div>
             </div>
         )
     }
