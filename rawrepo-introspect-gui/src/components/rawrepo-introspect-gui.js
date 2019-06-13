@@ -21,7 +21,8 @@ class RawrepoIntrospectGUI extends React.Component {
             view: 'record',
             bibliographicRecordId: null,
             agencyId: null,
-            agencyIdList: []
+            agencyIdList: [],
+            record: null
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -29,6 +30,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.onChangeAgencyId = this.onChangeAgencyId.bind(this);
 
         this.findAgenciesForBibliographicRecordId = this.findAgenciesForBibliographicRecordId.bind(this);
+        this.getRecord = this.getRecord.bind(this);
     }
 
     componentDidMount() {
@@ -42,6 +44,10 @@ class RawrepoIntrospectGUI extends React.Component {
 
         if (queryParams.bibliographicRecordId !== undefined) {
             this.findAgenciesForBibliographicRecordId(queryParams.bibliographicRecordId);
+        }
+
+        if (queryParams.bibliographicRecordId !== undefined && queryParams.agencyId !== undefined) {
+            this.getRecord(queryParams.bibliographicRecordId, queryParams.agencyId);
         }
     }
 
@@ -68,6 +74,18 @@ class RawrepoIntrospectGUI extends React.Component {
                     alert(err.message);
                 });
         }
+    }
+
+    getRecord(bibliographicRecordId, agencyId) {
+        request
+            .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId)
+            .then(res => {
+                console.log(res.body);
+                this.setState({record: res.body});
+            })
+            .catch(err => {
+                alert(err.message);
+            });
     }
 
     onChangeAgencyId(event) {
