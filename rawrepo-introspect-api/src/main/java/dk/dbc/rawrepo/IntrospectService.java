@@ -101,7 +101,7 @@ public class IntrospectService {
                 // TODO implement XML beautification
             }
 
-            return Response.ok(res, MediaType.APPLICATION_JSON).build();
+            return Response.ok(res, MediaType.TEXT_PLAIN).build();
         } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();

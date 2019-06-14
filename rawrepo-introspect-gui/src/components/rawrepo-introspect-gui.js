@@ -22,7 +22,7 @@ class RawrepoIntrospectGUI extends React.Component {
             bibliographicRecordId: null,
             agencyId: null,
             agencyIdList: [],
-            record: null
+            record: ''
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -73,15 +73,32 @@ class RawrepoIntrospectGUI extends React.Component {
                 .catch(err => {
                     alert(err.message);
                 });
+        } else {
+            this.state.set({
+                agencyIdList: []
+            })
         }
     }
 
     getRecord(bibliographicRecordId, agencyId) {
+        const queryParams = queryString.parse(location.search);
+        const requestParams = {};
+
+        if (queryParams.mode !== undefined) {
+            requestParams.mode = queryParams.mode;
+        }
+
+        if (queryParams.format !== undefined) {
+            requestParams.format = queryParams.format;
+        }
+
+        console.log('/api/v1/record/' + bibliographicRecordId + '/' + agencyId);
         request
             .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId)
+            .set('Content-Type', 'text/plain')
+            .query(requestParams)
             .then(res => {
-                console.log(res.body);
-                this.setState({record: res.body});
+                this.setState({record: res.text});
             })
             .catch(err => {
                 alert(err.message);
@@ -116,7 +133,7 @@ class RawrepoIntrospectGUI extends React.Component {
                           animation={false}
                           id="tabs">
                         <Tab eventKey={'record'} title="Post">
-                            <div><p/><RawrepoIntrospectRecordView/></div>
+                            <div><p/><RawrepoIntrospectRecordView record={this.state.record}/></div>
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
                             <div><p/><RawrepoIntrospectRelationsView/></div>

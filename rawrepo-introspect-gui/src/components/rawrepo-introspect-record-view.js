@@ -4,6 +4,8 @@
  */
 
 import React from "react";
+import RawrepoIntrospectRecordModeSelector from './rawrepo-introspect-record-mode-selector';
+import RawrepoIntrospectRecordFormatSelector from './rawrepo-introspect-record-format-selector';
 
 class RawrepoIntrospectRecordView extends React.Component {
 
@@ -14,8 +16,11 @@ class RawrepoIntrospectRecordView extends React.Component {
     render() {
         return (
             <div>
-                <p/>
-                Post
+                <RawrepoIntrospectRecordModeSelector/>
+                <hr/>
+                <RawrepoIntrospectRecordFormatSelector/>
+                <hr/>
+                <textarea rows='20' cols='200' value={this.props.record} readOnly/>
             </div>
         )
     }
