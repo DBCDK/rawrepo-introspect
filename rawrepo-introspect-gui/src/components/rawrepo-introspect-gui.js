@@ -111,6 +111,15 @@ class RawrepoIntrospectGUI extends React.Component {
 
         queryParams.bibliographicRecordId = this.state.bibliographicRecordId;
         queryParams.agencyId = agencyId;
+
+        if (queryParams.mode === undefined) {
+            queryParams.mode = 'merged';
+        }
+
+        if (queryParams.format === undefined) {
+            queryParams.format = 'line';
+        }
+
         location.search = queryString.stringify(queryParams);
     }
 

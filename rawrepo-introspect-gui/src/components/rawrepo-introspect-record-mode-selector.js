@@ -4,7 +4,8 @@
  */
 
 import React from "react";
-import {Button, ButtonToolbar} from "react-bootstrap";
+import {Button, ButtonGroup} from "react-bootstrap";
+
 const queryString = require('query-string');
 
 class RawrepoIntrospectRecordModeSelector extends React.Component {
@@ -36,13 +37,19 @@ class RawrepoIntrospectRecordModeSelector extends React.Component {
     }
 
     render() {
+        const queryParams = queryString.parse(location.search);
+        const mode = queryParams.mode;
+
         return (
             <div>
-                <ButtonToolbar>
-                    <Button onClick={RawrepoIntrospectRecordModeSelector.setModeRaw}>Raw</Button>
-                    <Button onClick={RawrepoIntrospectRecordModeSelector.setModeMerged}>Merged</Button>
-                    <Button onClick={RawrepoIntrospectRecordModeSelector.setModeExpanded}>Expanded</Button>
-                </ButtonToolbar>
+                <ButtonGroup>
+                    <Button onClick={RawrepoIntrospectRecordModeSelector.setModeRaw}
+                            bsStyle={mode === 'raw' ? 'primary' : 'default'}>Raw</Button>
+                    <Button onClick={RawrepoIntrospectRecordModeSelector.setModeMerged}
+                            bsStyle={mode === 'merged' ? 'primary' : 'default'}>Merged</Button>
+                    <Button onClick={RawrepoIntrospectRecordModeSelector.setModeExpanded}
+                            bsStyle={mode === 'expanded' ? 'primary' : 'default'}>Expanded</Button>
+                </ButtonGroup>
             </div>
         )
     }

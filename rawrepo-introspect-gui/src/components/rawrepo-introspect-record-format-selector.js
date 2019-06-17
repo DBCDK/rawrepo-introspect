@@ -4,7 +4,8 @@
  */
 
 import React from "react";
-import {Button, ButtonToolbar} from "react-bootstrap";
+import {Button, ButtonGroup} from "react-bootstrap";
+
 const queryString = require('query-string');
 
 class RawrepoIntrospectRecordFormatSelector extends React.Component {
@@ -29,12 +30,21 @@ class RawrepoIntrospectRecordFormatSelector extends React.Component {
     }
 
     render() {
+        const queryParams = queryString.parse(location.search);
+        const format = queryParams.format;
+
         return (
             <div>
-                <ButtonToolbar>
-                    <Button onClick={RawrepoIntrospectRecordFormatSelector.setFormatLine}>Line</Button>
-                    <Button onClick={RawrepoIntrospectRecordFormatSelector.setFormatMarcXchange}>MarcXchange</Button>
-                </ButtonToolbar>
+                <div id='format-div'>
+                    <ButtonGroup id='button-tool-bar-format'>
+                        <Button onClick={RawrepoIntrospectRecordFormatSelector.setFormatLine}
+                                bsStyle={format === 'line' ? 'primary' : 'default'}
+                                id='button-format-line'>Line</Button>
+                        <Button onClick={RawrepoIntrospectRecordFormatSelector.setFormatMarcXchange}
+                                bsStyle={format === 'xml' ? 'primary' : 'default'}
+                                id='button-format-xml'>MarcXchange</Button>
+                    </ButtonGroup>
+                </div>
             </div>
         )
     }
