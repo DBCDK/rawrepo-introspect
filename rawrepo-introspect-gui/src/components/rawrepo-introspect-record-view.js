@@ -19,18 +19,18 @@ class RawrepoIntrospectRecordView extends React.Component {
                 <div>
                     <div className='form-group' style={{height: '28px'}}>
                         <label
-                            className='control-label col-sm-1'
+                            className='control-label col-md-1'
                             style={{top: '7px'}}
                             htmlFor='record-mode-selector'>Visningstype</label>
-                        <div className='col-sm-4'>
+                        <div className='col-md-3'>
                             <RawrepoIntrospectRecordModeSelector
                                 id='record-mode-selector'/>
                         </div>
                         <label
-                            className='control-label col-sm-1'
+                            className='control-label col-md-1'
                             style={{top: '7px'}}
                             htmlFor='record-format-selector'>Visningsformat</label>
-                        <div className='col-sm-4'>
+                        <div className='col-md-4'>
                             <RawrepoIntrospectRecordFormatSelector
                                 id='record-format-selector'/>
                         </div>
