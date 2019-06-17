@@ -29,9 +29,17 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -95,14 +103,17 @@ public class IntrospectService {
             final MarcRecord record = reader.read();
 
             if ("LINE".equalsIgnoreCase(format)) {
-                res = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, Charset.forName("UTF-8")));
+                String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, Charset.forName("UTF-8")));
+
+                rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 "); // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
+                res = rawLines.replaceAll("  ", " "); // Replace double space with single space
+
             } else {
-                res = new String(MARC_XCHANGE_V1_WRITER.write(record, Charset.forName("UTF-8")));
-                // TODO implement XML beautification
+                res = prettyFormat(new String(MARC_XCHANGE_V1_WRITER.write(record, Charset.forName("UTF-8"))), 4);
             }
 
             return Response.ok(res, MediaType.TEXT_PLAIN).build();
-        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException e) {
+        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
         } finally {
@@ -110,4 +121,15 @@ public class IntrospectService {
         }
     }
 
+    public String prettyFormat(String input, int indent) throws TransformerException {
+        Source xmlInput = new StreamSource(new StringReader(input));
+        StringWriter stringWriter = new StringWriter();
+        StreamResult xmlOutput = new StreamResult(stringWriter);
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setAttribute("indent-number", indent);
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformer.transform(xmlInput, xmlOutput);
+        return xmlOutput.getWriter().toString();
+    }
 }
