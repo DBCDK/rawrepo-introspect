@@ -14,29 +14,33 @@ class RawrepoIntrospectRecordSelector extends React.Component {
     render() {
         return (
             <div>
-                <div className="form-group">
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="biliographic-record-id-input"
-                        onChange={this.props.onChangeBibliographicRecordId}
-                        value={this.props.bibliographicRecordId}
-                        style={{width: '250px'}}/>
-                </div>
-                <div className='form-group'>
-                    <div>
-                        <select className='form-control'
-                                id='select-agency-id'
-                                onChange={this.props.onChangeAgencyId}
-                                value={this.props.agencyId}
-                                style={{width: '250px'}}>
-                            {this.props.agencyIdList.map((item, key) =>
-                                <option item={item} key={key}>{item}</option>
-                            )}
-                        </select>
+                <div className='col-lg-2'>
+                    <div className="form-group" style={{marginTop: '15px'}}>
+                        <input
+                            type="text"
+                            className="form-control"
+                            id="biliographic-record-id-input"
+                            onChange={this.props.onChangeBibliographicRecordId}
+                            value={this.props.bibliographicRecordId}/>
+                    </div>
+                    <div className='form-group'>
+                        <div>
+                            <select className='form-control'
+                                    id='select-agency-id'
+                                    onChange={this.props.onChangeAgencyId}
+                                    value={this.props.agencyId}>
+                                {this.props.agencyIdList.map((item, key) =>
+                                    <option item={item} key={key}>{item}</option>
+                                )}
+                            </select>
+                        </div>
                     </div>
                 </div>
+                <div className='col-lg-10'>
+                    <h1>Rawrepo Introspect</h1>
+                </div>
             </div>
+
         )
     }
 }

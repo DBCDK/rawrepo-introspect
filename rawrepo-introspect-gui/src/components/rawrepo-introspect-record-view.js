@@ -11,6 +11,32 @@ class RawrepoIntrospectRecordView extends React.Component {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            textareaHeight: window.innerHeight - 200,
+            textareaWidth: window.innerWidth * 0.80
+        };
+
+        this.updateDimensions = this.updateDimensions.bind(this);
+    }
+
+    updateDimensions() {
+        this.setState({
+            textareaHeight: window.innerHeight - 250,
+            textareaWidth: window.innerWidth * 0.80
+        });
+    };
+
+    componentWillMount() {
+        this.updateDimensions();
+    };
+
+    componentDidMount() {
+        window.addEventListener("resize", this.updateDimensions);
+    };
+
+    componentWillUnmount() {
+        window.removeEventListener("resize", this.updateDimensions);
     }
 
     render() {
@@ -25,8 +51,8 @@ class RawrepoIntrospectRecordView extends React.Component {
                         <div className='col-md-3'>
                             <RawrepoIntrospectRecordModeSelector
                                 id='record-mode-selector'
-                            mode={this.props.mode}
-                            onChangeMode={this.props.onChangeMode}/>
+                                mode={this.props.mode}
+                                onChangeMode={this.props.onChangeMode}/>
                         </div>
                         <label
                             className='control-label col-md-2'
@@ -35,13 +61,14 @@ class RawrepoIntrospectRecordView extends React.Component {
                         <div className='col-md-4'>
                             <RawrepoIntrospectRecordFormatSelector
                                 id='record-format-selector'
-                            format={this.props.format}
-                            onChangeFormat={this.props.onChangeFormat}/>
+                                format={this.props.format}
+                                onChangeFormat={this.props.onChangeFormat}/>
                         </div>
                     </div>
                 </div>
                 <div>
-                    <textarea rows='20' cols='200' value={this.props.record} readOnly/>
+                    <textarea style={{height: this.state.textareaHeight + 'px', width: this.state.textareaWidth + 'px'}}
+                              value={this.props.record} readOnly/>
                 </div>
             </div>
         )

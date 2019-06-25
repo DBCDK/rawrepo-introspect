@@ -165,26 +165,29 @@ class RawrepoIntrospectGUI extends React.Component {
     render() {
         return (
             <div className="container-fluid">
-                <h2>Rawrepo Introspect</h2>
-                <hr/>
-                <div><RawrepoIntrospectRecordSelector
-                    onChangeBibliographicRecordId={this.onChangeBibliographicRecordId}
-                    onChangeAgencyId={this.onChangeAgencyId}
-                    bibliographicRecordId={this.state.bibliographicRecordId}
-                    agencyIdList={this.state.agencyIdList}
-                    agencyId={this.state.agencyId}/></div>
+                <div style={{height: '115px'}}>
+                    <RawrepoIntrospectRecordSelector
+                        onChangeBibliographicRecordId={this.onChangeBibliographicRecordId}
+                        onChangeAgencyId={this.onChangeAgencyId}
+                        bibliographicRecordId={this.state.bibliographicRecordId}
+                        agencyIdList={this.state.agencyIdList}
+                        agencyId={this.state.agencyId}/>
+                </div>
                 <div>
                     <Tabs activeKey={this.state.view}
                           onSelect={this.handleSelect}
                           animation={false}
                           id="tabs">
                         <Tab eventKey={'record'} title="Post">
-                            <div><p/><RawrepoIntrospectRecordView
-                                record={this.state.record}
-                                format={this.state.format}
-                                mode={this.state.mode}
-                                onChangeFormat={this.onChangeFormat}
-                                onChangeMode={this.onChangeMode}/></div>
+                            <div>
+                                <p/>
+                                <RawrepoIntrospectRecordView
+                                    record={this.state.record}
+                                    format={this.state.format}
+                                    mode={this.state.mode}
+                                    onChangeFormat={this.onChangeFormat}
+                                    onChangeMode={this.onChangeMode}/>
+                            </div>
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
                             <div><p/><RawrepoIntrospectRelationsView/></div>
