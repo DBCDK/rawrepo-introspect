@@ -12,6 +12,8 @@ import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view'
 const request = require('superagent');
 const queryString = require('querystring');
 
+const DEFAULT_BIBLIOGRAPHIC_RECORD_ID = 'BibliographicRecordId';
+
 class RawrepoIntrospectGUI extends React.Component {
 
     constructor(props) {
@@ -19,7 +21,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.state = {
             view: 'record',
-            bibliographicRecordId: null,
+            bibliographicRecordId: DEFAULT_BIBLIOGRAPHIC_RECORD_ID,
             agencyId: undefined,
             agencyIdList: [],
             record: '',
@@ -67,8 +69,21 @@ class RawrepoIntrospectGUI extends React.Component {
         const bibliographicRecordId = event.target.value;
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
-
-        this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
+        console.log('bibliographicRecordId.length', bibliographicRecordId.length);
+        if (bibliographicRecordId.length === 0) {
+            this.setState({
+                bibliographicRecordId: DEFAULT_BIBLIOGRAPHIC_RECORD_ID,
+                agencyIdList: [],
+                record: ''
+            })
+        } else if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
+            this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
+        } else {
+            this.setState({
+                agencyIdList: [],
+                record: ''
+            })
+        }
     }
 
     onChangeAgencyId(event) {
@@ -96,21 +111,15 @@ class RawrepoIntrospectGUI extends React.Component {
     }
 
     findAgenciesForBibliographicRecordId(bibliographicRecordId) {
-        if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
-            request
-                .get('/api/v1/agencies-for/' + bibliographicRecordId)
-                .then(res => {
-                    console.log(res.body);
-                    this.setState({agencyIdList: res.body});
-                })
-                .catch(err => {
-                    alert(err.message);
-                });
-        } else {
-            this.setState({
-                agencyIdList: []
+        request
+            .get('/api/v1/agencies-for/' + bibliographicRecordId)
+            .then(res => {
+                console.log(res.body);
+                this.setState({agencyIdList: res.body});
             })
-        }
+            .catch(err => {
+                alert(err.message);
+            });
     }
 
     getRecordByMode(mode) {

@@ -15,22 +15,21 @@ class RawrepoIntrospectRecordSelector extends React.Component {
         return (
             <div>
                 <div className="form-group">
-                    <label htmlFor="biliographic-record-id-input">BibliographicRecordId</label>
                     <input
                         type="text"
                         className="form-control"
                         id="biliographic-record-id-input"
-                        onBlur={this.props.onChangeBibliographicRecordId}
-                        defaultValue={this.props.bibliographicRecordId}/>
-
+                        onChange={this.props.onChangeBibliographicRecordId}
+                        value={this.props.bibliographicRecordId}
+                        style={{width: '250px'}}/>
                 </div>
                 <div className='form-group'>
-                    <label htmlFor='select-agency-id'>AgencyId</label>
                     <div>
                         <select className='form-control'
                                 id='select-agency-id'
                                 onChange={this.props.onChangeAgencyId}
-                                value={this.props.agencyId}>
+                                value={this.props.agencyId}
+                                style={{width: '250px'}}>
                             {this.props.agencyIdList.map((item, key) =>
                                 <option item={item} key={key}>{item}</option>
                             )}
