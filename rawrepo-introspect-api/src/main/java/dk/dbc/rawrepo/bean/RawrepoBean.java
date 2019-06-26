@@ -8,8 +8,6 @@ package dk.dbc.rawrepo.bean;
 import dk.dbc.rawrepo.RecordData;
 import dk.dbc.rawrepo.RecordServiceConnector;
 import dk.dbc.rawrepo.RecordServiceConnectorException;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -18,8 +16,6 @@ import java.util.List;
 
 @Stateless
 public class RawrepoBean {
-    private static final XLogger LOGGER = XLoggerFactory.getXLogger(RawrepoBean.class);
-
     @Inject
     private RecordServiceConnector rawRepoRecordServiceConnector;
 
