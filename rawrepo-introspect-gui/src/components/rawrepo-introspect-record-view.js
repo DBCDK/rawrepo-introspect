@@ -23,7 +23,7 @@ class RawrepoIntrospectRecordView extends React.Component {
     updateDimensions() {
         this.setState({
             textareaHeight: window.innerHeight - 250,
-            textareaWidth: window.innerWidth * 0.80
+            textareaWidth: window.innerWidth -300 // 300 reserved for future record history box
         });
     };
 
@@ -42,23 +42,23 @@ class RawrepoIntrospectRecordView extends React.Component {
     render() {
         return (
             <div>
-                <div>
+                <div style={{width: '100%', overflow: 'hidden'}}>
                     <div className='form-group' style={{height: '28px'}}>
                         <label
-                            className='control-label col-md-2'
-                            style={{top: '7px'}}
+                            className='control-label'
+                            style={{marginTop: '5px', float: 'left'}}
                             htmlFor='record-mode-selector'>Visningstype</label>
-                        <div className='col-md-3'>
+                        <div style={{marginLeft: '10px', float: 'left', width: '250px'}} >
                             <RawrepoIntrospectRecordModeSelector
                                 id='record-mode-selector'
                                 mode={this.props.mode}
                                 onChangeMode={this.props.onChangeMode}/>
                         </div>
                         <label
-                            className='control-label col-md-2'
-                            style={{top: '7px'}}
+                            className='control-label'
+                            style={{marginTop: '5px', float: 'left'}}
                             htmlFor='record-format-selector'>Visningsformat</label>
-                        <div className='col-md-4'>
+                        <div style={{marginLeft: '10px', float: 'left'}}>
                             <RawrepoIntrospectRecordFormatSelector
                                 id='record-format-selector'
                                 format={this.props.format}
