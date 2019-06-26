@@ -12,8 +12,6 @@ import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view'
 const request = require('superagent');
 const queryString = require('querystring');
 
-const DEFAULT_BIBLIOGRAPHIC_RECORD_ID = 'BibliographicRecordId';
-
 class RawrepoIntrospectGUI extends React.Component {
 
     constructor(props) {
@@ -21,8 +19,8 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.state = {
             view: 'record',
-            bibliographicRecordId: DEFAULT_BIBLIOGRAPHIC_RECORD_ID,
-            agencyId: undefined,
+            bibliographicRecordId: '',
+            agencyId: '',
             agencyIdList: [],
             record: '',
             format: 'line',
@@ -42,23 +40,40 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordById = this.getRecordById.bind(this);
         this.getRecordByMode = this.getRecordByMode.bind(this);
         this.getRecordByFormat = this.getRecordByFormat.bind(this);
+
+        this.clearRecord = this.clearRecord.bind(this);
     }
 
     componentDidMount() {
         const queryParams = queryString.parse(location.search);
+        if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
 
-        if (queryParams.view === undefined) {
-            console.log("View missing - setting default");
-            queryParams.view = 'record';
-            location.search = queryString.stringify(queryParams);
-        }
+            // The first param (assumed to always be bibliographicRecordId) with be prefixed with '?' so we will
+            // convert that param to be a normal attribute
+            if (queryParams['?bibliographicRecordId'] !== undefined) {
+                queryParams.bibliographicRecordId = queryParams['?bibliographicRecordId'];
+            }
 
-        if (queryParams.bibliographicRecordId !== undefined) {
-            this.findAgenciesForBibliographicRecordId(queryParams.bibliographicRecordId);
-        }
+            if (queryParams.bibliographicRecordId !== undefined) {
+                this.setState({bibliographicRecordId: queryParams.bibliographicRecordId})
+            }
 
-        if (queryParams.bibliographicRecordId !== undefined && queryParams.agencyId !== undefined) {
-            this.getRecord(queryParams.bibliographicRecordId, queryParams.agencyId);
+            if (queryParams.agencyId !== undefined) {
+                this.setState({agencyId: queryParams.agencyId})
+            }
+
+            if (queryParams.mode !== undefined) {
+                this.setState({mode: queryParams.mode})
+            }
+
+            if (queryParams.format !== undefined) {
+                this.setState({format: queryParams.format})
+            }
+
+            if (queryParams.bibliographicRecordId !== undefined && queryParams.agencyId !== undefined) {
+                this.findAgenciesForBibliographicRecordId(queryParams.bibliographicRecordId);
+                this.getRecordById(queryParams.bibliographicRecordId, queryParams.agencyId);
+            }
         }
     }
 
@@ -71,22 +86,19 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
         console.log('bibliographicRecordId.length', bibliographicRecordId.length);
-        if (bibliographicRecordId.length === 0) {
-            this.setState({
-                bibliographicRecordId: DEFAULT_BIBLIOGRAPHIC_RECORD_ID,
-                agencyIdList: [],
-                record: '',
-                recordLoaded: false
-            })
-        } else if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
+        if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
             this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
         } else {
-            this.setState({
-                agencyIdList: [],
-                record: '',
-                recordLoaded: false
-            })
+            this.clearRecord();
         }
+    }
+
+    clearRecord() {
+        this.setState({
+            agencyIdList: [],
+            record: '',
+            recordLoaded: false
+        })
     }
 
     onChangeAgencyId(event) {
@@ -117,8 +129,15 @@ class RawrepoIntrospectGUI extends React.Component {
         request
             .get('/api/v1/agencies-for/' + bibliographicRecordId)
             .then(res => {
-                console.log(res.body);
-                this.setState({agencyIdList: res.body});
+                const agencyIdList = res.body;
+
+                if (agencyIdList.length > 0) {
+                    const agencyId = agencyIdList[0];
+                    this.setState({agencyIdList: agencyIdList, agencyId: agencyId});
+                    this.getRecordById(bibliographicRecordId, agencyId)
+                } else {
+                    this.clearRecord();
+                }
             })
             .catch(err => {
                 alert(err.message);
@@ -160,6 +179,19 @@ class RawrepoIntrospectGUI extends React.Component {
                     record: res.text,
                     recordLoaded: true
                 });
+
+                const urlParams = {
+                    bibliographicRecordId: bibliographicRecordId,
+                    agencyId: agencyId,
+                    mode: mode,
+                    format: format,
+                    view: 'record'
+                };
+
+                // This seems to be the only way to get the full URL without URL params
+                // Alternatively location.href could be used by that includes previous URL params
+                const URL = location.protocol + '//' + location.host + location.pathname;
+                window.history.replaceState(null, null,  URL + '?' + queryString.stringify(urlParams));
             })
             .catch(err => {
                 alert(err.message);
@@ -202,7 +234,6 @@ class RawrepoIntrospectGUI extends React.Component {
             </div>
         )
     }
-
 }
 
 export default RawrepoIntrospectGUI;
