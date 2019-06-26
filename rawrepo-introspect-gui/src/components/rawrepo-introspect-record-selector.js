@@ -13,9 +13,9 @@ class RawrepoIntrospectRecordSelector extends React.Component {
 
     render() {
         return (
-            <div>
-                <div className='col-lg-2'>
-                    <div className="form-group" style={{marginTop: '15px'}}>
+            <div style={{width: '100%', overflow: 'hidden'}}>
+                <div style={{float: 'left', marginTop: '15px', width: '250px'}}>
+                    <div className="form-group">
                         <input
                             type="text"
                             className="form-control"
@@ -36,8 +36,8 @@ class RawrepoIntrospectRecordSelector extends React.Component {
                         </div>
                     </div>
                 </div>
-                <div className='col-lg-10'>
-                    <h1>Rawrepo Introspect</h1>
+                <div style={{marginLeft: '260px'}}>
+                    <h1 style={{marginTop: '10px'}}>Rawrepo Introspect</h1>
                 </div>
             </div>
 
