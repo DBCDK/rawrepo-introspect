@@ -21,7 +21,8 @@ class RawrepoIntrospectRecordSelector extends React.Component {
                             className="form-control"
                             id="biliographic-record-id-input"
                             onChange={this.props.onChangeBibliographicRecordId}
-                            value={this.props.bibliographicRecordId}/>
+                            value={this.props.bibliographicRecordId}
+                            placeholder='BibliographicRecordId'/>
                     </div>
                     <div className='form-group'>
                         <div>

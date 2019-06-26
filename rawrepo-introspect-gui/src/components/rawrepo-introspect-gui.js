@@ -12,8 +12,6 @@ import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view'
 const request = require('superagent');
 const queryString = require('querystring');
 
-const DEFAULT_BIBLIOGRAPHIC_RECORD_ID = 'BibliographicRecordId';
-
 class RawrepoIntrospectGUI extends React.Component {
 
     constructor(props) {
@@ -21,7 +19,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.state = {
             view: 'record',
-            bibliographicRecordId: DEFAULT_BIBLIOGRAPHIC_RECORD_ID,
+            bibliographicRecordId: '',
             agencyId: undefined,
             agencyIdList: [],
             record: '',
@@ -42,6 +40,8 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordById = this.getRecordById.bind(this);
         this.getRecordByMode = this.getRecordByMode.bind(this);
         this.getRecordByFormat = this.getRecordByFormat.bind(this);
+
+        this.clearRecord = this.clearRecord.bind(this);
     }
 
     componentDidMount() {
@@ -71,22 +71,19 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
         console.log('bibliographicRecordId.length', bibliographicRecordId.length);
-        if (bibliographicRecordId.length === 0) {
-            this.setState({
-                bibliographicRecordId: DEFAULT_BIBLIOGRAPHIC_RECORD_ID,
-                agencyIdList: [],
-                record: '',
-                recordLoaded: false
-            })
-        } else if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
+        if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
             this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
         } else {
-            this.setState({
-                agencyIdList: [],
-                record: '',
-                recordLoaded: false
-            })
+            this.clearRecord();
         }
+    }
+
+    clearRecord() {
+        this.setState({
+            agencyIdList: [],
+            record: '',
+            recordLoaded: false
+        })
     }
 
     onChangeAgencyId(event) {
@@ -117,8 +114,15 @@ class RawrepoIntrospectGUI extends React.Component {
         request
             .get('/api/v1/agencies-for/' + bibliographicRecordId)
             .then(res => {
-                console.log(res.body);
-                this.setState({agencyIdList: res.body});
+                const agencyIdList = res.body;
+
+                if (agencyIdList.length > 0) {
+                    const agencyId = agencyIdList[0];
+                    this.setState({agencyIdList: agencyIdList, agencyId: agencyId});
+                    this.getRecordById(bibliographicRecordId, agencyId)
+                } else {
+                    this.clearRecord();
+                }
             })
             .catch(err => {
                 alert(err.message);
