@@ -24,7 +24,7 @@ class RawrepoIntrospectGUI extends React.Component {
             agencyIdList: [],
             record: '',
             format: 'line',
-            mode: 'merged',
+            mode: 'raw',
             recordLoaded: false
         };
 
