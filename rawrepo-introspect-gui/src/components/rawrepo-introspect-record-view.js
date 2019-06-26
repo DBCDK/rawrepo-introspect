@@ -23,7 +23,7 @@ class RawrepoIntrospectRecordView extends React.Component {
     updateDimensions() {
         this.setState({
             textareaHeight: window.innerHeight - 250,
-            textareaWidth: window.innerWidth -300 // 300 reserved for future record history box
+            textareaWidth: window.innerWidth - 300 // 300 reserved for future record history box
         });
     };
 
@@ -48,11 +48,12 @@ class RawrepoIntrospectRecordView extends React.Component {
                             className='control-label'
                             style={{marginTop: '5px', float: 'left'}}
                             htmlFor='record-mode-selector'>Visningstype</label>
-                        <div style={{marginLeft: '10px', float: 'left', width: '250px'}} >
+                        <div style={{marginLeft: '10px', float: 'left', width: '250px'}}>
                             <RawrepoIntrospectRecordModeSelector
                                 id='record-mode-selector'
                                 mode={this.props.mode}
-                                onChangeMode={this.props.onChangeMode}/>
+                                onChangeMode={this.props.onChangeMode}
+                                recordLoaded={this.props.recordLoaded}/>
                         </div>
                         <label
                             className='control-label'
@@ -62,7 +63,8 @@ class RawrepoIntrospectRecordView extends React.Component {
                             <RawrepoIntrospectRecordFormatSelector
                                 id='record-format-selector'
                                 format={this.props.format}
-                                onChangeFormat={this.props.onChangeFormat}/>
+                                onChangeFormat={this.props.onChangeFormat}
+                                recordLoaded={this.props.recordLoaded}/>
                         </div>
                     </div>
                 </div>

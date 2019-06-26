@@ -26,7 +26,8 @@ class RawrepoIntrospectGUI extends React.Component {
             agencyIdList: [],
             record: '',
             format: 'line',
-            mode: 'merged'
+            mode: 'merged',
+            recordLoaded: false
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -74,14 +75,16 @@ class RawrepoIntrospectGUI extends React.Component {
             this.setState({
                 bibliographicRecordId: DEFAULT_BIBLIOGRAPHIC_RECORD_ID,
                 agencyIdList: [],
-                record: ''
+                record: '',
+                recordLoaded: false
             })
         } else if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
             this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
         } else {
             this.setState({
                 agencyIdList: [],
-                record: ''
+                record: '',
+                recordLoaded: false
             })
         }
     }
@@ -154,7 +157,8 @@ class RawrepoIntrospectGUI extends React.Component {
             .query(params)
             .then(res => {
                 this.setState({
-                    record: res.text
+                    record: res.text,
+                    recordLoaded: true
                 });
             })
             .catch(err => {
@@ -186,7 +190,8 @@ class RawrepoIntrospectGUI extends React.Component {
                                     format={this.state.format}
                                     mode={this.state.mode}
                                     onChangeFormat={this.onChangeFormat}
-                                    onChangeMode={this.onChangeMode}/>
+                                    onChangeMode={this.onChangeMode}
+                                    recordLoaded={this.state.recordLoaded}/>
                             </div>
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
