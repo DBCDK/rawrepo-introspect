@@ -22,7 +22,13 @@ class RawrepoIntrospectRecordSelector extends React.Component {
                             id="biliographic-record-id-input"
                             onChange={this.props.onChangeBibliographicRecordId}
                             value={this.props.bibliographicRecordId}
-                            placeholder='BibliographicRecordId'/>
+                            placeholder='BibliographicRecordId'
+                            list='BibliographicRecordIdCache'/>
+                        <datalist id="BibliographicRecordIdCache">
+                            {this.props.bibliographicRecordIdCache.map((item, key) =>
+                                <option value={item} key={key}/>
+                            )}
+                        </datalist>
                     </div>
                     <div className='form-group'>
                         <div>
