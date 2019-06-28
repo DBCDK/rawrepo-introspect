@@ -94,7 +94,7 @@ class RawrepoIntrospectGUI extends React.Component {
         const bibliographicRecordId = event.target.value;
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
-        console.log('bibliographicRecordId.length', bibliographicRecordId.length);
+
         if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
             this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
         } else {
