@@ -105,8 +105,14 @@ public class IntrospectService {
             if ("LINE".equalsIgnoreCase(format)) {
                 String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, Charset.forName("UTF-8")));
 
-                rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 "); // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
-                res = rawLines.replaceAll("  ", " "); // Replace double space with single space
+                // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
+                rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
+
+                // Replace double space with single space in front of subfield marker
+                rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
+
+                // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
+                res = rawLines.replaceAll(" {4}\n", "");
 
             } else {
                 res = prettyFormat(new String(MARC_XCHANGE_V1_WRITER.write(record, Charset.forName("UTF-8"))), 4);
