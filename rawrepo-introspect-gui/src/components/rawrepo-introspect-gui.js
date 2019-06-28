@@ -12,6 +12,8 @@ import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view'
 const request = require('superagent');
 const queryString = require('querystring');
 
+const COOKIE_PREFIX = 'recId=';
+
 class RawrepoIntrospectGUI extends React.Component {
 
     constructor(props) {
@@ -20,6 +22,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.state = {
             view: 'record',
             bibliographicRecordId: '',
+            bibliographicRecordIdCache: [],
             agencyId: '',
             agencyIdList: [],
             record: '',
@@ -42,10 +45,16 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordByFormat = this.getRecordByFormat.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
+        RawrepoIntrospectGUI.getExpirationDate = RawrepoIntrospectGUI.getExpirationDate.bind(this);
+        this.addToCookie = this.addToCookie.bind(this);
+        this.readCookie = this.readCookie.bind(this);
     }
 
     componentDidMount() {
         const queryParams = queryString.parse(location.search);
+
+        this.readCookie();
+
         if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
 
             // The first param (assumed to always be bibliographicRecordId) with be prefixed with '?' so we will
@@ -85,7 +94,7 @@ class RawrepoIntrospectGUI extends React.Component {
         const bibliographicRecordId = event.target.value;
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
-        console.log('bibliographicRecordId.length', bibliographicRecordId.length);
+
         if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
             this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
         } else {
@@ -191,11 +200,49 @@ class RawrepoIntrospectGUI extends React.Component {
                 // This seems to be the only way to get the full URL without URL params
                 // Alternatively location.href could be used by that includes previous URL params
                 const URL = location.protocol + '//' + location.host + location.pathname;
-                window.history.replaceState(null, null,  URL + '?' + queryString.stringify(urlParams));
+                window.history.replaceState(null, null, URL + '?' + queryString.stringify(urlParams));
+                this.addToCookie(bibliographicRecordId);
             })
             .catch(err => {
                 alert(err.message);
             });
+    }
+
+    // Constructs 'expires' message for cookies
+    static getExpirationDate() {
+        const date = new Date();
+        date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000));
+        return "; expires=" + date.toGMTString();
+    }
+
+    addToCookie(recId) {
+        const expires = RawrepoIntrospectGUI.getExpirationDate();
+        const bibliographicRecordIdCache = this.state.bibliographicRecordIdCache;
+
+        // Only add the value if it isn't already present
+        if (bibliographicRecordIdCache.indexOf(recId) === -1) {
+            bibliographicRecordIdCache.push(recId);
+            this.setState({bibliographicRecordIdCache: bibliographicRecordIdCache});
+            document.cookie = COOKIE_PREFIX + bibliographicRecordIdCache.join(',') + expires;
+        }
+    }
+
+    readCookie() {
+        let bibliographicRecordIdCache = [];
+        const documentCookies = document.cookie.split(';'); // Split cookie into separate elements
+
+        for (let i = 0; i < documentCookies.length; i++) {
+            if (documentCookies[i].indexOf(COOKIE_PREFIX) > -1) {
+                const bibliographicRecordIdCookie = documentCookies[i];
+
+                // Remove 'recId='
+                const bibliographicRecordIdCookieValues = bibliographicRecordIdCookie.split('=').pop();
+
+                bibliographicRecordIdCache = bibliographicRecordIdCookieValues.split(',');
+            }
+        }
+
+        this.setState({bibliographicRecordIdCache: bibliographicRecordIdCache});
     }
 
     render() {
@@ -207,7 +254,8 @@ class RawrepoIntrospectGUI extends React.Component {
                         onChangeAgencyId={this.onChangeAgencyId}
                         bibliographicRecordId={this.state.bibliographicRecordId}
                         agencyIdList={this.state.agencyIdList}
-                        agencyId={this.state.agencyId}/>
+                        agencyId={this.state.agencyId}
+                        bibliographicRecordIdCache={this.state.bibliographicRecordIdCache}/>
                 </div>
                 <div>
                     <Tabs activeKey={this.state.view}
