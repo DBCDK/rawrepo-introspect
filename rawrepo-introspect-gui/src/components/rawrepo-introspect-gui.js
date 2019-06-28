@@ -55,14 +55,14 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.readCookie();
 
-        if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
-
-            // The first param (assumed to always be bibliographicRecordId) with be prefixed with '?' so we will
-            // convert that param to be a normal attribute
-            if (queryParams['?bibliographicRecordId'] !== undefined) {
-                queryParams.bibliographicRecordId = queryParams['?bibliographicRecordId'];
+        // Sanitize the raw values in queryParams as the first value will be prefixed with '?'
+        for (var key in queryParams) {
+            if (key.startsWith('?')) {
+                queryParams[key.substring(1, key.length)] = queryParams[key];
             }
+        }
 
+        if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
             if (queryParams.bibliographicRecordId !== undefined) {
                 this.setState({bibliographicRecordId: queryParams.bibliographicRecordId})
             }
