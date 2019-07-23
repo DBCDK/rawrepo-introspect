@@ -14,8 +14,8 @@ import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.marc.writer.MarcXchangeV1Writer;
 import dk.dbc.util.StopwatchInterceptor;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -46,11 +46,11 @@ import java.util.List;
 @Stateless
 @Path("")
 public class IntrospectService {
-    private static final XLogger LOGGER = XLoggerFactory.getXLogger(IntrospectService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntrospectService.class);
     private final JSONBContext mapper = new JSONBContext();
 
     @Inject
-    private RecordServiceConnector rawRepoRecordServiceConnector;
+    RecordServiceConnector rawRepoRecordServiceConnector;
 
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
     private static final MarcXchangeV1Writer MARC_XCHANGE_V1_WRITER = new MarcXchangeV1Writer();
@@ -59,7 +59,6 @@ public class IntrospectService {
     @Produces({MediaType.APPLICATION_JSON})
     @Path("v1/agencies-for/{bibliographicRecordId}")
     public Response getAllAgenciesForBibliographicRecordId(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
-        LOGGER.entry();
         String res = "";
 
         try {
@@ -71,8 +70,6 @@ public class IntrospectService {
         } catch (JSONBException | RecordServiceConnectorException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
-        } finally {
-            LOGGER.exit(res);
         }
     }
 
@@ -83,7 +80,6 @@ public class IntrospectService {
                               @PathParam("agencyId") int agencyId,
                               @DefaultValue("LINE") @QueryParam("format") String format,
                               @DefaultValue("MERGED") @QueryParam("mode") String mode) {
-        LOGGER.entry();
         String res = "";
 
         try {
@@ -107,17 +103,14 @@ public class IntrospectService {
         } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
-        } finally {
-            LOGGER.exit(res);
         }
     }
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    @Path("v1/record/{bibliographicRecordId}/{agencyId}")
+    @Path("v1/record/{bibliographicRecordId}/{agencyId}/history")
     public Response getRecordHistory(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                                      @PathParam("agencyId") int agencyId) {
-        LOGGER.entry();
         String res = "";
 
         try {
@@ -130,8 +123,6 @@ public class IntrospectService {
         } catch (RecordServiceConnectorException | JSONBException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
-        } finally {
-            LOGGER.exit(res);
         }
     }
 
@@ -142,7 +133,6 @@ public class IntrospectService {
                                       @PathParam("agencyId") int agencyId,
                                       @PathParam("modifiedDate") String modifiedDate,
                                       @DefaultValue("LINE") @QueryParam("format") String format) {
-        LOGGER.entry();
         String res = "";
 
         try {
@@ -159,8 +149,6 @@ public class IntrospectService {
         } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
-        } finally {
-            LOGGER.exit(res);
         }
     }
 

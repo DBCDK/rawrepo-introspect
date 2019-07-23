@@ -1,0 +1,33 @@
+001 00 *a 22058037 *b 191919 *c 20190723053821 *d 19991103 *f a
+004 00 *r n *a e
+008 00 *& f *t m *u r *a 1998 *z 1999 *b dk *d å *l dan *o b *v 0
+009 00 *a a *g xx
+021 00 *a 87-14-19823-1 *c ib. *d kr. 68,00
+021 00 *a 87-14-19489-9 *b 1. oplag
+032 00 *a DBF199948 *x SFD199948 *x DAT199946 *x DAT981243
+038 00 *a bi
+100 00 *a Mogensen *h Jan *c f. 1945
+245 00 *a Hvordan skildpadden fik sit skjold *e tekst og illustrationer af Jan Mog
+    ensen
+250 00 *x [Nyt oplag]
+260 00 *& 1 *a Kbh. *b Høst *c 2000 *k tr. i udl.
+300 00 *a [32] sider *b alle ill. i farver
+440 00 *0 *& i *a Spiren
+504 00 *& 1 *a Billedbog. En gang for længe siden havde skildpadden ikke noget skj
+    old. Og den nåede ikke altid af vejen, når de store dyr kom brasende. Men s
+    å en dag møder den en opfinder, der lige har opfundet lerskålen ...
+521 00 *a [1. oplag] *c 1998
+652 00 *n 86 *z 096
+652 00 *o sk
+666 00 *0 *s dyrefortællinger
+666 00 *0 *s skildpadder
+666 00 *0 *u for 3 år
+666 00 *0 *u for 4 år
+666 00 *0 *u for 5 år
+990 00 *b b *b s
+996 00 *a DBC
+d08 00 *a BØK/SKO kode fjernet ved masserettelse og 990b tilføjet
+d08 00 *a nø/lhf-bvl-002/16.11.00 agr
+d08 00 *a masserettet i forb. med konvertering af aldersnoter
+z99 00 *a masseret
+$
