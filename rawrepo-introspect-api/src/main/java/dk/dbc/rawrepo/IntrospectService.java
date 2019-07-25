@@ -13,13 +13,12 @@ import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.marc.writer.MarcXchangeV1Writer;
-import dk.dbc.rawrepo.bean.RawrepoBean;
 import dk.dbc.util.StopwatchInterceptor;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import javax.interceptor.Interceptors;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -47,11 +46,11 @@ import java.util.List;
 @Stateless
 @Path("")
 public class IntrospectService {
-    private static final XLogger LOGGER = XLoggerFactory.getXLogger(IntrospectService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntrospectService.class);
     private final JSONBContext mapper = new JSONBContext();
 
-    @EJB
-    RawrepoBean rawrepoBean;
+    @Inject
+    RecordServiceConnector rawRepoRecordServiceConnector;
 
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
     private static final MarcXchangeV1Writer MARC_XCHANGE_V1_WRITER = new MarcXchangeV1Writer();
@@ -60,11 +59,10 @@ public class IntrospectService {
     @Produces({MediaType.APPLICATION_JSON})
     @Path("v1/agencies-for/{bibliographicRecordId}")
     public Response getAllAgenciesForBibliographicRecordId(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
-        LOGGER.entry();
         String res = "";
 
         try {
-            final List<Integer> agencies = rawrepoBean.getAllAgenciesForBibliographicRecordId(bibliographicRecordId);
+            final List<Integer> agencies = Arrays.asList(rawRepoRecordServiceConnector.getAllAgenciesForBibliographicRecordId(bibliographicRecordId));
 
             res = mapper.marshall(agencies);
 
@@ -72,8 +70,6 @@ public class IntrospectService {
         } catch (JSONBException | RecordServiceConnectorException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
-        } finally {
-            LOGGER.exit(res);
         }
     }
 
@@ -84,7 +80,6 @@ public class IntrospectService {
                               @PathParam("agencyId") int agencyId,
                               @DefaultValue("LINE") @QueryParam("format") String format,
                               @DefaultValue("MERGED") @QueryParam("mode") String mode) {
-        LOGGER.entry();
         String res = "";
 
         try {
@@ -97,45 +92,93 @@ public class IntrospectService {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
-            final RecordData recordData = rawrepoBean.getRecord(bibliographicRecordId, agencyId, RecordServiceConnector.Params.Mode.valueOf(mode.toUpperCase()));
+            final RecordServiceConnector.Params params = new RecordServiceConnector.Params();
+            params.withMode(RecordServiceConnector.Params.Mode.valueOf(mode.toUpperCase()));
 
-            final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), Charset.forName("UTF-8"));
-            final MarcRecord record = reader.read();
+            final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
 
-            if ("LINE".equalsIgnoreCase(format)) {
-                String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, Charset.forName("UTF-8")));
-
-                // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
-                rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
-
-                // Replace double space with single space in front of subfield marker
-                rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
-
-                // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-                res = rawLines.replaceAll(" {4}\n", "");
-
-            } else {
-                res = prettyFormat(new String(MARC_XCHANGE_V1_WRITER.write(record, Charset.forName("UTF-8"))), 4);
-            }
+            res = recordDataToText(recordData, format);
 
             return Response.ok(res, MediaType.TEXT_PLAIN).build();
         } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
-        } finally {
-            LOGGER.exit(res);
         }
     }
 
-    public String prettyFormat(String input, int indent) throws TransformerException {
-        Source xmlInput = new StreamSource(new StringReader(input));
-        StringWriter stringWriter = new StringWriter();
-        StreamResult xmlOutput = new StreamResult(stringWriter);
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        transformerFactory.setAttribute("indent-number", indent);
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.transform(xmlInput, xmlOutput);
-        return xmlOutput.getWriter().toString();
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    @Path("v1/record/{bibliographicRecordId}/{agencyId}/history")
+    public Response getRecordHistory(@PathParam("bibliographicRecordId") String bibliographicRecordId,
+                                     @PathParam("agencyId") int agencyId) {
+        String res = "";
+
+        try {
+            final RecordHistoryCollection recordHistoryCollection = rawRepoRecordServiceConnector.getRecordHistory(Integer.toString(agencyId), bibliographicRecordId);
+            final List<RecordHistory> recordHistoryList = recordHistoryCollection.getRecordHistoryList();
+
+            res = mapper.marshall(recordHistoryList);
+
+            return Response.ok(res, MediaType.APPLICATION_JSON).build();
+        } catch (RecordServiceConnectorException | JSONBException e) {
+            LOGGER.error(e.getMessage());
+            return Response.serverError().build();
+        }
     }
+
+    @GET
+    @Produces({MediaType.TEXT_PLAIN})
+    @Path("v1/record/{bibliographicRecordId}/{agencyId}/{modifiedDate}")
+    public Response getHistoricRecord(@PathParam("bibliographicRecordId") String bibliographicRecordId,
+                                      @PathParam("agencyId") int agencyId,
+                                      @PathParam("modifiedDate") String modifiedDate,
+                                      @DefaultValue("LINE") @QueryParam("format") String format) {
+        String res = "";
+
+        try {
+            // Validate input
+            if (!Arrays.asList("LINE", "XML").contains(format.toUpperCase())) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            final RecordData recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
+
+            res = recordDataToText(recordData, format);
+
+            return Response.ok(res, MediaType.TEXT_PLAIN).build();
+        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException e) {
+            LOGGER.error(e.getMessage());
+            return Response.serverError().build();
+        }
+    }
+
+    private String recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
+        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), Charset.forName("UTF-8"));
+        final MarcRecord record = reader.read();
+
+        if ("LINE".equalsIgnoreCase(format)) {
+            String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, Charset.forName("UTF-8")));
+
+            // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
+            rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
+
+            // Replace double space with single space in front of subfield marker
+            rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
+
+            // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
+            return rawLines.replaceAll(" {4}\n", "");
+        } else {
+            final String recordContent = new String(MARC_XCHANGE_V1_WRITER.write(record, Charset.forName("UTF-8")));
+            final Source xmlInput = new StreamSource(new StringReader(recordContent));
+            final StringWriter stringWriter = new StringWriter();
+            final StreamResult xmlOutput = new StreamResult(stringWriter);
+            final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", 4);
+            final Transformer transformer = transformerFactory.newTransformer();
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.transform(xmlInput, xmlOutput);
+            return xmlOutput.getWriter().toString();
+        }
+    }
+
 }

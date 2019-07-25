@@ -7,14 +7,19 @@ import React from "react";
 import RawrepoIntrospectRecordModeSelector from './rawrepo-introspect-record-mode-selector';
 import RawrepoIntrospectRecordFormatSelector from './rawrepo-introspect-record-format-selector';
 
+const HEIGHT_OFFSET = 225;
+const HISTORY_WIDTH = 200;
+
 class RawrepoIntrospectRecordView extends React.Component {
+
 
     constructor(props) {
         super(props);
 
         this.state = {
-            textareaHeight: window.innerHeight - 200,
-            textareaWidth: window.innerWidth * 0.80
+            textareaHeight: window.innerHeight - HEIGHT_OFFSET,
+            recordWidth: window.innerWidth - HISTORY_WIDTH - 50, // 50 px extra offset seems to make everything work
+            historyWidth: HISTORY_WIDTH
         };
 
         this.updateDimensions = this.updateDimensions.bind(this);
@@ -22,8 +27,8 @@ class RawrepoIntrospectRecordView extends React.Component {
 
     updateDimensions() {
         this.setState({
-            textareaHeight: window.innerHeight - 250,
-            textareaWidth: window.innerWidth - 300 // 300 reserved for future record history box
+            textareaHeight: window.innerHeight - HEIGHT_OFFSET,
+            recordWidth: window.innerWidth - HISTORY_WIDTH - 50
         });
     };
 
@@ -37,6 +42,14 @@ class RawrepoIntrospectRecordView extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener("resize", this.updateDimensions);
+    }
+
+    // Formats the raw ISO date to make it more friendly to look at
+    static formatHistoryDate(date) {
+        date = date.replace('T', ' ');
+        date = date.replace('Z', '');
+
+        return date
     }
 
     render() {
@@ -53,7 +66,8 @@ class RawrepoIntrospectRecordView extends React.Component {
                                 id='record-mode-selector'
                                 mode={this.props.mode}
                                 onChangeMode={this.props.onChangeMode}
-                                recordLoaded={this.props.recordLoaded}/>
+                                recordLoaded={this.props.recordLoaded}
+                                version={this.props.version}/>
                         </div>
                         <label
                             className='control-label'
@@ -69,8 +83,37 @@ class RawrepoIntrospectRecordView extends React.Component {
                     </div>
                 </div>
                 <div>
-                    <textarea style={{height: this.state.textareaHeight + 'px', width: this.state.textareaWidth + 'px'}}
-                              value={this.props.record} readOnly/>
+                    <textarea
+                        style={{
+                            height: this.state.textareaHeight + 'px',
+                            width: this.state.recordWidth + 'px',
+                            float: 'left'
+                        }}
+                        value={this.props.record}
+                        readOnly/>
+                </div>
+                <div>
+                    <select
+                        style={{
+                            height: this.state.textareaHeight + 'px',
+                            width: this.state.historyWidth + 'px',
+                            marginLeft: '15px',
+                            float: 'right'
+                        }}
+                        name="history-list"
+                        multiple
+                        onChange={this.props.onSelectHistory}
+                        value={[this.props.version]}>
+                        {this.props.history.map((item, key) =>
+                            <option
+                                key={key}
+                                style={{color: item.deleted === true ? 'red' : 'black'}}
+
+                                value={item.isCurrent !== undefined ? 'current' : item.modified}>
+                                {RawrepoIntrospectRecordView.formatHistoryDate(item.modified)}
+                            </option>
+                        )}
+                    </select>
                 </div>
             </div>
         )
