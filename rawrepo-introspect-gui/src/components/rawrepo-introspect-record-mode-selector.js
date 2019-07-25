@@ -21,15 +21,15 @@ class RawrepoIntrospectRecordModeSelector extends React.Component {
                     <Button onClick={this.props.onChangeMode}
                             bsStyle={mode === 'raw' ? 'primary' : 'default'}
                             value='raw'
-                            disabled={!this.props.recordLoaded}>Raw</Button>
+                            disabled={!this.props.recordLoaded || this.props.version !== 'current'}>Raw</Button>
                     <Button onClick={this.props.onChangeMode}
                             bsStyle={mode === 'merged' ? 'primary' : 'default'}
                             value='merged'
-                            disabled={!this.props.recordLoaded}>Merged</Button>
+                            disabled={!this.props.recordLoaded || this.props.version !== 'current'}>Merged</Button>
                     <Button onClick={this.props.onChangeMode}
                             bsStyle={mode === 'expanded' ? 'primary' : 'default'}
                             value='expanded'
-                            disabled={!this.props.recordLoaded}>Expanded</Button>
+                            disabled={!this.props.recordLoaded || this.props.version !== 'current'}>Expanded</Button>
                 </ButtonGroup>
             </div>
         )

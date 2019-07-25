@@ -6,8 +6,8 @@
 import React from "react";
 import {Tab, Tabs} from "react-bootstrap";
 import RawrepoIntrospectRecordSelector from './rawrepo-introspect-record-selector';
-import RawrepoIntrospectRecordView from './rawrepo-introspect-record-view';
 import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view';
+import RawrepoIntrospectRecordView from "./rawrepo-introspect-record-view";
 
 const request = require('superagent');
 const queryString = require('querystring');
@@ -28,7 +28,9 @@ class RawrepoIntrospectGUI extends React.Component {
             record: '',
             format: 'line',
             mode: 'raw',
-            recordLoaded: false
+            recordLoaded: false,
+            history: [],
+            version: 'current'
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -37,30 +39,33 @@ class RawrepoIntrospectGUI extends React.Component {
         this.onChangeAgencyId = this.onChangeAgencyId.bind(this);
         this.onChangeMode = this.onChangeMode.bind(this);
         this.onChangeFormat = this.onChangeFormat.bind(this);
+        this.onChangeVersion = this.onChangeVersion.bind(this);
 
-        this.findAgenciesForBibliographicRecordId = this.findAgenciesForBibliographicRecordId.bind(this);
+        this.getAgenciesAndRefresh = this.getAgenciesAndRefresh.bind(this);
+        this.getAgencies = this.getAgencies.bind(this);
         this.getRecord = this.getRecord.bind(this);
         this.getRecordById = this.getRecordById.bind(this);
         this.getRecordByMode = this.getRecordByMode.bind(this);
         this.getRecordByFormat = this.getRecordByFormat.bind(this);
+        this.getRecordByVersion = this.getRecordByVersion.bind(this);
+        this.getRecordByIdAndVersion = this.getRecordByIdAndVersion.bind(this);
+        this.getHistory = this.getHistory.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
-        RawrepoIntrospectGUI.getExpirationDate = RawrepoIntrospectGUI.getExpirationDate.bind(this);
         this.addToCookie = this.addToCookie.bind(this);
         this.readCookie = this.readCookie.bind(this);
+
+        RawrepoIntrospectGUI.getExpirationDate = RawrepoIntrospectGUI.getExpirationDate.bind(this);
+
+        this.getURLParams = this.getURLParams.bind(this);
+        this.setURLParams = this.setURLParams.bind(this);
     }
 
     componentDidMount() {
-        const queryParams = queryString.parse(location.search);
+        const queryParams = this.getURLParams();
 
         this.readCookie();
 
-        // Sanitize the raw values in queryParams as the first value will be prefixed with '?'
-        for (var key in queryParams) {
-            if (key.startsWith('?')) {
-                queryParams[key.substring(1, key.length)] = queryParams[key];
-            }
-        }
 
         if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
             if (queryParams.bibliographicRecordId !== undefined) {
@@ -79,9 +84,17 @@ class RawrepoIntrospectGUI extends React.Component {
                 this.setState({format: queryParams.format})
             }
 
+            if (queryParams.version !== undefined) {
+                this.setState({version: queryParams.version})
+            }
+
             if (queryParams.bibliographicRecordId !== undefined && queryParams.agencyId !== undefined) {
-                this.findAgenciesForBibliographicRecordId(queryParams.bibliographicRecordId);
-                this.getRecordById(queryParams.bibliographicRecordId, queryParams.agencyId);
+                this.getAgencies(queryParams.bibliographicRecordId);
+                if (queryParams.version !== undefined) {
+                    this.getRecordByIdAndVersion(queryParams.bibliographicRecordId, queryParams.agencyId, queryParams.version)
+                } else {
+                    this.getRecordById(queryParams.bibliographicRecordId, queryParams.agencyId);
+                }
             }
         }
     }
@@ -96,7 +109,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.setState({bibliographicRecordId: bibliographicRecordId});
 
         if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
-            this.findAgenciesForBibliographicRecordId(bibliographicRecordId);
+            this.getAgenciesAndRefresh(bibliographicRecordId);
         } else {
             this.clearRecord();
         }
@@ -113,7 +126,7 @@ class RawrepoIntrospectGUI extends React.Component {
     onChangeAgencyId(event) {
         const agencyId = event.target.value;
 
-        this.setState({agencyId: agencyId});
+        this.setState({agencyId: agencyId, version: 'current'} );
 
         this.getRecordById(this.state.bibliographicRecordId, agencyId);
     }
@@ -134,7 +147,15 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordByFormat(format);
     }
 
-    findAgenciesForBibliographicRecordId(bibliographicRecordId) {
+    onChangeVersion(event) {
+        const version = event.target.value;
+
+        this.setState({version: version});
+
+        this.getRecordByVersion(version);
+    }
+
+    getAgenciesAndRefresh(bibliographicRecordId) {
         request
             .get('/api/v1/agencies-for/' + bibliographicRecordId)
             .then(res => {
@@ -153,59 +174,177 @@ class RawrepoIntrospectGUI extends React.Component {
             });
     }
 
+    getAgencies(bibliographicRecordId) {
+        request
+            .get('/api/v1/agencies-for/' + bibliographicRecordId)
+            .then(res => {
+                this.setState({agencyIdList: res.body});
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
     getRecordByMode(mode) {
         const bibliographicRecordId = this.state.bibliographicRecordId;
         const agencyId = this.state.agencyId;
         const format = this.state.format;
+        const version = this.state.version;
 
-        this.getRecord(bibliographicRecordId, agencyId, mode, format);
+        const urlParams = this.getURLParams();
+        urlParams['mode'] = mode;
+
+        this.setURLParams(urlParams);
+
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
     }
+
 
     getRecordByFormat(format) {
         const bibliographicRecordId = this.state.bibliographicRecordId;
         const agencyId = this.state.agencyId;
         const mode = this.state.mode;
+        const version = this.state.version;
 
-        this.getRecord(bibliographicRecordId, agencyId, mode, format);
+        const urlParams = this.getURLParams();
+        urlParams['format'] = format;
+
+        this.setURLParams(urlParams);
+
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+    }
+
+    getRecordByVersion(version) {
+        const bibliographicRecordId = this.state.bibliographicRecordId;
+        const agencyId = this.state.agencyId;
+        const mode = this.state.mode;
+        const format = this.state.format;
+
+        const urlParams = this.getURLParams();
+        urlParams['version'] = version;
+
+        this.setURLParams(urlParams);
+
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
     }
 
     getRecordById(bibliographicRecordId, agencyId) {
         const mode = this.state.mode;
         const format = this.state.format;
+        const version = 'current';
 
-        this.getRecord(bibliographicRecordId, agencyId, mode, format);
+        const urlParams = this.getURLParams();
+        urlParams['bibliographicRecordId'] = bibliographicRecordId;
+        urlParams['agencyId'] = agencyId;
+        urlParams['version'] = version;
+
+        this.setURLParams(urlParams);
+
+        this.addToCookie(bibliographicRecordId);
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+        this.getHistory(bibliographicRecordId, agencyId);
     }
 
-    getRecord(bibliographicRecordId, agencyId, mode, format) {
+    getRecordByIdAndVersion(bibliographicRecordId, agencyId, version) {
+        const mode = this.state.mode;
+        const format = this.state.format;
+
+        const urlParams = this.getURLParams();
+        urlParams['bibliographicRecordId'] = bibliographicRecordId;
+        urlParams['agencyId'] = agencyId;
+        urlParams['version'] = version;
+        this.setURLParams(urlParams);
+
+        this.addToCookie(bibliographicRecordId);
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+        this.getHistory(bibliographicRecordId, agencyId);
+    }
+
+    getRecord(bibliographicRecordId, agencyId, mode, format, version) {
         const params = {mode: mode, format: format};
 
-        request
-            .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId)
-            .set('Content-Type', 'text/plain')
-            .query(params)
-            .then(res => {
-                this.setState({
-                    record: res.text,
-                    recordLoaded: true
+        if (version === 'current') {
+            request
+                .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId)
+                .set('Content-Type', 'text/plain')
+                .query(params)
+                .then(res => {
+                    this.setState({
+                        record: res.text,
+                        recordLoaded: true
+                    });
+                })
+                .catch(err => {
+                    alert(err.message);
                 });
+        } else {
+            request
+                .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/' + version)
+                .query(params)
+                .then(res => {
+                    this.setState({
+                        record: res.text,
+                        recordLoaded: true
+                    });
+                })
+                .catch(err => {
+                    alert(err.message);
+                });
+        }
+    }
 
-                const urlParams = {
-                    bibliographicRecordId: bibliographicRecordId,
-                    agencyId: agencyId,
-                    mode: mode,
-                    format: format,
-                    view: 'record'
-                };
+    getHistory(bibliographicRecordId, agencyId) {
+        request
+            .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/history')
+            .accept('application/json')
+            .then(res => {
+                // We have to mark the first element as 'current' but we can't overwrite the modified date as that is the display value
+                const history = res.body;
+                history[0].isCurrent = true;
 
-                // This seems to be the only way to get the full URL without URL params
-                // Alternatively location.href could be used by that includes previous URL params
-                const URL = location.protocol + '//' + location.host + location.pathname;
-                window.history.replaceState(null, null, URL + '?' + queryString.stringify(urlParams));
-                this.addToCookie(bibliographicRecordId);
+                this.setState({
+                    history: history,
+                });
             })
             .catch(err => {
                 alert(err.message);
             });
+    }
+
+    getURLParams() {
+        const windowLocation = window.location.search;
+        const urlParamsList = windowLocation.substring(1).split('&');
+
+        const urlParamsDict = {};
+
+        urlParamsList.forEach(function (item, index) {
+            const split = item.split('=');
+            const key = split[0];
+            var value = split[1];
+
+            // Hack to url decode the date from history
+            if (key === 'version' && value !=='current') {
+                value = value.replace('_', ':');
+                value = value.replace('_', ':');
+            }
+
+            urlParamsDict[key] = value;
+        });
+
+        return urlParamsDict;
+    }
+
+    setURLParams(urlParams) {
+        const URL = location.protocol + '//' + location.host + location.pathname;
+
+        // Hack to url encode the date from history.
+        // Without this conversion weird stuff happens the the url when refreshing the url with the same version.
+        if (urlParams.version !== undefined && urlParams.version !== 'current') {
+            urlParams.version = urlParams.version.replace(':','_');
+            urlParams.version = urlParams.version.replace(':','_');
+        }
+
+        window.history.replaceState(null, null, URL + '?' + queryString.stringify(urlParams));
     }
 
     // Constructs 'expires' message for cookies
@@ -271,11 +410,14 @@ class RawrepoIntrospectGUI extends React.Component {
                                     mode={this.state.mode}
                                     onChangeFormat={this.onChangeFormat}
                                     onChangeMode={this.onChangeMode}
-                                    recordLoaded={this.state.recordLoaded}/>
+                                    onSelectHistory={this.onChangeVersion}
+                                    recordLoaded={this.state.recordLoaded}
+                                    history={this.state.history}
+                                    version={this.state.version}/>
                             </div>
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
-                            <div><p/><RawrepoIntrospectRelationsView/></div>
+                            <div><RawrepoIntrospectRelationsView/></div>
                         </Tab>
                     </Tabs>
                 </div>
