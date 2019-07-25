@@ -108,11 +108,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
 
-        if (8 <= bibliographicRecordId.length && 9 >= bibliographicRecordId.length) {
-            this.getAgenciesAndRefresh(bibliographicRecordId);
-        } else {
-            this.clearRecord();
-        }
+        this.getAgenciesAndRefresh(bibliographicRecordId);
     }
 
     clearRecord() {
@@ -126,7 +122,7 @@ class RawrepoIntrospectGUI extends React.Component {
     onChangeAgencyId(event) {
         const agencyId = event.target.value;
 
-        this.setState({agencyId: agencyId, version: 'current'} );
+        this.setState({agencyId: agencyId, version: 'current'});
 
         this.getRecordById(this.state.bibliographicRecordId, agencyId);
     }
@@ -323,7 +319,7 @@ class RawrepoIntrospectGUI extends React.Component {
             var value = split[1];
 
             // Hack to url decode the date from history
-            if (key === 'version' && value !=='current') {
+            if (key === 'version' && value !== 'current') {
                 value = value.replace('_', ':');
                 value = value.replace('_', ':');
             }
@@ -340,8 +336,8 @@ class RawrepoIntrospectGUI extends React.Component {
         // Hack to url encode the date from history.
         // Without this conversion weird stuff happens the the url when refreshing the url with the same version.
         if (urlParams.version !== undefined && urlParams.version !== 'current') {
-            urlParams.version = urlParams.version.replace(':','_');
-            urlParams.version = urlParams.version.replace(':','_');
+            urlParams.version = urlParams.version.replace(':', '_');
+            urlParams.version = urlParams.version.replace(':', '_');
         }
 
         window.history.replaceState(null, null, URL + '?' + queryString.stringify(urlParams));

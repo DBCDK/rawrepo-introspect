@@ -94,6 +94,7 @@ public class IntrospectService {
 
             final RecordServiceConnector.Params params = new RecordServiceConnector.Params();
             params.withMode(RecordServiceConnector.Params.Mode.valueOf(mode.toUpperCase()));
+            params.withAllowDeleted(true);
 
             final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
 
