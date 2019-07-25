@@ -119,7 +119,7 @@ public class IntrospectService {
 
             res = mapper.marshall(recordHistoryList);
 
-            return Response.ok(res, MediaType.TEXT_PLAIN).build();
+            return Response.ok(res, MediaType.APPLICATION_JSON).build();
         } catch (RecordServiceConnectorException | JSONBException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
