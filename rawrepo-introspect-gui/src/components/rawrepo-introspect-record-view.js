@@ -18,7 +18,7 @@ class RawrepoIntrospectRecordView extends React.Component {
 
         this.state = {
             textareaHeight: window.innerHeight - HEIGHT_OFFSET,
-            recordWidth: window.innerWidth - HISTORY_WIDTH - 50, // 50 px extra offset seems to make everything work
+            recordWidth: window.innerWidth - HISTORY_WIDTH - 60,
             historyWidth: HISTORY_WIDTH
         };
 
@@ -28,7 +28,7 @@ class RawrepoIntrospectRecordView extends React.Component {
     updateDimensions() {
         this.setState({
             textareaHeight: window.innerHeight - HEIGHT_OFFSET,
-            recordWidth: window.innerWidth - HISTORY_WIDTH - 50
+            recordWidth: window.innerWidth - HISTORY_WIDTH - 60
         });
     };
 
