@@ -24,3 +24,7 @@ hs_err_pid*
 
 .idea/
 *.iml
+**/target/
+
+rawrepo-introspect-gui/node/
+rawrepo-introspect-gui/node_modules/
