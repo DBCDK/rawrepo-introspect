@@ -107,16 +107,29 @@ class RawrepoIntrospectGUI extends React.Component {
         const bibliographicRecordId = event.target.value;
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
-
-        this.getAgenciesAndRefresh(bibliographicRecordId);
+        if (bibliographicRecordId.length > 0) {
+            this.getAgenciesAndRefresh(bibliographicRecordId);
+        } else {
+            this.clearRecord();
+        }
     }
 
     clearRecord() {
+        // Reset state
         this.setState({
             agencyIdList: [],
             record: '',
-            recordLoaded: false
-        })
+            recordLoaded: false,
+            history: []
+        });
+
+        // Reset url params
+        // 'format' and 'mode' can stay but all record specific values should be cleared
+        const urlParams = this.getURLParams();
+        delete urlParams['bibliographicRecordId'];
+        delete urlParams['agencyId'];
+        delete urlParams['version'];
+        this.setURLParams(urlParams);
     }
 
     onChangeAgencyId(event) {
@@ -324,7 +337,10 @@ class RawrepoIntrospectGUI extends React.Component {
                 value = value.replace('_', ':');
             }
 
-            urlParamsDict[key] = value;
+            // Ignore weird empty key
+            if (key !== "") {
+                urlParamsDict[key] = value;
+            }
         });
 
         return urlParamsDict;
