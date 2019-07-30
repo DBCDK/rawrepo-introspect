@@ -120,7 +120,8 @@ class RawrepoIntrospectGUI extends React.Component {
             agencyIdList: [],
             record: '',
             recordLoaded: false,
-            history: []
+            history: [],
+            version: 'current'
         });
 
         // Reset url params
@@ -280,7 +281,8 @@ class RawrepoIntrospectGUI extends React.Component {
                 .then(res => {
                     this.setState({
                         record: res.text,
-                        recordLoaded: true
+                        recordLoaded: true,
+                        version: 'current'
                     });
                 })
                 .catch(err => {
@@ -293,7 +295,8 @@ class RawrepoIntrospectGUI extends React.Component {
                 .then(res => {
                     this.setState({
                         record: res.text,
-                        recordLoaded: true
+                        recordLoaded: true,
+                        version: version
                     });
                 })
                 .catch(err => {
