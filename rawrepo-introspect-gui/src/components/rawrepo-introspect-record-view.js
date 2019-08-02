@@ -52,6 +52,14 @@ class RawrepoIntrospectRecordView extends React.Component {
         return date
     }
 
+    static formatToolTip(item) {
+        let toolTipText = item.deleted ? 'Slettet' : 'Aktiv';
+        toolTipText += ' | ';
+        toolTipText += item.mimeType;
+
+        return toolTipText;
+    }
+
     render() {
         return (
             <div>
@@ -108,7 +116,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                             <option
                                 key={key}
                                 style={{color: item.deleted === true ? 'red' : 'black'}}
-
+                                title={RawrepoIntrospectRecordView.formatToolTip(item)}
                                 value={item.isCurrent !== undefined ? 'current' : item.modified}>
                                 {RawrepoIntrospectRecordView.formatHistoryDate(item.modified)}
                             </option>
