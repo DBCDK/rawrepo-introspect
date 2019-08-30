@@ -30,7 +30,8 @@ class RawrepoIntrospectGUI extends React.Component {
             mode: 'raw',
             recordLoaded: false,
             history: [],
-            version: 'current'
+            version: 'current',
+            relations: []
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -50,6 +51,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordByVersion = this.getRecordByVersion.bind(this);
         this.getRecordByIdAndVersion = this.getRecordByIdAndVersion.bind(this);
         this.getHistory = this.getHistory.bind(this);
+        this.getRelations = this.getRelations.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
         this.addToCookie = this.addToCookie.bind(this);
@@ -65,7 +67,6 @@ class RawrepoIntrospectGUI extends React.Component {
         const queryParams = this.getURLParams();
 
         this.readCookie();
-
 
         if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
             if (queryParams.bibliographicRecordId !== undefined) {
@@ -101,6 +102,10 @@ class RawrepoIntrospectGUI extends React.Component {
 
     handleSelect(view) {
         this.setState({view: view});
+
+        if (view === 'relations') {
+            this.getRelations(this.state.bibliographicRecordId, this.state.agencyId);
+        }
     }
 
     onChangeBibliographicRecordId(event) {
@@ -121,7 +126,8 @@ class RawrepoIntrospectGUI extends React.Component {
             record: '',
             recordLoaded: false,
             history: [],
-            version: 'current'
+            version: 'current',
+            relations: []
         });
 
         // Reset url params
@@ -323,6 +329,22 @@ class RawrepoIntrospectGUI extends React.Component {
             });
     }
 
+    getRelations(bibliographicRecordId, agencyId) {
+        request
+            .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/relations')
+            .accept('application/json')
+            .then(res => {
+                const relations = res.body;
+                console.log(relations);
+                this.setState({
+                    relations: relations
+                });
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
     getURLParams() {
         const windowLocation = window.location.search;
         const urlParamsList = windowLocation.substring(1).split('&');
@@ -432,7 +454,10 @@ class RawrepoIntrospectGUI extends React.Component {
                             </div>
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
-                            <div><RawrepoIntrospectRelationsView/></div>
+                            <div><RawrepoIntrospectRelationsView
+                                relationNodes={this.state.relations.nodes}
+                                relationEdges={this.state.relations.edges}
+                                onLoadRelations={this.getRelations}/></div>
                         </Tab>
                     </Tabs>
                 </div>
