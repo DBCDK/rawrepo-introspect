@@ -179,7 +179,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
                 if (agencyIdList.length > 0) {
                     const agencyId = agencyIdList[0];
-                    this.setState({agencyIdList: agencyIdList, agencyId: agencyId});
+                    this.setState({agencyIdList: agencyIdList, agencyId: agencyId, relations: []});
                     this.getRecordById(bibliographicRecordId, agencyId)
                 } else {
                     this.clearRecord();
@@ -290,6 +290,10 @@ class RawrepoIntrospectGUI extends React.Component {
                         recordLoaded: true,
                         version: 'current'
                     });
+
+                    if (this.state.view === 'relations') {
+                        this.getRelations(bibliographicRecordId, agencyId);
+                    }
                 })
                 .catch(err => {
                     alert(err.message);
@@ -335,7 +339,7 @@ class RawrepoIntrospectGUI extends React.Component {
             .accept('application/json')
             .then(res => {
                 const relations = res.body;
-                console.log(relations);
+
                 this.setState({
                     relations: relations
                 });
@@ -455,8 +459,7 @@ class RawrepoIntrospectGUI extends React.Component {
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
                             <div><RawrepoIntrospectRelationsView
-                                relationNodes={this.state.relations.nodes}
-                                relationEdges={this.state.relations.edges}
+                                relations={this.state.relations}
                                 onLoadRelations={this.getRelations}/></div>
                         </Tab>
                     </Tabs>
