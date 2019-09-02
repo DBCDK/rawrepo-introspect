@@ -52,7 +52,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <skip.install>true</skip.install>
-        <microprofile.version>1.2</microprofile.version>
     </properties>
 
     <pluginRepositories>
@@ -105,6 +104,11 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile</groupId>
+            <artifactId>microprofile</artifactId>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

@@ -14,6 +14,7 @@ import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.marc.writer.MarcXchangeV1Writer;
 import dk.dbc.util.StopwatchInterceptor;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,10 @@ public class IntrospectService {
 
     @Inject
     RecordServiceConnector rawRepoRecordServiceConnector;
+
+    @Inject
+    @ConfigProperty(name = "INSTANCE", defaultValue = "")
+    private String INSTANCE;
 
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
     private static final MarcXchangeV1Writer MARC_XCHANGE_V1_WRITER = new MarcXchangeV1Writer();
@@ -220,6 +225,13 @@ public class IntrospectService {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
         }
+    }
+
+    @GET
+    @Produces({MediaType.TEXT_PLAIN})
+    @Path("v1/instance")
+    public Response getInstance() {
+        return Response.ok(INSTANCE, MediaType.TEXT_PLAIN).build();
     }
 
     private String recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
