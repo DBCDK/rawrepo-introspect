@@ -109,7 +109,9 @@ class RawrepoIntrospectGUI extends React.Component {
     }
 
     onChangeBibliographicRecordId(event) {
-        const bibliographicRecordId = event.target.value;
+        let bibliographicRecordId = event.target.value;
+
+        bibliographicRecordId = bibliographicRecordId.replace(/\s/g, '');
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
         if (bibliographicRecordId.length > 0) {
