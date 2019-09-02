@@ -44,7 +44,7 @@ class RawrepoIntrospectRecordSelector extends React.Component {
                     </div>
                 </div>
                 <div style={{marginLeft: '260px'}}>
-                    <h1 style={{marginTop: '10px'}}>Rawrepo Introspect</h1>
+                    <h2 style={{marginTop: '10px'}}>Rawrepo <b>{this.props.instance}</b></h2>
                 </div>
             </div>
 

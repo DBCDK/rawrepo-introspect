@@ -30,7 +30,9 @@ class RawrepoIntrospectGUI extends React.Component {
             mode: 'raw',
             recordLoaded: false,
             history: [],
-            version: 'current'
+            version: 'current',
+            relations: [],
+            instance: ''
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -50,6 +52,8 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordByVersion = this.getRecordByVersion.bind(this);
         this.getRecordByIdAndVersion = this.getRecordByIdAndVersion.bind(this);
         this.getHistory = this.getHistory.bind(this);
+        this.getRelations = this.getRelations.bind(this);
+        this.getInstance = this.getInstance.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
         this.addToCookie = this.addToCookie.bind(this);
@@ -65,7 +69,6 @@ class RawrepoIntrospectGUI extends React.Component {
         const queryParams = this.getURLParams();
 
         this.readCookie();
-
 
         if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
             if (queryParams.bibliographicRecordId !== undefined) {
@@ -97,14 +100,24 @@ class RawrepoIntrospectGUI extends React.Component {
                 }
             }
         }
+
+        if (this.state.instance === '') {
+            this.getInstance();
+        }
     }
 
     handleSelect(view) {
         this.setState({view: view});
+
+        if (view === 'relations' && this.state.recordLoaded) {
+            this.getRelations(this.state.bibliographicRecordId, this.state.agencyId);
+        }
     }
 
     onChangeBibliographicRecordId(event) {
-        const bibliographicRecordId = event.target.value;
+        let bibliographicRecordId = event.target.value;
+
+        bibliographicRecordId = bibliographicRecordId.replace(/\s/g, '');
 
         this.setState({bibliographicRecordId: bibliographicRecordId});
         if (bibliographicRecordId.length > 0) {
@@ -121,7 +134,8 @@ class RawrepoIntrospectGUI extends React.Component {
             record: '',
             recordLoaded: false,
             history: [],
-            version: 'current'
+            version: 'current',
+            relations: []
         });
 
         // Reset url params
@@ -173,7 +187,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
                 if (agencyIdList.length > 0) {
                     const agencyId = agencyIdList[0];
-                    this.setState({agencyIdList: agencyIdList, agencyId: agencyId});
+                    this.setState({agencyIdList: agencyIdList, agencyId: agencyId, relations: []});
                     this.getRecordById(bibliographicRecordId, agencyId)
                 } else {
                     this.clearRecord();
@@ -195,6 +209,18 @@ class RawrepoIntrospectGUI extends React.Component {
             });
     }
 
+    getInstance() {
+        request
+            .get('/api/v1/instance')
+            .set('Content-Type', 'text/plain')
+            .then(res => {
+                this.setState({instance: res.text});
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
     getRecordByMode(mode) {
         const bibliographicRecordId = this.state.bibliographicRecordId;
         const agencyId = this.state.agencyId;
@@ -208,7 +234,6 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
     }
-
 
     getRecordByFormat(format) {
         const bibliographicRecordId = this.state.bibliographicRecordId;
@@ -284,6 +309,10 @@ class RawrepoIntrospectGUI extends React.Component {
                         recordLoaded: true,
                         version: 'current'
                     });
+
+                    if (this.state.view === 'relations') {
+                        this.getRelations(bibliographicRecordId, agencyId);
+                    }
                 })
                 .catch(err => {
                     alert(err.message);
@@ -316,6 +345,22 @@ class RawrepoIntrospectGUI extends React.Component {
 
                 this.setState({
                     history: history,
+                });
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
+    getRelations(bibliographicRecordId, agencyId) {
+        request
+            .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/relations')
+            .accept('application/json')
+            .then(res => {
+                const relations = res.body;
+
+                this.setState({
+                    relations: relations
                 });
             })
             .catch(err => {
@@ -409,7 +454,8 @@ class RawrepoIntrospectGUI extends React.Component {
                         bibliographicRecordId={this.state.bibliographicRecordId}
                         agencyIdList={this.state.agencyIdList}
                         agencyId={this.state.agencyId}
-                        bibliographicRecordIdCache={this.state.bibliographicRecordIdCache}/>
+                        bibliographicRecordIdCache={this.state.bibliographicRecordIdCache}
+                        instance={this.state.instance}/>
                 </div>
                 <div>
                     <Tabs activeKey={this.state.view}
@@ -432,7 +478,11 @@ class RawrepoIntrospectGUI extends React.Component {
                             </div>
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
-                            <div><RawrepoIntrospectRelationsView/></div>
+                            <div><RawrepoIntrospectRelationsView
+                                relations={this.state.relations}
+                                onLoadRelations={this.getRelations}
+                                bibliographicRecordId={this.state.bibliographicRecordId}
+                                agencyId={this.state.agencyId}/></div>
                         </Tab>
                     </Tabs>
                 </div>
