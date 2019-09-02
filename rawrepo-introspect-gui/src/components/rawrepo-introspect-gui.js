@@ -480,7 +480,9 @@ class RawrepoIntrospectGUI extends React.Component {
                         <Tab eventKey={'relations'} title="Relationer">
                             <div><RawrepoIntrospectRelationsView
                                 relations={this.state.relations}
-                                onLoadRelations={this.getRelations}/></div>
+                                onLoadRelations={this.getRelations}
+                                bibliographicRecordId={this.state.bibliographicRecordId}
+                                agencyId={this.state.agencyId}/></div>
                         </Tab>
                     </Tabs>
                 </div>

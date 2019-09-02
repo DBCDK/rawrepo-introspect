@@ -17,6 +17,7 @@ class RawrepoIntrospectRelationsView extends React.Component {
 
     constructor(props) {
         super(props);
+
         this.state = {
             nodes: [],
             edges: [],
@@ -61,7 +62,7 @@ class RawrepoIntrospectRelationsView extends React.Component {
                 }
 
                 if (hasChanges) {
-                    this.drawGraph(relations.nodes, relations.edges, nextProps.onLoadRelations);
+                    this.drawGraph(relations.nodes, relations.edges, nextProps.onLoadRelations, nextProps.bibliographicRecordId, nextProps.agencyId);
                 }
             }
         }
@@ -83,7 +84,7 @@ class RawrepoIntrospectRelationsView extends React.Component {
         render(svgGroup, g);
     }
 
-    drawGraph(nodes, edges, callBack) {
+    drawGraph(nodes, edges, callBack, bibliographicRecordId, agencyId) {
         nodes.forEach(function (item) {
             const label = item.bibliographicRecordId + ':' + item.agencyId;
             const url = '?bibliographicRecordId=' + item.bibliographicRecordId + '&agencyId=' + item.agencyId;
@@ -96,7 +97,8 @@ class RawrepoIntrospectRelationsView extends React.Component {
                 ry: 5,
                 callBack: callBack,
                 bibliographicRecordId: item.bibliographicRecordId,
-                agencyId: item.agencyId
+                agencyId: item.agencyId,
+                style: (bibliographicRecordId === item.bibliographicRecordId && agencyId.toString() === item.agencyId.toString()) ? "fill: #afa" : "fill: #9cbedb"
             };
 
             g.setNode(label, value);
