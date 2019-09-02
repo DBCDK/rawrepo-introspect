@@ -21,6 +21,7 @@ pipeline {
         DOCKER_IMAGE_NAME = "docker-io.dbc.dk/rawrepo-introspect"
         DOCKER_IMAGE_VERSION = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
         DOCKER_IMAGE_DIT_VERSION = "DIT-${env.BUILD_NUMBER}"
+        GITLAB_PRIVATE_TOKEN = credentials("metascrum-gitlab-api-token")
     }
 
     stages {
@@ -72,7 +73,7 @@ pipeline {
             agent {
                 docker {
                     label workerNode
-                    image "docker.dbc.dk/gitops-deploy-env:${env.GITOPS_DEPLOY_TAG}"
+                    image "docker.dbc.dk/gitops-deploy-env:master-5"
                     alwaysPull true
                 }
             }
@@ -88,6 +89,8 @@ pipeline {
                     if (env.BRANCH_NAME == 'master') {
                         sh """
                             set-new-version rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b metascrum-staging
+                            set-new-version rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b fbstest
+                            set-new-version rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b basismig
                         """
                     }
                 }
