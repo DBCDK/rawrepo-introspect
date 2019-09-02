@@ -24,7 +24,7 @@ class RawrepoIntrospectRecordFormatSelector extends React.Component {
                                 bsStyle={format === 'line' ? 'primary' : 'default'}
                                 id='button-format-line'
                                 value='line'
-                                disabled={!this.props.recordLoaded}>Line</Button>
+                                disabled={!this.props.recordLoaded}>Linje</Button>
                         <Button onClick={this.props.onChangeFormat}
                                 bsStyle={format === 'xml' ? 'primary' : 'default'}
                                 id='button-format-xml'
