@@ -67,6 +67,28 @@ pipeline {
                 }
             }
         }
+        stage("Bump deploy version") {
+            agent {
+                    docker {
+                        label workerNode
+                        image "docker.dbc.dk/gitops-deploy-env:${env.GITOPS_DEPLOY_TAG}"
+                                            alwaysPull true
+                    }
+            }
+            when {
+                expression {
+                     (currentBuild.result == null || currentBuild.result == 'SUCCESS') && env.BRANCH_NAME == 'master'
+                }
+                steps {
+                     dir("deploy"){
+                        sh """
+                            set-new-version rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b metascrum-staging
+                        """
+
+                     }
+                }
+            }
+        }
     }
 
 }
