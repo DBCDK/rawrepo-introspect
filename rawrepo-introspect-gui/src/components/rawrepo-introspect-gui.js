@@ -103,7 +103,7 @@ class RawrepoIntrospectGUI extends React.Component {
     handleSelect(view) {
         this.setState({view: view});
 
-        if (view === 'relations') {
+        if (view === 'relations' && this.state.recordLoaded) {
             this.getRelations(this.state.bibliographicRecordId, this.state.agencyId);
         }
     }
