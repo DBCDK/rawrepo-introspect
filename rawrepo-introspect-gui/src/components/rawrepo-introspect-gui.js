@@ -31,7 +31,8 @@ class RawrepoIntrospectGUI extends React.Component {
             recordLoaded: false,
             history: [],
             version: 'current',
-            relations: []
+            relations: [],
+            instance: ''
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -52,6 +53,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordByIdAndVersion = this.getRecordByIdAndVersion.bind(this);
         this.getHistory = this.getHistory.bind(this);
         this.getRelations = this.getRelations.bind(this);
+        this.getInstance = this.getInstance.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
         this.addToCookie = this.addToCookie.bind(this);
@@ -97,6 +99,10 @@ class RawrepoIntrospectGUI extends React.Component {
                     this.getRecordById(queryParams.bibliographicRecordId, queryParams.agencyId);
                 }
             }
+        }
+
+        if (this.state.instance === '') {
+            this.getInstance();
         }
     }
 
@@ -203,6 +209,18 @@ class RawrepoIntrospectGUI extends React.Component {
             });
     }
 
+    getInstance() {
+        request
+            .get('/api/v1/instance')
+            .set('Content-Type', 'text/plain')
+            .then(res => {
+                this.setState({instance: res.text});
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
     getRecordByMode(mode) {
         const bibliographicRecordId = this.state.bibliographicRecordId;
         const agencyId = this.state.agencyId;
@@ -216,7 +234,6 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
     }
-
 
     getRecordByFormat(format) {
         const bibliographicRecordId = this.state.bibliographicRecordId;
@@ -437,7 +454,8 @@ class RawrepoIntrospectGUI extends React.Component {
                         bibliographicRecordId={this.state.bibliographicRecordId}
                         agencyIdList={this.state.agencyIdList}
                         agencyId={this.state.agencyId}
-                        bibliographicRecordIdCache={this.state.bibliographicRecordIdCache}/>
+                        bibliographicRecordIdCache={this.state.bibliographicRecordIdCache}
+                        instance={this.state.instance}/>
                 </div>
                 <div>
                     <Tabs activeKey={this.state.view}
