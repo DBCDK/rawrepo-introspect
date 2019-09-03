@@ -1,4 +1,4 @@
-package dk.dbc.rawrepo;
+package dk.dbc.rawrepo.dto;
 
 import java.util.List;
 

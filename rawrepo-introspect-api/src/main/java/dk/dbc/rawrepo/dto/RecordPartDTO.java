@@ -1,4 +1,4 @@
-package dk.dbc.rawrepo;
+package dk.dbc.rawrepo.dto;
 
 public class RecordPartDTO {
 

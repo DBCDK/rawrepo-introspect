@@ -1,5 +1,6 @@
 package dk.dbc.rawrepo;
 
+import dk.dbc.rawrepo.dto.RecordPartDTO;
 import dk.dbc.xmldiff.XmlDiffWriter;
 
 import java.util.ArrayList;
