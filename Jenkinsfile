@@ -73,7 +73,7 @@ pipeline {
             agent {
                 docker {
                     label workerNode
-                    image "docker.dbc.dk/gitops-deploy-env:master-5"
+                    image "docker.dbc.dk/build-env:master-44"
                     alwaysPull true
                 }
             }
