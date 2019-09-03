@@ -14,6 +14,7 @@ import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.marc.writer.MarcXchangeV1Writer;
 import dk.dbc.util.StopwatchInterceptor;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,6 +53,10 @@ public class IntrospectService {
 
     @Inject
     RecordServiceConnector rawRepoRecordServiceConnector;
+
+    @Inject
+    @ConfigProperty(name = "INSTANCE", defaultValue = "")
+    private String INSTANCE;
 
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
     private static final MarcXchangeV1Writer MARC_XCHANGE_V1_WRITER = new MarcXchangeV1Writer();
@@ -151,6 +157,81 @@ public class IntrospectService {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
         }
+    }
+
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    @Path("v1/record/{bibliographicRecordId}/{agencyId}/relations")
+    public Response getRelations(@PathParam("bibliographicRecordId") String bibliographicRecordId,
+                                 @PathParam("agencyId") int agencyId) {
+        String res = "";
+
+        try {
+            RelationDTO relationDTO = new RelationDTO();
+            relationDTO.setNodes(new ArrayList<>());
+            relationDTO.setEdges(new ArrayList<>());
+
+            RecordId currentNode = new RecordId(bibliographicRecordId, agencyId);
+            relationDTO.getNodes().add(currentNode);
+
+            // Children
+            RecordId[] recordIds = rawRepoRecordServiceConnector.getRecordChildren(agencyId, bibliographicRecordId);
+            for (RecordId recordId : recordIds) {
+                relationDTO.getNodes().add(recordId);
+
+                EdgeDTO edgeDTO = new EdgeDTO();
+                edgeDTO.setParent(currentNode);
+                edgeDTO.setChild(recordId);
+                relationDTO.getEdges().add(edgeDTO);
+            }
+
+            // Parents
+            recordIds = rawRepoRecordServiceConnector.getRecordParents(agencyId, bibliographicRecordId);
+            for (RecordId recordId : recordIds) {
+                relationDTO.getNodes().add(recordId);
+
+                EdgeDTO edgeDTO = new EdgeDTO();
+                edgeDTO.setParent(recordId);
+                edgeDTO.setChild(currentNode);
+                relationDTO.getEdges().add(edgeDTO);
+            }
+
+            // Siblings from this record
+            recordIds = rawRepoRecordServiceConnector.getRecordSiblingsFrom(agencyId, bibliographicRecordId);
+            for (RecordId recordId : recordIds) {
+                relationDTO.getNodes().add(recordId);
+
+                EdgeDTO edgeDTO = new EdgeDTO();
+                edgeDTO.setParent(recordId);
+                edgeDTO.setChild(currentNode);
+                relationDTO.getEdges().add(edgeDTO);
+            }
+
+            // Siblings to this record
+            recordIds = rawRepoRecordServiceConnector.getRecordSiblingsTo(agencyId, bibliographicRecordId);
+            for (RecordId recordId : recordIds) {
+                relationDTO.getNodes().add(recordId);
+
+                EdgeDTO edgeDTO = new EdgeDTO();
+                edgeDTO.setParent(currentNode);
+                edgeDTO.setChild(recordId);
+                relationDTO.getEdges().add(edgeDTO);
+            }
+
+            res = mapper.marshall(relationDTO);
+
+            return Response.ok(res, MediaType.APPLICATION_JSON).build();
+        } catch (RecordServiceConnectorException | JSONBException e) {
+            LOGGER.error(e.getMessage());
+            return Response.serverError().build();
+        }
+    }
+
+    @GET
+    @Produces({MediaType.TEXT_PLAIN})
+    @Path("v1/instance")
+    public Response getInstance() {
+        return Response.ok(INSTANCE, MediaType.TEXT_PLAIN).build();
     }
 
     private String recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
