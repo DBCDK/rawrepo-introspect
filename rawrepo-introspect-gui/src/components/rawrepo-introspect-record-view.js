@@ -90,15 +90,21 @@ class RawrepoIntrospectRecordView extends React.Component {
                         </div>
                     </div>
                 </div>
-                <div>
-                    <textarea
-                        style={{
-                            height: this.state.textareaHeight + 'px',
-                            width: this.state.recordWidth + 'px',
-                            float: 'left'
-                        }}
-                        value={this.props.record}
-                        readOnly/>
+                <div id="content-container"
+                     style={{
+                         height: this.state.textareaHeight + 'px',
+                         width: this.state.recordWidth + 'px',
+                         float: 'left'
+                     }}>
+                    <div id="content">
+                        {this.props.recordParts.map((item, key) =>
+                            <span
+                                key={key}
+                                className={item.type}>
+                                {item.content}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div>
                     <select
@@ -109,9 +115,9 @@ class RawrepoIntrospectRecordView extends React.Component {
                             float: 'right'
                         }}
                         name="history-list"
-                        multiple
-                        onChange={this.props.onSelectHistory}
-                        value={[this.props.version]}>
+                        multiple={true}
+                        onChange={this.props.onChangeVersion}
+                        value={this.props.version}>
                         {this.props.history.map((item, key) =>
                             <option
                                 key={key}

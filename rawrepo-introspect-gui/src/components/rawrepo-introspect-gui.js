@@ -25,12 +25,12 @@ class RawrepoIntrospectGUI extends React.Component {
             bibliographicRecordIdCache: [],
             agencyId: '',
             agencyIdList: [],
-            record: '',
+            recordParts: [],
             format: 'line',
             mode: 'raw',
             recordLoaded: false,
             history: [],
-            version: 'current',
+            version: ['current'],
             relations: [],
             instance: ''
         };
@@ -131,10 +131,10 @@ class RawrepoIntrospectGUI extends React.Component {
         // Reset state
         this.setState({
             agencyIdList: [],
-            record: '',
+            recordParts: [],
             recordLoaded: false,
             history: [],
-            version: 'current',
+            version: ['current'],
             relations: []
         });
 
@@ -150,7 +150,7 @@ class RawrepoIntrospectGUI extends React.Component {
     onChangeAgencyId(event) {
         const agencyId = event.target.value;
 
-        this.setState({agencyId: agencyId, version: 'current'});
+        this.setState({agencyId: agencyId, version: ['current']});
 
         this.getRecordById(this.state.bibliographicRecordId, agencyId);
     }
@@ -172,11 +172,17 @@ class RawrepoIntrospectGUI extends React.Component {
     }
 
     onChangeVersion(event) {
-        const version = event.target.value;
+        var options = event.target.options;
+        var value = [];
+        for (var i = 0, l = options.length; i < l; i++) {
+            if (options[i].selected) {
+                value.push(options[i].value);
+            }
+        }
 
-        this.setState({version: version});
+        this.setState({version: value});
 
-        this.getRecordByVersion(version);
+        this.getRecordByVersion(value);
     }
 
     getAgenciesAndRefresh(bibliographicRecordId) {
@@ -266,7 +272,7 @@ class RawrepoIntrospectGUI extends React.Component {
     getRecordById(bibliographicRecordId, agencyId) {
         const mode = this.state.mode;
         const format = this.state.format;
-        const version = 'current';
+        const version = ['current'];
 
         const urlParams = this.getURLParams();
         urlParams['bibliographicRecordId'] = bibliographicRecordId;
@@ -298,16 +304,21 @@ class RawrepoIntrospectGUI extends React.Component {
     getRecord(bibliographicRecordId, agencyId, mode, format, version) {
         const params = {mode: mode, format: format};
 
-        if (version === 'current') {
+        if (version.length === 0) {
+            this.setState({
+                recordParts: [],
+                recordLoaded: true
+            });
+        } else if (version.length === 1 && version[0] === 'current') {
+            // Load current version
             request
                 .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId)
-                .set('Content-Type', 'text/plain')
                 .query(params)
                 .then(res => {
                     this.setState({
-                        record: res.text,
+                        recordParts: res.body.recordParts,
                         recordLoaded: true,
-                        version: 'current'
+                        version: ['current']
                     });
 
                     if (this.state.view === 'relations') {
@@ -317,13 +328,30 @@ class RawrepoIntrospectGUI extends React.Component {
                 .catch(err => {
                     alert(err.message);
                 });
-        } else {
+        } else if (version.length === 1) {
+            // Load historic version
             request
-                .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/' + version)
+                .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/' + version[0])
                 .query(params)
                 .then(res => {
                     this.setState({
-                        record: res.text,
+                        recordParts: res.body.recordParts,
+                        recordLoaded: true,
+                        version: version
+                    });
+                })
+                .catch(err => {
+                    alert(err.message);
+                });
+        } else if (version.length === 2) {
+            params.format = 'XML'; // TODO temp
+            // Load record diff
+            request
+                .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/diff/' + version.join('|'))
+                .query(params)
+                .then(res => {
+                    this.setState({
+                        recordParts: res.body.recordParts,
                         recordLoaded: true,
                         version: version
                     });
@@ -380,9 +408,10 @@ class RawrepoIntrospectGUI extends React.Component {
             var value = split[1];
 
             // Hack to url decode the date from history
-            if (key === 'version' && value !== 'current') {
-                value = value.replace('_', ':');
-                value = value.replace('_', ':');
+            if (key === 'version') {
+                value = decodeURIComponent(value); // The queryString is implicit url encoded so we have to decode it first
+                value = value.split(',');
+
             }
 
             // Ignore weird empty key
@@ -397,11 +426,8 @@ class RawrepoIntrospectGUI extends React.Component {
     setURLParams(urlParams) {
         const URL = location.protocol + '//' + location.host + location.pathname;
 
-        // Hack to url encode the date from history.
-        // Without this conversion weird stuff happens the the url when refreshing the url with the same version.
-        if (urlParams.version !== undefined && urlParams.version !== 'current') {
-            urlParams.version = urlParams.version.replace(':', '_');
-            urlParams.version = urlParams.version.replace(':', '_');
+        if (urlParams.version !== undefined) {
+            urlParams.version = urlParams.version.join(',');
         }
 
         window.history.replaceState(null, null, URL + '?' + queryString.stringify(urlParams));
@@ -466,12 +492,12 @@ class RawrepoIntrospectGUI extends React.Component {
                             <div>
                                 <p/>
                                 <RawrepoIntrospectRecordView
-                                    record={this.state.record}
+                                    recordParts={this.state.recordParts}
                                     format={this.state.format}
                                     mode={this.state.mode}
                                     onChangeFormat={this.onChangeFormat}
                                     onChangeMode={this.onChangeMode}
-                                    onSelectHistory={this.onChangeVersion}
+                                    onChangeVersion={this.onChangeVersion}
                                     recordLoaded={this.state.recordLoaded}
                                     history={this.state.history}
                                     version={this.state.version}/>
