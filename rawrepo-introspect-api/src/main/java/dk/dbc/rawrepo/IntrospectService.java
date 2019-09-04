@@ -12,7 +12,6 @@ import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
-import dk.dbc.marc.writer.MarcXchangeV1Writer;
 import dk.dbc.rawrepo.dto.EdgeDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
@@ -67,7 +66,6 @@ public class IntrospectService {
     private String INSTANCE;
 
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
-    private static final MarcXchangeV1Writer MARC_XCHANGE_V1_WRITER = new MarcXchangeV1Writer();
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -343,25 +341,13 @@ public class IntrospectService {
     private RecordDTO recordDiffToText(RecordData recordData1, RecordData recordData2, String format) throws MarcReaderException, XPathExpressionException, SAXException, IOException {
         RecordDTO result = new RecordDTO();
 
-        if ("LINE".equalsIgnoreCase(format)) {
-            final MarcXchangeV1Reader reader1 = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData1.getContent()), Charset.forName("UTF-8"));
-            final MarcRecord record1 = reader1.read();
+        ByteArrayInputStream leftStream = new ByteArrayInputStream(recordData1.getContent());
+        ByteArrayInputStream rightStream = new ByteArrayInputStream(recordData2.getContent());
+        XMLDiffHelper writer = new XMLDiffHelper();
+        XmlDiff.builder().indent(4).normalize(true).strip(true).trim(true).build()
+                .compare(leftStream, rightStream, writer);
+        result.setRecordParts(writer.getData());
 
-            final MarcXchangeV1Reader reader2 = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData2.getContent()), Charset.forName("UTF-8"));
-            final MarcRecord record2 = reader2.read();
-
-            // TODO implement
-            //ArrayList<Object> response = new ArrayList<>();
-            //response.add("Not implemented");
-            //result.setRecordParts();
-        } else {
-            ByteArrayInputStream leftStream = new ByteArrayInputStream(recordData1.getContent());
-            ByteArrayInputStream rightStream = new ByteArrayInputStream(recordData2.getContent());
-            XMLDiffHelper writer = new XMLDiffHelper();
-            XmlDiff.builder().indent(4).normalize(true).strip(true).trim(true).build()
-                    .compare(leftStream, rightStream, writer);
-            result.setRecordParts(writer.getData());
-        }
 
         return result;
     }
