@@ -73,32 +73,43 @@ class RawrepoIntrospectGUI extends React.Component {
         this.readCookie();
 
         if (queryParams.view === undefined || queryParams.view === 'record') { // TODO implement other views
-            if (queryParams.bibliographicRecordId !== undefined) {
-                this.setState({bibliographicRecordId: queryParams.bibliographicRecordId})
+            let bibliographicRecordId = queryParams.bibliographicRecordId;
+            if (bibliographicRecordId !== undefined) {
+                this.setState({bibliographicRecordId: bibliographicRecordId})
             }
 
-            if (queryParams.agencyId !== undefined) {
-                this.setState({agencyId: queryParams.agencyId})
+            let agencyId = queryParams.agencyId;
+            if (agencyId !== undefined) {
+                this.setState({agencyId: agencyId})
             }
 
-            if (queryParams.mode !== undefined) {
-                this.setState({mode: queryParams.mode})
+            let mode = queryParams.mode;
+            if (mode !== undefined) {
+                this.setState({mode: mode})
+            } else {
+                mode = this.state.mode;
             }
 
-            if (queryParams.format !== undefined) {
-                this.setState({format: queryParams.format})
+            let format = queryParams.format;
+            if (format !== undefined) {
+                this.setState({format: format})
+            } else {
+                format = this.state.format;
             }
 
-            if (queryParams.version !== undefined) {
-                this.setState({version: queryParams.version})
+            let version = queryParams.version;
+            if (version !== undefined) {
+                this.setState({version: version})
+            } else {
+                version = this.state.version;
             }
 
-            if (queryParams.bibliographicRecordId !== undefined && queryParams.agencyId !== undefined) {
-                this.getAgencies(queryParams.bibliographicRecordId);
-                if (queryParams.version !== undefined) {
-                    this.getRecordByIdAndVersion(queryParams.bibliographicRecordId, queryParams.agencyId, queryParams.version)
+            if (bibliographicRecordId !== undefined && agencyId !== undefined) {
+                this.getAgencies(bibliographicRecordId);
+                if (version !== undefined) {
+                    this.getRecordByIdAndVersion(bibliographicRecordId, agencyId, mode, format, version)
                 } else {
-                    this.getRecordById(queryParams.bibliographicRecordId, queryParams.agencyId);
+                    this.getRecordById(bibliographicRecordId, agencyId);
                 }
             }
         }
@@ -288,10 +299,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getHistory(bibliographicRecordId, agencyId);
     }
 
-    getRecordByIdAndVersion(bibliographicRecordId, agencyId, version) {
-        const mode = this.state.mode;
-        const format = this.state.format;
-
+    getRecordByIdAndVersion(bibliographicRecordId, agencyId, mode, format, version) {
         const urlParams = this.getURLParams();
         urlParams['bibliographicRecordId'] = bibliographicRecordId;
         urlParams['agencyId'] = agencyId;
