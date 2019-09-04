@@ -55,6 +55,8 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRelations = this.getRelations.bind(this);
         this.getInstance = this.getInstance.bind(this);
 
+        this.onCopyToClipboard = this.onCopyToClipboard.bind(this);
+
         this.clearRecord = this.clearRecord.bind(this);
         this.addToCookie = this.addToCookie.bind(this);
         this.readCookie = this.readCookie.bind(this);
@@ -396,6 +398,16 @@ class RawrepoIntrospectGUI extends React.Component {
             });
     }
 
+    onCopyToClipboard(e) {
+        let text = '';
+        this.state.recordParts.map((item, key) => {
+                text = text + (item.content);
+            }
+        );
+
+        navigator.clipboard.writeText(text);
+    }
+
     getURLParams() {
         const windowLocation = window.location.search;
         const urlParamsList = windowLocation.substring(1).split('&');
@@ -498,6 +510,7 @@ class RawrepoIntrospectGUI extends React.Component {
                                     onChangeFormat={this.onChangeFormat}
                                     onChangeMode={this.onChangeMode}
                                     onChangeVersion={this.onChangeVersion}
+                                    onCopyToClipboard={this.onCopyToClipboard}
                                     recordLoaded={this.state.recordLoaded}
                                     history={this.state.history}
                                     version={this.state.version}/>

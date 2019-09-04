@@ -6,6 +6,7 @@
 import React from "react";
 import RawrepoIntrospectRecordModeSelector from './rawrepo-introspect-record-mode-selector';
 import RawrepoIntrospectRecordFormatSelector from './rawrepo-introspect-record-format-selector';
+import RawrepoIntrospectRecordCopy from './rawrepo-introspect-record-copy';
 
 const HEIGHT_OFFSET = 225;
 const HISTORY_WIDTH = 200;
@@ -86,6 +87,11 @@ class RawrepoIntrospectRecordView extends React.Component {
                                 id='record-format-selector'
                                 format={this.props.format}
                                 onChangeFormat={this.props.onChangeFormat}
+                                recordLoaded={this.props.recordLoaded}/>
+                        </div>
+                        <div style={{marginLeft: '25px', float: 'left'}}>
+                            <RawrepoIntrospectRecordCopy
+                                onCopyToClipboard={this.props.onCopyToClipboard}
                                 recordLoaded={this.props.recordLoaded}/>
                         </div>
                     </div>
