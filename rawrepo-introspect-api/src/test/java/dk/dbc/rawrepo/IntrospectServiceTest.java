@@ -65,7 +65,7 @@ public class IntrospectServiceTest {
         assertThat(response, is(notNullValue()));
         assertThat(response.getStatus(), is(200));
         assertThat(response.hasEntity(), is(true));
-        assertThat(response.getEntity(), is(loadFileContent("get-record-output.txt") + "\n"));
+        assertThat(response.getEntity(), is(loadFileContent("get-record-output.json")));
     }
 
     @Test
@@ -112,7 +112,7 @@ public class IntrospectServiceTest {
         assertThat(response, is(notNullValue()));
         assertThat(response.getStatus(), is(200));
         assertThat(response.hasEntity(), is(true));
-        assertThat(response.getEntity(), is(loadFileContent("get-historic-record-output.txt") + "\n"));
+        assertThat(response.getEntity(), is(loadFileContent("get-historic-record-output.json")));
     }
 
 }
