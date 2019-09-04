@@ -10,6 +10,18 @@ class RawrepoIntrospectRecordModeSelector extends React.Component {
 
     constructor(props) {
         super(props);
+
+        this.disableButton = this.disableButton.bind(this);
+    }
+
+    disableButton() {
+        // If no record is loaded disable buttons
+        if (!this.props.recordLoaded) {
+            return true;
+        } else {
+            // If record is loaded and version contains exactly one value and that value is 'current and enable the buttons
+            return !(this.props.version.length === 1 && this.props.version[0] === 'current');
+        }
     }
 
     render() {
@@ -21,15 +33,15 @@ class RawrepoIntrospectRecordModeSelector extends React.Component {
                     <Button onClick={this.props.onChangeMode}
                             bsStyle={mode === 'raw' ? 'primary' : 'default'}
                             value='raw'
-                            disabled={!this.props.recordLoaded || this.props.version !== 'current'}>Raw</Button>
+                            disabled={this.disableButton()}>Raw</Button>
                     <Button onClick={this.props.onChangeMode}
                             bsStyle={mode === 'merged' ? 'primary' : 'default'}
                             value='merged'
-                            disabled={!this.props.recordLoaded || this.props.version !== 'current'}>Merged</Button>
+                            disabled={this.disableButton()}>Merged</Button>
                     <Button onClick={this.props.onChangeMode}
                             bsStyle={mode === 'expanded' ? 'primary' : 'default'}
                             value='expanded'
-                            disabled={!this.props.recordLoaded || this.props.version !== 'current'}>Expanded</Button>
+                            disabled={this.disableButton()}>Expanded</Button>
                 </ButtonGroup>
             </div>
         )
