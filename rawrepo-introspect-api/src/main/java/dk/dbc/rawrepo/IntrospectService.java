@@ -207,7 +207,7 @@ public class IntrospectService {
                 recordData2 = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, version2);
             }
 
-            RecordDTO recordDTO = recordDiffToText(recordData1, recordData2, format);
+            RecordDTO recordDTO = recordDiffToText(recordData1, recordData2);
 
             res = mapper.marshall(recordDTO);
 
@@ -338,7 +338,8 @@ public class IntrospectService {
         return recordDTO;
     }
 
-    private RecordDTO recordDiffToText(RecordData recordData1, RecordData recordData2, String format) throws MarcReaderException, XPathExpressionException, SAXException, IOException {
+    // TODO implement correct diff. Should be using colordiff instead.
+    private RecordDTO recordDiffToText(RecordData recordData1, RecordData recordData2) throws XPathExpressionException, SAXException, IOException {
         RecordDTO result = new RecordDTO();
 
         ByteArrayInputStream leftStream = new ByteArrayInputStream(recordData1.getContent());
@@ -347,7 +348,6 @@ public class IntrospectService {
         XmlDiff.builder().indent(4).normalize(true).strip(true).trim(true).build()
                 .compare(leftStream, rightStream, writer);
         result.setRecordParts(writer.getData());
-
 
         return result;
     }
