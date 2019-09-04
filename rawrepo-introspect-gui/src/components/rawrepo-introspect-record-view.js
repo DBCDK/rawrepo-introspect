@@ -93,8 +93,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                 <div id="content-container"
                      style={{
                          height: this.state.textareaHeight + 'px',
-                         width: this.state.recordWidth + 'px',
-                         float: 'left'
+                         width: this.state.recordWidth + 'px'
                      }}>
                     <div id="content">
                         {this.props.recordParts.map((item, key) =>
@@ -112,7 +111,8 @@ class RawrepoIntrospectRecordView extends React.Component {
                             height: this.state.textareaHeight + 'px',
                             width: this.state.historyWidth + 'px',
                             marginLeft: '15px',
-                            float: 'right'
+                            float: 'right',
+                            border: '1px solid'
                         }}
                         name="history-list"
                         multiple={true}
