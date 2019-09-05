@@ -21,3 +21,35 @@ g a {
     fill: blue;
     stroke-width: 1.5px;
 }
+
+#content-container {
+    min-width: 300px;
+    min-height: 300px;
+    border: 1px solid;
+    float: left;
+}
+#content {
+    position: relative;
+    height: 100%;
+    overflow: auto;
+    white-space: pre-wrap;
+}
+
+#content SPAN {
+    display: inline;
+}
+#content SPAN.both {
+    color: black;
+}
+#content SPAN.left {
+    color: green;
+}
+#content SPAN.right {
+    color: red;
+}
+#content SPAN.name {
+    color: purple;
+}
+#content SPAN.uri {
+    color: brown;
+}

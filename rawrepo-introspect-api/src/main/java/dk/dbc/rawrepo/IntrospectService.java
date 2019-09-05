@@ -12,11 +12,16 @@ import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
-import dk.dbc.marc.writer.MarcXchangeV1Writer;
+import dk.dbc.rawrepo.dto.EdgeDTO;
+import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.rawrepo.dto.RecordPartDTO;
+import dk.dbc.rawrepo.dto.RelationDTO;
 import dk.dbc.util.StopwatchInterceptor;
+import dk.dbc.xmldiff.XmlDiff;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -36,7 +41,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+import javax.xml.xpath.XPathExpressionException;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
@@ -59,7 +66,6 @@ public class IntrospectService {
     private String INSTANCE;
 
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
-    private static final MarcXchangeV1Writer MARC_XCHANGE_V1_WRITER = new MarcXchangeV1Writer();
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -80,7 +86,7 @@ public class IntrospectService {
     }
 
     @GET
-    @Produces({MediaType.TEXT_PLAIN})
+    @Produces({MediaType.APPLICATION_JSON})
     @Path("v1/record/{bibliographicRecordId}/{agencyId}")
     public Response getRecord(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                               @PathParam("agencyId") int agencyId,
@@ -104,10 +110,12 @@ public class IntrospectService {
 
             final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
 
-            res = recordDataToText(recordData, format);
+            RecordDTO recordDTO = recordDataToText(recordData, format);
 
-            return Response.ok(res, MediaType.TEXT_PLAIN).build();
-        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException e) {
+            res = mapper.marshall(recordDTO);
+
+            return Response.ok(res, MediaType.APPLICATION_JSON).build();
+        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException | JSONBException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
         }
@@ -134,7 +142,7 @@ public class IntrospectService {
     }
 
     @GET
-    @Produces({MediaType.TEXT_PLAIN})
+    @Produces({MediaType.APPLICATION_JSON})
     @Path("v1/record/{bibliographicRecordId}/{agencyId}/{modifiedDate}")
     public Response getHistoricRecord(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                                       @PathParam("agencyId") int agencyId,
@@ -150,10 +158,61 @@ public class IntrospectService {
 
             final RecordData recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
 
-            res = recordDataToText(recordData, format);
+            RecordDTO recordDTO = recordDataToText(recordData, format);
 
-            return Response.ok(res, MediaType.TEXT_PLAIN).build();
-        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException e) {
+            res = mapper.marshall(recordDTO);
+
+            return Response.ok(res, MediaType.APPLICATION_JSON).build();
+        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException | JSONBException e) {
+            LOGGER.error(e.getMessage());
+            return Response.serverError().build();
+        }
+    }
+
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    @Path("v1/record/{bibliographicRecordId}/{agencyId}/diff/{versions}")
+    public Response getRecordDiff(@PathParam("bibliographicRecordId") String bibliographicRecordId,
+                                  @PathParam("agencyId") int agencyId,
+                                  @PathParam("versions") String versions,
+                                  @DefaultValue("LINE") @QueryParam("format") String format) {
+        String res = "";
+
+        try {
+            String[] versionList = versions.split("\\|");
+
+            if (versionList.length != 2) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+
+            String version1 = versionList[0];
+            String version2 = versionList[1];
+
+            RecordData recordData1;
+            RecordData recordData2;
+
+            final RecordServiceConnector.Params params = new RecordServiceConnector.Params();
+            params.withMode(RecordServiceConnector.Params.Mode.RAW);
+            params.withAllowDeleted(true);
+
+            if ("current".equals(version1)) {
+                recordData1 = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
+            } else {
+                recordData1 = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, version1);
+            }
+
+            if ("current".equals(version2)) {
+                recordData2 = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
+            } else {
+                recordData2 = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, version2);
+            }
+
+            RecordDTO recordDTO = recordDiffToText(recordData1, recordData2);
+
+            res = mapper.marshall(recordDTO);
+
+            return Response.ok(res, MediaType.APPLICATION_JSON).build();
+        } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
         }
@@ -234,11 +293,14 @@ public class IntrospectService {
         return Response.ok(INSTANCE, MediaType.TEXT_PLAIN).build();
     }
 
-    private String recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
-        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), Charset.forName("UTF-8"));
-        final MarcRecord record = reader.read();
+    private RecordDTO recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
+        RecordDTO recordDTO = new RecordDTO();
+        List<RecordPartDTO> parts = new ArrayList<>();
 
         if ("LINE".equalsIgnoreCase(format)) {
+            final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), Charset.forName("UTF-8"));
+            final MarcRecord record = reader.read();
+
             String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, Charset.forName("UTF-8")));
 
             // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
@@ -248,9 +310,14 @@ public class IntrospectService {
             rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
 
             // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-            return rawLines.replaceAll(" {4}\n", "");
+
+            rawLines = rawLines.replaceAll(" {4}\n", "");
+            RecordPartDTO part = new RecordPartDTO();
+            part.setType("both");
+            part.setContent(rawLines);
+            parts.add(part);
         } else {
-            final String recordContent = new String(MARC_XCHANGE_V1_WRITER.write(record, Charset.forName("UTF-8")));
+            final String recordContent = new String(recordData.getContent(), Charset.forName("UTF-8"));
             final Source xmlInput = new StreamSource(new StringReader(recordContent));
             final StringWriter stringWriter = new StringWriter();
             final StreamResult xmlOutput = new StreamResult(stringWriter);
@@ -259,8 +326,30 @@ public class IntrospectService {
             final Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(xmlInput, xmlOutput);
-            return xmlOutput.getWriter().toString();
+
+            RecordPartDTO part = new RecordPartDTO();
+            part.setType("both");
+            part.setContent(xmlOutput.getWriter().toString());
+            parts.add(part);
         }
+
+        recordDTO.setRecordParts(parts);
+
+        return recordDTO;
+    }
+
+    // TODO implement correct diff. Should be using colordiff instead.
+    private RecordDTO recordDiffToText(RecordData recordData1, RecordData recordData2) throws XPathExpressionException, SAXException, IOException {
+        RecordDTO result = new RecordDTO();
+
+        ByteArrayInputStream leftStream = new ByteArrayInputStream(recordData1.getContent());
+        ByteArrayInputStream rightStream = new ByteArrayInputStream(recordData2.getContent());
+        XMLDiffHelper writer = new XMLDiffHelper();
+        XmlDiff.builder().indent(4).normalize(true).strip(true).trim(true).build()
+                .compare(leftStream, rightStream, writer);
+        result.setRecordParts(writer.getData());
+
+        return result;
     }
 
 }

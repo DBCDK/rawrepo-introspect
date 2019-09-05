@@ -6,6 +6,7 @@
 import React from "react";
 import RawrepoIntrospectRecordModeSelector from './rawrepo-introspect-record-mode-selector';
 import RawrepoIntrospectRecordFormatSelector from './rawrepo-introspect-record-format-selector';
+import RawrepoIntrospectRecordCopy from './rawrepo-introspect-record-copy';
 
 const HEIGHT_OFFSET = 225;
 const HISTORY_WIDTH = 200;
@@ -88,17 +89,27 @@ class RawrepoIntrospectRecordView extends React.Component {
                                 onChangeFormat={this.props.onChangeFormat}
                                 recordLoaded={this.props.recordLoaded}/>
                         </div>
+                        <div style={{marginLeft: '25px', float: 'left'}}>
+                            <RawrepoIntrospectRecordCopy
+                                onCopyToClipboard={this.props.onCopyToClipboard}
+                                recordLoaded={this.props.recordLoaded}/>
+                        </div>
                     </div>
                 </div>
-                <div>
-                    <textarea
-                        style={{
-                            height: this.state.textareaHeight + 'px',
-                            width: this.state.recordWidth + 'px',
-                            float: 'left'
-                        }}
-                        value={this.props.record}
-                        readOnly/>
+                <div id="content-container"
+                     style={{
+                         height: this.state.textareaHeight + 'px',
+                         width: this.state.recordWidth + 'px'
+                     }}>
+                    <div id="content">
+                        {this.props.recordParts.map((item, key) =>
+                            <span
+                                key={key}
+                                className={item.type}>
+                                {item.content}
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <div>
                     <select
@@ -106,12 +117,13 @@ class RawrepoIntrospectRecordView extends React.Component {
                             height: this.state.textareaHeight + 'px',
                             width: this.state.historyWidth + 'px',
                             marginLeft: '15px',
-                            float: 'right'
+                            float: 'right',
+                            border: '1px solid'
                         }}
                         name="history-list"
-                        multiple
-                        onChange={this.props.onSelectHistory}
-                        value={[this.props.version]}>
+                        multiple={true}
+                        onChange={this.props.onChangeVersion}
+                        value={this.props.version}>
                         {this.props.history.map((item, key) =>
                             <option
                                 key={key}
