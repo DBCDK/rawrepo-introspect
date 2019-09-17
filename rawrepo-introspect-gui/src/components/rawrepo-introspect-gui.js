@@ -428,7 +428,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
     getAttachmentInfoDanbib(bibliographicRecordId) {
         request
-            .get('/api/v1/attachment/' + bibliographicRecordId + '/danbib')
+            .get('/api/v1/attachment/danbib/' + bibliographicRecordId)
             .accept('application/json')
             .then(res => {
                 this.setState({
@@ -442,7 +442,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
     getAttachmentInfoUpdate(bibliographicRecordId) {
         request
-            .get('/api/v1/attachment/' + bibliographicRecordId + '/update')
+            .get('/api/v1/attachment/update/' + bibliographicRecordId)
             .accept('application/json')
             .then(res => {
                 this.setState({
@@ -456,7 +456,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
     getAttachmentInfoBasis(bibliographicRecordId) {
         request
-            .get('/api/v1/attachment/' + bibliographicRecordId + '/basis')
+            .get('/api/v1/attachment/basis/' + bibliographicRecordId)
             .accept('application/json')
             .then(res => {
                 this.setState({

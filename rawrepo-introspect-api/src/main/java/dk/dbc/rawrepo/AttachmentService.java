@@ -2,8 +2,10 @@ package dk.dbc.rawrepo;
 
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
+import dk.dbc.rawrepo.dto.AttachmentDataDTO;
 import dk.dbc.rawrepo.dao.MoreInfoBean;
 import dk.dbc.rawrepo.dto.AttachmentInfoDTO;
+import dk.dbc.rawrepo.exception.AttachmentException;
 import dk.dbc.util.StopwatchInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,12 +34,13 @@ public class AttachmentService {
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
-    @Path("v1/attachment/{bibliographicRecordId}/danbib")
-    public Response getAttachmentInfoDanbib(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
+    @Path("v1/attachment/{base}/{bibliographicRecordId}")
+    public Response getAttachmentInfoDanbib(@PathParam("base") String base,
+                                            @PathParam("bibliographicRecordId") String bibliographicRecordId) {
         String res = "";
 
         try {
-            final List<AttachmentInfoDTO> attachmentInfo = moreInfo.getAttachmentInfoDanbib(bibliographicRecordId);
+            final List<AttachmentInfoDTO> attachmentInfo = moreInfo.getAttachmentInfo(base, bibliographicRecordId);
 
             res = mapper.marshall(attachmentInfo);
 
@@ -45,46 +48,29 @@ public class AttachmentService {
         } catch (JSONBException | SQLException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
+        } catch (AttachmentException e) {
+            LOGGER.error(e.getMessage());
+            return Response.status(Response.Status.BAD_REQUEST.getStatusCode(), e.getMessage()).build();
         }
     }
 
     @GET
-    @Produces({MediaType.APPLICATION_JSON})
-    @Path("v1/attachment/{bibliographicRecordId}/update")
-    public Response getAttachmentInfoUpdate(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
-        String res = "";
-
+    @Path("v1/attachment/{base}/{bibliographicRecordId}/{agencyId}/{attachment-type}")
+    public Response getAttachment(@PathParam("base") String base,
+                                  @PathParam("bibliographicRecordId") String bibliographicRecordId,
+                                  @PathParam("agencyId") int agencyId,
+                                  @PathParam("attachment-type") String attachmentType) {
         try {
-            final List<AttachmentInfoDTO> attachmentInfo = moreInfo.getAttachmentInfoUpdate(bibliographicRecordId);
+            final AttachmentDataDTO attachmentDataDTO = moreInfo.getAttachmentData(base, bibliographicRecordId, agencyId, attachmentType);
 
-            res = mapper.marshall(attachmentInfo);
-
-            return Response.ok(res, MediaType.APPLICATION_JSON).build();
-        } catch (JSONBException | SQLException e) {
+            return Response.ok(attachmentDataDTO.getData(), attachmentDataDTO.getMimetype()).build();
+        } catch (SQLException e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
-        }
-    }
-
-    @GET
-    @Produces({MediaType.APPLICATION_JSON})
-    @Path("v1/attachment/{bibliographicRecordId}/basis")
-    public Response getAttachmentInfoBasis(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
-        String res = "";
-
-        try {
-            final List<AttachmentInfoDTO> attachmentInfo = moreInfo.getAttachmentInfo24(bibliographicRecordId);
-
-            res = mapper.marshall(attachmentInfo);
-
-            return Response.ok(res, MediaType.APPLICATION_JSON).build();
-        } catch (JSONBException | SQLException e) {
+        } catch (AttachmentException e) {
             LOGGER.error(e.getMessage());
-            return Response.serverError().build();
+            return Response.status(Response.Status.BAD_REQUEST.getStatusCode(), e.getMessage()).build();
         }
     }
-
-
-
 
 }

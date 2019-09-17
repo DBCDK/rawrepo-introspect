@@ -22,11 +22,29 @@ const dateFormatter = function (cell, row) {
         ':' + leftPad2(dateValue.getSeconds());
 };
 
+
 class RawrepoIntrospectAttachmentView extends React.Component {
 
     constructor(props) {
         super(props);
+
+        this.attachmentTypeFormatterDanbib = this.attachmentTypeFormatterDanbib.bind(this);
+        this.attachmentTypeFormatterUpdate = this.attachmentTypeFormatterUpdate.bind(this);
+        this.attachmentTypeFormatterBasis = this.attachmentTypeFormatterBasis.bind(this);
     }
+
+    attachmentTypeFormatterDanbib(cell, row) {
+        return <a href={'/api/v1/attachment/danbib/' + this.props.bibliographicRecordId + '/' + row.sourceId +'/' + row.type} target='_blank'>{cell}</a>
+    }
+
+    attachmentTypeFormatterUpdate(cell, row) {
+        return <a href={'/api/v1/attachment/update/' + this.props.bibliographicRecordId + '/' + row.sourceId +'/' + row.type} target='_blank'>{cell}</a>
+    }
+
+    attachmentTypeFormatterBasis(cell, row) {
+        return <a href={'/api/v1/attachment/basis/' + this.props.bibliographicRecordId + '/' + row.sourceId +'/' + row.type} target='_blank'>{cell}</a>
+    }
+
 
     render() {
         return (
@@ -35,7 +53,10 @@ class RawrepoIntrospectAttachmentView extends React.Component {
                     <h2>Moreinfo Danbib</h2>
                     <BootstrapTable data={this.props.attachmentInfoDanbib}
                                     options={{noDataText: 'Der blev ikke fundet nogen attachments for denne post'}}>
-                        <TableHeaderColumn dataField='type' isKey={true} dataSort>TYPE</TableHeaderColumn>
+                        <TableHeaderColumn dataField='type'
+                                           isKey={true}
+                                           dataSort
+                                           dataFormat={this.attachmentTypeFormatterDanbib}>TYPE</TableHeaderColumn>
                         <TableHeaderColumn dataField='sourceId' dataSort data>SOURCE_ID</TableHeaderColumn>
                         <TableHeaderColumn dataField='ajourDate'
                                            dataFormat={dateFormatter}>AJOURDATO</TableHeaderColumn>
@@ -48,7 +69,10 @@ class RawrepoIntrospectAttachmentView extends React.Component {
                     <h2>Moreinfo Basis</h2>
                     <BootstrapTable data={this.props.attachmentInfoBasis}
                                     options={{noDataText: 'Der blev ikke fundet nogen attachments for denne post'}}>
-                        <TableHeaderColumn dataField='type' isKey={true} dataSort>TYPE</TableHeaderColumn>
+                        <TableHeaderColumn dataField='type'
+                                           isKey={true}
+                                           dataSort
+                                           dataFormat={this.attachmentTypeFormatterBasis}>TYPE</TableHeaderColumn>
                         <TableHeaderColumn dataField='sourceId' dataSort data>SOURCE_ID</TableHeaderColumn>
                         <TableHeaderColumn dataField='ajourDate'
                                            dataFormat={dateFormatter}>AJOURDATO</TableHeaderColumn>
@@ -61,7 +85,10 @@ class RawrepoIntrospectAttachmentView extends React.Component {
                     <h2>Moreinfo Update</h2>
                     <BootstrapTable data={this.props.attachmentInfoUpdate}
                                     options={{noDataText: 'Der blev ikke fundet nogen attachments for denne post'}}>
-                        <TableHeaderColumn dataField='type' isKey={true} dataSort>TYPE</TableHeaderColumn>
+                        <TableHeaderColumn dataField='type'
+                                           isKey={true}
+                                           dataSort
+                                           dataFormat={this.attachmentTypeFormatterUpdate}>TYPE</TableHeaderColumn>
                         <TableHeaderColumn dataField='sourceId' dataSort data>SOURCE_ID</TableHeaderColumn>
                         <TableHeaderColumn dataField='ajourDate'
                                            dataFormat={dateFormatter}>AJOURDATO</TableHeaderColumn>
