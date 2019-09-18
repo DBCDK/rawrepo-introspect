@@ -593,7 +593,7 @@ class RawrepoIntrospectGUI extends React.Component {
                                 bibliographicRecordId={this.state.bibliographicRecordId}
                                 agencyId={this.state.agencyId}/></div>
                         </Tab>
-                        <Tab eventKey={'attachments'} title="Forsider">
+                        <Tab eventKey={'attachments'} title="Attachments">
                             <div><RawrepoIntrospectAttachmentView
                                 attachmentInfoDanbib={this.state.attachmentInfoDanbib}
                                 attachmentInfoUpdate={this.state.attachmentInfoUpdate}
