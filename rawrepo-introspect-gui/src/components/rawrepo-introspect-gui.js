@@ -161,7 +161,10 @@ class RawrepoIntrospectGUI extends React.Component {
             recordLoaded: false,
             history: [],
             version: ['current'],
-            relations: []
+            relations: [],
+            attachmentInfoDanbib: [],
+            attachmentInfoUpdate: [],
+            attachmentInfoBasis: []
         });
 
         // Reset url params
