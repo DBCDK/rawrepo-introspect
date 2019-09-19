@@ -125,7 +125,6 @@ class RawrepoIntrospectRecordView extends React.Component {
                         style={{
                             height: this.state.textareaHeight + 'px',
                             width: this.state.historyWidth + 'px',
-                            marginLeft: '15px',
                             float: 'right',
                             border: '1px solid'
                         }}
