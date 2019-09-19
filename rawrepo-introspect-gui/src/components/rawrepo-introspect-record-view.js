@@ -9,7 +9,6 @@ import RawrepoIntrospectRecordFormatSelector from './rawrepo-introspect-record-f
 import RawrepoIntrospectRecordCopy from './rawrepo-introspect-record-copy';
 
 const HEIGHT_OFFSET = 225;
-const HISTORY_WIDTH = 200;
 
 class RawrepoIntrospectRecordView extends React.Component {
 
@@ -19,8 +18,6 @@ class RawrepoIntrospectRecordView extends React.Component {
 
         this.state = {
             textareaHeight: window.innerHeight - HEIGHT_OFFSET,
-            recordWidth: window.innerWidth - HISTORY_WIDTH - 60,
-            historyWidth: HISTORY_WIDTH
         };
 
         this.updateDimensions = this.updateDimensions.bind(this);
@@ -29,7 +26,6 @@ class RawrepoIntrospectRecordView extends React.Component {
     updateDimensions() {
         this.setState({
             textareaHeight: window.innerHeight - HEIGHT_OFFSET,
-            recordWidth: window.innerWidth - HISTORY_WIDTH - 60
         });
     };
 
@@ -105,43 +101,41 @@ class RawrepoIntrospectRecordView extends React.Component {
                         </div>
                     </div>
                 </div>
-                <div id="content-container"
-                     style={{
-                         height: this.state.textareaHeight + 'px',
-                         width: this.state.recordWidth + 'px'
-                     }}>
-                    <div id="content">
-                        {this.props.recordParts.map((item, key) =>
-                            <span
-                                key={key}
-                                className={item.type}>
+                <div className="flex-container">
+                    <div id="content-container"
+                         style={{
+                             height: this.state.textareaHeight + 'px',
+                         }}>
+                        <div id="content">
+                            {this.props.recordParts.map((item, key) =>
+                                    <span
+                                        key={key}
+                                        className={item.type}>
                                 {item.content}
                             </span>
-                        )}
+                            )}
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <select
-                        style={{
-                            height: this.state.textareaHeight + 'px',
-                            width: this.state.historyWidth + 'px',
-                            float: 'right',
-                            border: '1px solid'
-                        }}
-                        name="history-list"
-                        multiple={true}
-                        onChange={this.props.onChangeVersion}
-                        value={this.props.version}>
-                        {this.props.history.map((item, key) =>
-                            <option
-                                key={key}
-                                style={{color: item.deleted === true ? 'red' : 'black'}}
-                                title={RawrepoIntrospectRecordView.formatToolTip(item)}
-                                value={item.isCurrent !== undefined ? 'current' : item.modified}>
-                                {RawrepoIntrospectRecordView.formatHistoryDate(item.modified)}
-                            </option>
-                        )}
-                    </select>
+                    <div id="content-history"
+                         style={{
+                             height: this.state.textareaHeight + 'px',
+                         }}>
+                        <select
+                            name="history-list"
+                            multiple={true}
+                            onChange={this.props.onChangeVersion}
+                            value={this.props.version}>
+                            {this.props.history.map((item, key) =>
+                                <option
+                                    key={key}
+                                    style={{color: item.deleted === true ? 'red' : 'black'}}
+                                    title={RawrepoIntrospectRecordView.formatToolTip(item)}
+                                    value={item.isCurrent !== undefined ? 'current' : item.modified}>
+                                    {RawrepoIntrospectRecordView.formatHistoryDate(item.modified)}
+                                </option>
+                            )}
+                        </select>
+                    </div>
                 </div>
             </div>
         )
