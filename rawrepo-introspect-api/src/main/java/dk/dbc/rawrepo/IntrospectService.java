@@ -295,6 +295,7 @@ public class IntrospectService {
 
     private RecordDTO recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
         RecordDTO recordDTO = new RecordDTO();
+        RecordPartDTO part = new RecordPartDTO();
         List<RecordPartDTO> parts = new ArrayList<>();
 
         if ("LINE".equalsIgnoreCase(format)) {
@@ -310,12 +311,9 @@ public class IntrospectService {
             rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
 
             // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-
             rawLines = rawLines.replaceAll(" {4}\n", "");
-            RecordPartDTO part = new RecordPartDTO();
-            part.setType("both");
+
             part.setContent(rawLines);
-            parts.add(part);
         } else {
             final String recordContent = new String(recordData.getContent(), Charset.forName("UTF-8"));
             final Source xmlInput = new StreamSource(new StringReader(recordContent));
@@ -327,12 +325,15 @@ public class IntrospectService {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(xmlInput, xmlOutput);
 
-            RecordPartDTO part = new RecordPartDTO();
-            part.setType("both");
             part.setContent(xmlOutput.getWriter().toString());
-            parts.add(part);
         }
 
+        if (recordData.isDeleted()) {
+            part.setType("right"); // 'right' translates to red text color
+        } else {
+            part.setType("both"); // 'both' translates to black text color
+        }
+        parts.add(part);
         recordDTO.setRecordParts(parts);
 
         return recordDTO;
