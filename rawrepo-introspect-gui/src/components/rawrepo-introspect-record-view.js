@@ -47,10 +47,19 @@ class RawrepoIntrospectRecordView extends React.Component {
 
     // Formats the raw ISO date to make it more friendly to look at
     static formatHistoryDate(date) {
-        date = date.replace('T', ' ');
-        date = date.replace('Z', '');
+        let dateValue = new Date(date);
 
-        return date
+        // Used for making date and time segments two chars long.
+        let leftPad2 = function (val) {
+            return ("00" + val).slice(-2)
+        };
+
+        return dateValue.getFullYear() +
+            '-' + leftPad2(dateValue.getMonth() + 1) +
+            '-' + leftPad2(dateValue.getDate()) +
+            ' ' + leftPad2(dateValue.getHours()) +
+            ':' + leftPad2(dateValue.getMinutes()) +
+            ':' + leftPad2(dateValue.getSeconds());
     }
 
     static formatToolTip(item) {
