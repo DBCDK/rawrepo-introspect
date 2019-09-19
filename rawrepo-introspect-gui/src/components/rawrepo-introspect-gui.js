@@ -124,6 +124,8 @@ class RawrepoIntrospectGUI extends React.Component {
         if (this.state.instance === '') {
             this.getInstance();
         }
+
+
     }
 
     handleSelect(view) {
@@ -249,7 +251,9 @@ class RawrepoIntrospectGUI extends React.Component {
             .get('/api/v1/instance')
             .set('Content-Type', 'text/plain')
             .then(res => {
-                this.setState({instance: res.text});
+                const instance = res.text;
+                this.setState({instance: instance});
+                document.title = "Rawrepo Introspect " + instance;
             })
             .catch(err => {
                 alert(err.message);
