@@ -22,17 +22,37 @@ g a {
     stroke-width: 1.5px;
 }
 
+.flex-container {
+    display: flex;
+    flex-direction: row;
+}
+
 #content-container {
     min-width: 300px;
     min-height: 300px;
     border: 1px solid;
-    float: left;
+    order: 1;
+    flex: 100%;
 }
 #content {
     position: relative;
     height: 100%;
     overflow: auto;
     white-space: pre-wrap;
+}
+
+#content-history {
+    min-height: 300px;
+    min-width: 160px;
+    width: 160px;
+    order: 2;
+    margin-left: 15px;
+}
+
+#content-history SELECT {
+    width: 100%;
+    height: 100%;
+    border: 1px solid;
 }
 
 #content SPAN {

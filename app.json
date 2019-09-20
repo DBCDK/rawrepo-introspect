@@ -1,3 +1,14 @@
 {
-  "appName": "rawrepo-introspect"
+  "appName": "rawrepo-introspect",
+  "jdbc": {
+    "jdbc/moreinfoDanbib": {
+      "url": "${MOREINFO_DANBIB_URL}"
+    },
+    "jdbc/moreinfoUpdate": {
+      "url": "${MOREINFO_UPDATE_URL}"
+    },
+    "jdbc/moreinfoBasis": {
+      "url": "${MOREINFO_BASIS_URL}"
+    }
+  }
 }

@@ -46,7 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -71,7 +71,7 @@ public class IntrospectService {
     @Produces({MediaType.APPLICATION_JSON})
     @Path("v1/agencies-for/{bibliographicRecordId}")
     public Response getAllAgenciesForBibliographicRecordId(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
-        String res = "";
+        String res;
 
         try {
             final List<Integer> agencies = Arrays.asList(rawRepoRecordServiceConnector.getAllAgenciesForBibliographicRecordId(bibliographicRecordId));
@@ -92,7 +92,7 @@ public class IntrospectService {
                               @PathParam("agencyId") int agencyId,
                               @DefaultValue("LINE") @QueryParam("format") String format,
                               @DefaultValue("MERGED") @QueryParam("mode") String mode) {
-        String res = "";
+        String res;
 
         try {
             // Validate input
@@ -126,7 +126,7 @@ public class IntrospectService {
     @Path("v1/record/{bibliographicRecordId}/{agencyId}/history")
     public Response getRecordHistory(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                                      @PathParam("agencyId") int agencyId) {
-        String res = "";
+        String res;
 
         try {
             final RecordHistoryCollection recordHistoryCollection = rawRepoRecordServiceConnector.getRecordHistory(Integer.toString(agencyId), bibliographicRecordId);
@@ -148,7 +148,7 @@ public class IntrospectService {
                                       @PathParam("agencyId") int agencyId,
                                       @PathParam("modifiedDate") String modifiedDate,
                                       @DefaultValue("LINE") @QueryParam("format") String format) {
-        String res = "";
+        String res;
 
         try {
             // Validate input
@@ -176,7 +176,7 @@ public class IntrospectService {
                                   @PathParam("agencyId") int agencyId,
                                   @PathParam("versions") String versions,
                                   @DefaultValue("LINE") @QueryParam("format") String format) {
-        String res = "";
+        String res;
 
         try {
             String[] versionList = versions.split("\\|");
@@ -223,7 +223,7 @@ public class IntrospectService {
     @Path("v1/record/{bibliographicRecordId}/{agencyId}/relations")
     public Response getRelations(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                                  @PathParam("agencyId") int agencyId) {
-        String res = "";
+        String res;
 
         try {
             RelationDTO relationDTO = new RelationDTO();
@@ -295,13 +295,14 @@ public class IntrospectService {
 
     private RecordDTO recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
         RecordDTO recordDTO = new RecordDTO();
+        RecordPartDTO part = new RecordPartDTO();
         List<RecordPartDTO> parts = new ArrayList<>();
 
         if ("LINE".equalsIgnoreCase(format)) {
-            final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), Charset.forName("UTF-8"));
+            final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
             final MarcRecord record = reader.read();
 
-            String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, Charset.forName("UTF-8")));
+            String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, StandardCharsets.UTF_8));
 
             // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
             rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
@@ -310,14 +311,11 @@ public class IntrospectService {
             rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
 
             // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-
             rawLines = rawLines.replaceAll(" {4}\n", "");
-            RecordPartDTO part = new RecordPartDTO();
-            part.setType("both");
+
             part.setContent(rawLines);
-            parts.add(part);
         } else {
-            final String recordContent = new String(recordData.getContent(), Charset.forName("UTF-8"));
+            final String recordContent = new String(recordData.getContent(), StandardCharsets.UTF_8);
             final Source xmlInput = new StreamSource(new StringReader(recordContent));
             final StringWriter stringWriter = new StringWriter();
             final StreamResult xmlOutput = new StreamResult(stringWriter);
@@ -327,12 +325,15 @@ public class IntrospectService {
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.transform(xmlInput, xmlOutput);
 
-            RecordPartDTO part = new RecordPartDTO();
-            part.setType("both");
             part.setContent(xmlOutput.getWriter().toString());
-            parts.add(part);
         }
 
+        if (recordData.isDeleted()) {
+            part.setType("right"); // 'right' translates to red text color
+        } else {
+            part.setType("both"); // 'both' translates to black text color
+        }
+        parts.add(part);
         recordDTO.setRecordParts(parts);
 
         return recordDTO;

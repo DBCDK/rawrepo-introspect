@@ -8,6 +8,7 @@ import {Tab, Tabs} from "react-bootstrap";
 import RawrepoIntrospectRecordSelector from './rawrepo-introspect-record-selector';
 import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view';
 import RawrepoIntrospectRecordView from "./rawrepo-introspect-record-view";
+import RawrepoIntrospectAttachmentView from "./rawrepo-introspect-attachment-view";
 
 const request = require('superagent');
 const queryString = require('querystring');
@@ -32,6 +33,9 @@ class RawrepoIntrospectGUI extends React.Component {
             history: [],
             version: ['current'],
             relations: [],
+            attachmentInfoDanbib: [],
+            attachmentInfoUpdate: [],
+            attachmentInfoBasis: [],
             instance: ''
         };
 
@@ -54,6 +58,9 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getHistory = this.getHistory.bind(this);
         this.getRelations = this.getRelations.bind(this);
         this.getInstance = this.getInstance.bind(this);
+        this.getAttachmentInfoDanbib = this.getAttachmentInfoDanbib.bind(this);
+        this.getAttachmentInfoUpdate = this.getAttachmentInfoUpdate.bind(this);
+        this.getAttachmentInfoBasis = this.getAttachmentInfoBasis.bind(this);
 
         this.onCopyToClipboard = this.onCopyToClipboard.bind(this);
 
@@ -117,6 +124,8 @@ class RawrepoIntrospectGUI extends React.Component {
         if (this.state.instance === '') {
             this.getInstance();
         }
+
+
     }
 
     handleSelect(view) {
@@ -124,6 +133,12 @@ class RawrepoIntrospectGUI extends React.Component {
 
         if (view === 'relations' && this.state.recordLoaded) {
             this.getRelations(this.state.bibliographicRecordId, this.state.agencyId);
+        }
+
+        if (view === 'attachments' && this.state.recordLoaded) {
+            this.getAttachmentInfoDanbib(this.state.bibliographicRecordId);
+            this.getAttachmentInfoUpdate(this.state.bibliographicRecordId);
+            this.getAttachmentInfoBasis(this.state.bibliographicRecordId);
         }
     }
 
@@ -148,7 +163,10 @@ class RawrepoIntrospectGUI extends React.Component {
             recordLoaded: false,
             history: [],
             version: ['current'],
-            relations: []
+            relations: [],
+            attachmentInfoDanbib: [],
+            attachmentInfoUpdate: [],
+            attachmentInfoBasis: []
         });
 
         // Reset url params
@@ -233,7 +251,9 @@ class RawrepoIntrospectGUI extends React.Component {
             .get('/api/v1/instance')
             .set('Content-Type', 'text/plain')
             .then(res => {
-                this.setState({instance: res.text});
+                const instance = res.text;
+                this.setState({instance: instance});
+                document.title = "Rawrepo Introspect " + instance;
             })
             .catch(err => {
                 alert(err.message);
@@ -334,6 +354,13 @@ class RawrepoIntrospectGUI extends React.Component {
                     if (this.state.view === 'relations') {
                         this.getRelations(bibliographicRecordId, agencyId);
                     }
+
+                    if (this.state.view === 'attachments') {
+                        this.getAttachmentInfoDanbib(this.state.bibliographicRecordId);
+                        this.getAttachmentInfoUpdate(this.state.bibliographicRecordId);
+                        this.getAttachmentInfoBasis(this.state.bibliographicRecordId);
+                    }
+
                 })
                 .catch(err => {
                     alert(err.message);
@@ -399,6 +426,48 @@ class RawrepoIntrospectGUI extends React.Component {
 
                 this.setState({
                     relations: relations
+                });
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
+    getAttachmentInfoDanbib(bibliographicRecordId) {
+        request
+            .get('/api/v1/attachment/danbib/' + bibliographicRecordId)
+            .accept('application/json')
+            .then(res => {
+                this.setState({
+                    attachmentInfoDanbib: res.body
+                });
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
+    getAttachmentInfoUpdate(bibliographicRecordId) {
+        request
+            .get('/api/v1/attachment/update/' + bibliographicRecordId)
+            .accept('application/json')
+            .then(res => {
+                this.setState({
+                    attachmentInfoUpdate: res.body
+                });
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
+    getAttachmentInfoBasis(bibliographicRecordId) {
+        request
+            .get('/api/v1/attachment/basis/' + bibliographicRecordId)
+            .accept('application/json')
+            .then(res => {
+                this.setState({
+                    attachmentInfoBasis: res.body
                 });
             })
             .catch(err => {
@@ -530,6 +599,14 @@ class RawrepoIntrospectGUI extends React.Component {
                                 onLoadRelations={this.getRelations}
                                 bibliographicRecordId={this.state.bibliographicRecordId}
                                 agencyId={this.state.agencyId}/></div>
+                        </Tab>
+                        <Tab eventKey={'attachments'} title="Attachments">
+                            <div><RawrepoIntrospectAttachmentView
+                                attachmentInfoDanbib={this.state.attachmentInfoDanbib}
+                                attachmentInfoUpdate={this.state.attachmentInfoUpdate}
+                                attachmentInfoBasis={this.state.attachmentInfoBasis}
+                                bibliographicRecordId={this.state.bibliographicRecordId}/>
+                            </div>
                         </Tab>
                     </Tabs>
                 </div>
