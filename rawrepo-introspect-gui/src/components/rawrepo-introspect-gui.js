@@ -9,6 +9,7 @@ import RawrepoIntrospectRecordSelector from './rawrepo-introspect-record-selecto
 import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view';
 import RawrepoIntrospectRecordView from "./rawrepo-introspect-record-view";
 import RawrepoIntrospectAttachmentView from "./rawrepo-introspect-attachment-view";
+import RawrepoIntrospectHoldingsView from "./rawrepo-introspect-holdings-view";
 
 const request = require('superagent');
 const queryString = require('querystring');
@@ -36,7 +37,8 @@ class RawrepoIntrospectGUI extends React.Component {
             attachmentInfoDanbib: [],
             attachmentInfoUpdate: [],
             attachmentInfoBasis: [],
-            instance: ''
+            instance: '',
+            holdingsItems: []
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -61,6 +63,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getAttachmentInfoDanbib = this.getAttachmentInfoDanbib.bind(this);
         this.getAttachmentInfoUpdate = this.getAttachmentInfoUpdate.bind(this);
         this.getAttachmentInfoBasis = this.getAttachmentInfoBasis.bind(this);
+        this.getHoldingsItems = this.getHoldingsItems.bind(this);
 
         this.onCopyToClipboard = this.onCopyToClipboard.bind(this);
 
@@ -140,6 +143,10 @@ class RawrepoIntrospectGUI extends React.Component {
             this.getAttachmentInfoUpdate(this.state.bibliographicRecordId);
             this.getAttachmentInfoBasis(this.state.bibliographicRecordId);
         }
+
+        if (view === 'holdingsItems' && this.state.recordLoaded) {
+            this.getHoldingsItems(this.state.bibliographicRecordId);
+        }
     }
 
     onChangeBibliographicRecordId(event) {
@@ -166,7 +173,8 @@ class RawrepoIntrospectGUI extends React.Component {
             relations: [],
             attachmentInfoDanbib: [],
             attachmentInfoUpdate: [],
-            attachmentInfoBasis: []
+            attachmentInfoBasis: [],
+            holdingsItems: []
         });
 
         // Reset url params
@@ -356,11 +364,14 @@ class RawrepoIntrospectGUI extends React.Component {
                     }
 
                     if (this.state.view === 'attachments') {
-                        this.getAttachmentInfoDanbib(this.state.bibliographicRecordId);
-                        this.getAttachmentInfoUpdate(this.state.bibliographicRecordId);
-                        this.getAttachmentInfoBasis(this.state.bibliographicRecordId);
+                        this.getAttachmentInfoDanbib(bibliographicRecordId);
+                        this.getAttachmentInfoUpdate(bibliographicRecordId);
+                        this.getAttachmentInfoBasis(bibliographicRecordId);
                     }
 
+                    if (this.state.view === 'holdingsItems') {
+                        this.getHoldingsItems(bibliographicRecordId);
+                    }
                 })
                 .catch(err => {
                     alert(err.message);
@@ -468,6 +479,20 @@ class RawrepoIntrospectGUI extends React.Component {
             .then(res => {
                 this.setState({
                     attachmentInfoBasis: res.body
+                });
+            })
+            .catch(err => {
+                alert(err.message);
+            });
+    }
+
+    getHoldingsItems(bibliographicRecordId) {
+        request
+            .get('/api/v1/holdingsitems/' + bibliographicRecordId)
+            .accept('application/json')
+            .then(res => {
+                this.setState({
+                    holdingsItems: res.body
                 });
             })
             .catch(err => {
@@ -606,6 +631,11 @@ class RawrepoIntrospectGUI extends React.Component {
                                 attachmentInfoUpdate={this.state.attachmentInfoUpdate}
                                 attachmentInfoBasis={this.state.attachmentInfoBasis}
                                 bibliographicRecordId={this.state.bibliographicRecordId}/>
+                            </div>
+                        </Tab>
+                        <Tab eventKey={'holdingsItems'} title="Beholdninger">
+                            <div><RawrepoIntrospectHoldingsView
+                                holdingsItems={this.state.holdingsItems}/>
                             </div>
                         </Tab>
                     </Tabs>

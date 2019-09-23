@@ -9,6 +9,7 @@ docker run --rm --name rawrepo-introspect -d -p ${rawrepo_introspect_port}:8080 
     -e MOREINFO_DANBIB_URL=${MOREINFO_DANBIB_URL} \
     -e MOREINFO_UPDATE_URL=${MOREINFO_UPDATE_URL} \
     -e MOREINFO_BASIS_URL=${MOREINFO_BASIS_URL} \
+    -e HOLDINGS_ITEMS_URL=${HOLDINGS_ITEMS_URL} \
     -e JAVA_MAX_HEAP_SIZE=2G \
     -e INSTANCE=dev rawrepo-introspect
 attempts=0
