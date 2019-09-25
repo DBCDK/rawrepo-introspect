@@ -10,6 +10,12 @@ class RawrepoIntrospectHoldingsView extends React.Component {
 
     constructor(props) {
         super(props);
+
+        this.linkFormatter = this.linkFormatter.bind(this);
+    }
+
+    linkFormatter(cell) {
+        return `<a href='${this.props.holdingsItemsIntrospectUrl}/holdings-items-introspection/app/items/?agencyId=${cell}&bibRecId=${this.props.bibliographicRecordId}'} target="_blank">Åben i holdings items introspect</a>`
     }
 
     render() {
@@ -21,6 +27,9 @@ class RawrepoIntrospectHoldingsView extends React.Component {
                     <TableHeaderColumn dataField='agencyId'
                                        isKey={true}
                                        dataSort>Agency Id</TableHeaderColumn>
+                    <TableHeaderColumn dataField='agencyId'
+                                       dataSort
+                                       dataFormat={this.linkFormatter}>Link</TableHeaderColumn>
                 </BootstrapTable>
             </div>
         );

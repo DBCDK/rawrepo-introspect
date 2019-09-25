@@ -38,6 +38,7 @@ class RawrepoIntrospectGUI extends React.Component {
             attachmentInfoUpdate: [],
             attachmentInfoBasis: [],
             instance: '',
+            holdingsItemsIntrospectUrl: '',
             holdingsItems: []
         };
 
@@ -256,12 +257,15 @@ class RawrepoIntrospectGUI extends React.Component {
 
     getInstance() {
         request
-            .get('/api/v1/instance')
+            .get('/api/v1/config')
             .set('Content-Type', 'text/plain')
             .then(res => {
-                const instance = res.text;
-                this.setState({instance: instance});
-                document.title = "Rawrepo Introspect " + instance;
+                const config = res.body;
+                this.setState({
+                    instance: config.instance,
+                    holdingsItemsIntrospectUrl: config.holdingsItemsIntrospectUrl
+                });
+                document.title = "Rawrepo Introspect " + config.instance;
             })
             .catch(err => {
                 alert(err.message);
@@ -635,7 +639,9 @@ class RawrepoIntrospectGUI extends React.Component {
                         </Tab>
                         <Tab eventKey={'holdingsItems'} title="Beholdninger">
                             <div><RawrepoIntrospectHoldingsView
-                                holdingsItems={this.state.holdingsItems}/>
+                                holdingsItems={this.state.holdingsItems}
+                                bibliographicRecordId={this.state.bibliographicRecordId}
+                                holdingsItemsIntrospectUrl={this.state.holdingsItemsIntrospectUrl}/>
                             </div>
                         </Tab>
                     </Tabs>

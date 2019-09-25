@@ -14,6 +14,7 @@ import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.rawrepo.dao.HoldingsItemsBean;
+import dk.dbc.rawrepo.dto.ConfigDTO;
 import dk.dbc.rawrepo.dto.EdgeDTO;
 import dk.dbc.rawrepo.dto.HoldingsItemsDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
@@ -70,6 +71,10 @@ public class IntrospectService {
     @Inject
     @ConfigProperty(name = "INSTANCE", defaultValue = "")
     private String INSTANCE;
+
+    @Inject
+    @ConfigProperty(name = "HOLDINGS_ITEMS_INTROSPECT_URL", defaultValue = "")
+    private String HOLDINGS_ITEMS_INTROSPECT_URL;
 
     @EJB
     private HoldingsItemsBean holdingsItemsBean;
@@ -321,10 +326,23 @@ public class IntrospectService {
     }
 
     @GET
-    @Produces({MediaType.TEXT_PLAIN})
-    @Path("v1/instance")
-    public Response getInstance() {
-        return Response.ok(INSTANCE, MediaType.TEXT_PLAIN).build();
+    @Produces({MediaType.APPLICATION_JSON})
+    @Path("v1/config")
+    public Response getConfig() {
+        String res;
+
+        try {
+            final ConfigDTO config = new ConfigDTO();
+            config.setInstance(INSTANCE);
+            config.setHoldingsItemsIntrospectUrl(HOLDINGS_ITEMS_INTROSPECT_URL);
+
+            res = mapper.marshall(config);
+
+            return Response.ok(res, MediaType.APPLICATION_JSON).build();
+        } catch (JSONBException e) {
+            LOGGER.error(e.getMessage());
+            return Response.serverError().build();
+        }
     }
 
     private RecordDTO recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
