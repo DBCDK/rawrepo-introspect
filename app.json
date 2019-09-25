@@ -9,6 +9,9 @@
     },
     "jdbc/moreinfoBasis": {
       "url": "${MOREINFO_BASIS_URL}"
+    },
+    "jdbc/holdingsItems": {
+      "url": "${HOLDINGS_ITEMS_URL}"
     }
   }
 }
