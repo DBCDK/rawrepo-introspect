@@ -396,7 +396,7 @@ class RawrepoIntrospectGUI extends React.Component {
                     alert(err.message);
                 });
         } else if (version.length === 2) {
-            params.format = 'XML'; // TODO temp
+            params.format = format;
             // Load record diff
             request
                 .get('/api/v1/record/' + bibliographicRecordId + '/' + agencyId + '/diff/' + version.join('|'))

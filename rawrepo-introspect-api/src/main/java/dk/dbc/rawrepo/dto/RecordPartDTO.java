@@ -5,6 +5,14 @@ public class RecordPartDTO {
     private String content;
     private String type;
 
+    public RecordPartDTO() {
+    }
+
+    public RecordPartDTO(String content, String type) {
+        this.content = content;
+        this.type = type;
+    }
+
     public String getContent() {
         return content;
     }
