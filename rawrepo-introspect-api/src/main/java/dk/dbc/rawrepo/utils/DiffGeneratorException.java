@@ -19,7 +19,7 @@
  * along with DataIO.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package dk.dbc.rawrepo.diff;
+package dk.dbc.rawrepo.utils;
 
 public class DiffGeneratorException extends Exception {
     /**

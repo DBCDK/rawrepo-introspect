@@ -3,7 +3,7 @@
  *  See license text at https://opensource.dbc.dk/licenses/gpl-3.0
  */
 
-package dk.dbc.rawrepo.diff;
+package dk.dbc.rawrepo.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
