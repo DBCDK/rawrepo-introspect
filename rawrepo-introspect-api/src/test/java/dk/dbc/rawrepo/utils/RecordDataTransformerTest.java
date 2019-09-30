@@ -171,9 +171,6 @@ public class RecordDataTransformerTest {
         assertThat(actual.getRecordParts().get(5).getContent(), is("+504 00 *& 1 *a Fra en flodpram på Hudson River i New York i 1950'erne fortæller he\n"));
         assertThat(actual.getRecordParts().get(5).getType(), is("left"));
 
-        assertThat(actual.getRecordParts().get(5).getContent(), is("+504 00 *& 1 *a Fra en flodpram på Hudson River i New York i 1950'erne fortæller he\n"));
-        assertThat(actual.getRecordParts().get(5).getType(), is("left"));
-
         assertThat(actual.getRecordParts().get(6).getContent(), is("+    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n"));
         assertThat(actual.getRecordParts().get(6).getType(), is("left"));
 
