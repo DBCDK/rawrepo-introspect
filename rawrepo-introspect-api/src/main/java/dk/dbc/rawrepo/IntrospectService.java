@@ -8,24 +8,19 @@ package dk.dbc.rawrepo;
 import dk.dbc.holdingsitems.HoldingsItemsException;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
-import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.MarcReaderException;
-import dk.dbc.marc.reader.MarcXchangeV1Reader;
-import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.rawrepo.dao.HoldingsItemsBean;
 import dk.dbc.rawrepo.dto.ConfigDTO;
 import dk.dbc.rawrepo.dto.EdgeDTO;
 import dk.dbc.rawrepo.dto.HoldingsItemsDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
-import dk.dbc.rawrepo.dto.RecordPartDTO;
 import dk.dbc.rawrepo.dto.RelationDTO;
+import dk.dbc.rawrepo.utils.RecordDataTransformer;
 import dk.dbc.util.StopwatchInterceptor;
-import dk.dbc.xmldiff.XmlDiff;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -39,19 +34,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.xpath.XPathExpressionException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -78,8 +61,6 @@ public class IntrospectService {
 
     @EJB
     private HoldingsItemsBean holdingsItemsBean;
-
-    private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -124,7 +105,7 @@ public class IntrospectService {
 
             final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
 
-            RecordDTO recordDTO = recordDataToText(recordData, format);
+            RecordDTO recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format);
 
             res = mapper.marshall(recordDTO);
 
@@ -172,7 +153,7 @@ public class IntrospectService {
 
             final RecordData recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
 
-            RecordDTO recordDTO = recordDataToText(recordData, format);
+            RecordDTO recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format);
 
             res = mapper.marshall(recordDTO);
 
@@ -221,7 +202,7 @@ public class IntrospectService {
                 recordData2 = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, version2);
             }
 
-            RecordDTO recordDTO = recordDiffToText(recordData1, recordData2);
+            RecordDTO recordDTO = RecordDataTransformer.recordDiffToDTO(recordData1, recordData2, format);
 
             res = mapper.marshall(recordDTO);
 
@@ -345,64 +326,5 @@ public class IntrospectService {
         }
     }
 
-    private RecordDTO recordDataToText(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
-        RecordDTO recordDTO = new RecordDTO();
-        RecordPartDTO part = new RecordPartDTO();
-        List<RecordPartDTO> parts = new ArrayList<>();
-
-        if ("LINE".equalsIgnoreCase(format)) {
-            final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
-            final MarcRecord record = reader.read();
-
-            String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, StandardCharsets.UTF_8));
-
-            // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
-            rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
-
-            // Replace double space with single space in front of subfield marker
-            rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
-
-            // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-            rawLines = rawLines.replaceAll(" {4}\n", "");
-
-            part.setContent(rawLines);
-        } else {
-            final String recordContent = new String(recordData.getContent(), StandardCharsets.UTF_8);
-            final Source xmlInput = new StreamSource(new StringReader(recordContent));
-            final StringWriter stringWriter = new StringWriter();
-            final StreamResult xmlOutput = new StreamResult(stringWriter);
-            final TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            transformerFactory.setAttribute("indent-number", 4);
-            final Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.transform(xmlInput, xmlOutput);
-
-            part.setContent(xmlOutput.getWriter().toString());
-        }
-
-        if (recordData.isDeleted()) {
-            part.setType("right"); // 'right' translates to red text color
-        } else {
-            part.setType("both"); // 'both' translates to black text color
-        }
-        parts.add(part);
-        recordDTO.setRecordParts(parts);
-
-        return recordDTO;
-    }
-
-    // TODO implement correct diff. Should be using colordiff instead.
-    private RecordDTO recordDiffToText(RecordData recordData1, RecordData recordData2) throws XPathExpressionException, SAXException, IOException {
-        RecordDTO result = new RecordDTO();
-
-        ByteArrayInputStream leftStream = new ByteArrayInputStream(recordData1.getContent());
-        ByteArrayInputStream rightStream = new ByteArrayInputStream(recordData2.getContent());
-        XMLDiffHelper writer = new XMLDiffHelper();
-        XmlDiff.builder().indent(4).normalize(true).strip(true).trim(true).build()
-                .compare(leftStream, rightStream, writer);
-        result.setRecordParts(writer.getData());
-
-        return result;
-    }
 
 }
