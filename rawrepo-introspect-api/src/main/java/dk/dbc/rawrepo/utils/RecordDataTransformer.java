@@ -106,7 +106,7 @@ public class RecordDataTransformer {
 
         // No diff, so just use the left record
         if ("".equals(diff)) {
-            diff = new String(left.getContent());
+            return recordDataToDTO(left, format);
         }
 
         for (String line : diff.split("\n")) {

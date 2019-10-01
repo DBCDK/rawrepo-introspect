@@ -264,4 +264,25 @@ public class RecordDataTransformerTest {
         assertThat(actual.getRecordParts().get(22).getType(), is("both"));
     }
 
+    @Test
+    public void testRecordDiffToText_LINE_NoDiff() throws Exception {
+        RecordData current = getRecordDataCurrent();
+        RecordData previous = getRecordDataCurrent();
+
+        ExternalToolDiffGenerator.path = "script/";
+
+        String content = "001 00 *a 47097886 *b 870970 *c 20190930123826 *d 20190911 *f a\n" +
+                "004 00 *r n *a e\n" +
+                "504 00 *& 1 *a Fra en flodpram på Hudson River i New York i 1950'erne fortæller he\n" +
+                "    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n" +
+                "     en bog\n" +
+                "996 00 *a DBC\n$\n";
+
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "LINE");
+
+        assertThat(actual.getRecordParts().size(), is(1));
+        assertThat(actual.getRecordParts().get(0).getContent(), is(content));
+        assertThat(actual.getRecordParts().get(0).getType(), is("both"));
+    }
+
 }
