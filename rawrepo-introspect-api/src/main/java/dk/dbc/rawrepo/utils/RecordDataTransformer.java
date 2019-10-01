@@ -6,8 +6,6 @@ import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.rawrepo.RecordData;
-import dk.dbc.rawrepo.utils.DiffGeneratorException;
-import dk.dbc.rawrepo.utils.ExternalToolDiffGenerator;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
 
@@ -29,7 +27,7 @@ public class RecordDataTransformer {
 
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
 
-      static String formatRecordDataToLine(RecordData recordData) throws MarcWriterException, MarcReaderException {
+    static String formatRecordDataToLine(RecordData recordData) throws MarcWriterException, MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
         final MarcRecord record = reader.read();
 
@@ -47,7 +45,7 @@ public class RecordDataTransformer {
         return rawLines;
     }
 
-     static String formatRecordDataToXML(RecordData recordData) throws TransformerException {
+    static String formatRecordDataToXML(RecordData recordData) throws TransformerException {
         final String recordContent = new String(recordData.getContent(), StandardCharsets.UTF_8);
         final Source xmlInput = new StreamSource(new StringReader(recordContent));
         final StringWriter stringWriter = new StringWriter();
@@ -61,7 +59,7 @@ public class RecordDataTransformer {
         return xmlOutput.getWriter().toString();
     }
 
-     public static RecordDTO recordDataToDTO(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
+    public static RecordDTO recordDataToDTO(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
         final RecordDTO recordDTO = new RecordDTO();
         final RecordPartDTO part = new RecordPartDTO();
         final List<RecordPartDTO> parts = new ArrayList<>();
@@ -83,7 +81,7 @@ public class RecordDataTransformer {
         return recordDTO;
     }
 
-     public static RecordDTO recordDiffToDTO(RecordData left, RecordData right, String format) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
+    public static RecordDTO recordDiffToDTO(RecordData left, RecordData right, String format) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
         final RecordDTO result = new RecordDTO();
 
         final ExternalToolDiffGenerator.Kind kind = "LINE".equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.PLAINTEXT : ExternalToolDiffGenerator.Kind.XML;
@@ -112,15 +110,19 @@ public class RecordDataTransformer {
         }
 
         for (String line : diff.split("\n")) {
-            // Since we split on new line we must remember to add it each line again
             if (!line.startsWith("---") && !line.startsWith("+++") && !line.startsWith("@@")) {
+                String type = "both";
+
                 if (line.startsWith("-")) {
-                    recordParts.add(new RecordPartDTO(line + "\n", "right"));
+                    type = "right";
                 } else if (line.startsWith("+")) {
-                    recordParts.add(new RecordPartDTO(line + "\n", "left"));
-                } else {
-                    recordParts.add(new RecordPartDTO(line + "\n", "both"));
+                    type = "left";
                 }
+                // The first char in each line contains either a "-" or "+" or a space used for indicating the diff
+                // However the "+" takes up more pixels than "-" which means the lines aren't properly aligned on the web page
+                // So instead we remove the first char and then use type to indicate if that line should be colored
+                // Also, since we split on new line we must remember to add it each line again
+                recordParts.add(new RecordPartDTO(line.substring(1) + "\n", type));
             }
         }
 

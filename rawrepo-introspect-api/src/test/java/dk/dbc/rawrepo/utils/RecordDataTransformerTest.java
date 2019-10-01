@@ -5,7 +5,6 @@ import dk.dbc.rawrepo.dto.RecordDTO;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class RecordDataTransformerTest {
@@ -153,34 +152,34 @@ public class RecordDataTransformerTest {
 
         assertThat(actual.getRecordParts().size(), is(10));
 
-        assertThat(actual.getRecordParts().get(0).getContent(), is(" 001 00 *a 47097886 *b 870970 *c 20190930123826 *d 20190911 *f a\n"));
+        assertThat(actual.getRecordParts().get(0).getContent(), is("001 00 *a 47097886 *b 870970 *c 20190930123826 *d 20190911 *f a\n"));
         assertThat(actual.getRecordParts().get(0).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(1).getContent(), is(" 004 00 *r n *a e\n"));
+        assertThat(actual.getRecordParts().get(1).getContent(), is("004 00 *r n *a e\n"));
         assertThat(actual.getRecordParts().get(1).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(2).getContent(), is("-504 00 *& 1 *a Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller her\n"));
+        assertThat(actual.getRecordParts().get(2).getContent(), is("504 00 *& 1 *a Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller her\n"));
         assertThat(actual.getRecordParts().get(2).getType(), is("right"));
 
-        assertThat(actual.getRecordParts().get(3).getContent(), is("-    oinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive \n"));
+        assertThat(actual.getRecordParts().get(3).getContent(), is("    oinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive \n"));
         assertThat(actual.getRecordParts().get(3).getType(), is("right"));
 
-        assertThat(actual.getRecordParts().get(4).getContent(), is("-    en bog\n"));
+        assertThat(actual.getRecordParts().get(4).getContent(), is("    en bog\n"));
         assertThat(actual.getRecordParts().get(4).getType(), is("right"));
 
-        assertThat(actual.getRecordParts().get(5).getContent(), is("+504 00 *& 1 *a Fra en flodpram på Hudson River i New York i 1950'erne fortæller he\n"));
+        assertThat(actual.getRecordParts().get(5).getContent(), is("504 00 *& 1 *a Fra en flodpram på Hudson River i New York i 1950'erne fortæller he\n"));
         assertThat(actual.getRecordParts().get(5).getType(), is("left"));
 
-        assertThat(actual.getRecordParts().get(6).getContent(), is("+    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n"));
+        assertThat(actual.getRecordParts().get(6).getContent(), is("    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n"));
         assertThat(actual.getRecordParts().get(6).getType(), is("left"));
 
-        assertThat(actual.getRecordParts().get(7).getContent(), is("+     en bog\n"));
+        assertThat(actual.getRecordParts().get(7).getContent(), is("     en bog\n"));
         assertThat(actual.getRecordParts().get(7).getType(), is("left"));
 
-        assertThat(actual.getRecordParts().get(8).getContent(), is(" 996 00 *a DBC\n"));
+        assertThat(actual.getRecordParts().get(8).getContent(), is("996 00 *a DBC\n"));
         assertThat(actual.getRecordParts().get(8).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(9).getContent(), is(" $\n"));
+        assertThat(actual.getRecordParts().get(9).getContent(), is("$\n"));
         assertThat(actual.getRecordParts().get(9).getType(), is("both"));
     }
 
@@ -195,73 +194,73 @@ public class RecordDataTransformerTest {
 
         assertThat(actual.getRecordParts().size(), is(23));
 
-        assertThat(actual.getRecordParts().get(0).getContent(), is(" <?xml version=\"1.0\" encoding=\"utf8\"?>\n"));
+        assertThat(actual.getRecordParts().get(0).getContent(), is("<?xml version=\"1.0\" encoding=\"utf8\"?>\n"));
         assertThat(actual.getRecordParts().get(0).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(1).getContent(), is(" <record xmlns=\"urn:info:lc/xmlns/marcxchange-v1\" xmlns:xsi=\"urn:http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd\">\n"));
+        assertThat(actual.getRecordParts().get(1).getContent(), is("<record xmlns=\"urn:info:lc/xmlns/marcxchange-v1\" xmlns:xsi=\"urn:http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd\">\n"));
         assertThat(actual.getRecordParts().get(1).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(2).getContent(), is("   <leader>00000     22000000 4500 </leader>\n"));
+        assertThat(actual.getRecordParts().get(2).getContent(), is("  <leader>00000     22000000 4500 </leader>\n"));
         assertThat(actual.getRecordParts().get(2).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(3).getContent(), is("   <datafield ind1=\"0\" ind2=\"0\" tag=\"001\">\n"));
+        assertThat(actual.getRecordParts().get(3).getContent(), is("  <datafield ind1=\"0\" ind2=\"0\" tag=\"001\">\n"));
         assertThat(actual.getRecordParts().get(3).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(4).getContent(), is("     <subfield code=\"a\">47097886</subfield>\n"));
+        assertThat(actual.getRecordParts().get(4).getContent(), is("    <subfield code=\"a\">47097886</subfield>\n"));
         assertThat(actual.getRecordParts().get(4).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(5).getContent(), is("     <subfield code=\"b\">870970</subfield>\n"));
+        assertThat(actual.getRecordParts().get(5).getContent(), is("    <subfield code=\"b\">870970</subfield>\n"));
         assertThat(actual.getRecordParts().get(5).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(6).getContent(), is("     <subfield code=\"c\">20190930123826</subfield>\n"));
+        assertThat(actual.getRecordParts().get(6).getContent(), is("    <subfield code=\"c\">20190930123826</subfield>\n"));
         assertThat(actual.getRecordParts().get(6).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(7).getContent(), is("     <subfield code=\"d\">20190911</subfield>\n"));
+        assertThat(actual.getRecordParts().get(7).getContent(), is("    <subfield code=\"d\">20190911</subfield>\n"));
         assertThat(actual.getRecordParts().get(7).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(8).getContent(), is("     <subfield code=\"f\">a</subfield>\n"));
+        assertThat(actual.getRecordParts().get(8).getContent(), is("    <subfield code=\"f\">a</subfield>\n"));
         assertThat(actual.getRecordParts().get(8).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(9).getContent(), is("   </datafield>\n"));
+        assertThat(actual.getRecordParts().get(9).getContent(), is("  </datafield>\n"));
         assertThat(actual.getRecordParts().get(9).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(10).getContent(), is("   <datafield ind1=\"0\" ind2=\"0\" tag=\"004\">\n"));
+        assertThat(actual.getRecordParts().get(10).getContent(), is("  <datafield ind1=\"0\" ind2=\"0\" tag=\"004\">\n"));
         assertThat(actual.getRecordParts().get(10).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(11).getContent(), is("     <subfield code=\"r\">n</subfield>\n"));
+        assertThat(actual.getRecordParts().get(11).getContent(), is("    <subfield code=\"r\">n</subfield>\n"));
         assertThat(actual.getRecordParts().get(11).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(12).getContent(), is("     <subfield code=\"a\">e</subfield>\n"));
+        assertThat(actual.getRecordParts().get(12).getContent(), is("    <subfield code=\"a\">e</subfield>\n"));
         assertThat(actual.getRecordParts().get(12).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(13).getContent(), is("   </datafield>\n"));
+        assertThat(actual.getRecordParts().get(13).getContent(), is("  </datafield>\n"));
         assertThat(actual.getRecordParts().get(13).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(14).getContent(), is("   <datafield ind1=\"0\" ind2=\"0\" tag=\"504\">\n"));
+        assertThat(actual.getRecordParts().get(14).getContent(), is("  <datafield ind1=\"0\" ind2=\"0\" tag=\"504\">\n"));
         assertThat(actual.getRecordParts().get(14).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(15).getContent(), is("     <subfield code=\"&amp;\">1</subfield>\n"));
+        assertThat(actual.getRecordParts().get(15).getContent(), is("    <subfield code=\"&amp;\">1</subfield>\n"));
         assertThat(actual.getRecordParts().get(15).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(16).getContent(), is("-    <subfield code=\"a\">Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
+        assertThat(actual.getRecordParts().get(16).getContent(), is("    <subfield code=\"a\">Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
         assertThat(actual.getRecordParts().get(16).getType(), is("right"));
 
-        assertThat(actual.getRecordParts().get(17).getContent(), is("+    <subfield code=\"a\">Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
+        assertThat(actual.getRecordParts().get(17).getContent(), is("    <subfield code=\"a\">Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
         assertThat(actual.getRecordParts().get(17).getType(), is("left"));
 
-        assertThat(actual.getRecordParts().get(18).getContent(), is("   </datafield>\n"));
+        assertThat(actual.getRecordParts().get(18).getContent(), is("  </datafield>\n"));
         assertThat(actual.getRecordParts().get(18).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(19).getContent(), is("   <datafield ind1=\"0\" ind2=\"0\" tag=\"996\">\n"));
+        assertThat(actual.getRecordParts().get(19).getContent(), is("  <datafield ind1=\"0\" ind2=\"0\" tag=\"996\">\n"));
         assertThat(actual.getRecordParts().get(19).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(20).getContent(), is("     <subfield code=\"a\">DBC</subfield>\n"));
+        assertThat(actual.getRecordParts().get(20).getContent(), is("    <subfield code=\"a\">DBC</subfield>\n"));
         assertThat(actual.getRecordParts().get(20).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(21).getContent(), is("   </datafield>\n"));
+        assertThat(actual.getRecordParts().get(21).getContent(), is("  </datafield>\n"));
         assertThat(actual.getRecordParts().get(21).getType(), is("both"));
 
-        assertThat(actual.getRecordParts().get(22).getContent(), is(" </record>\n"));
+        assertThat(actual.getRecordParts().get(22).getContent(), is("</record>\n"));
         assertThat(actual.getRecordParts().get(22).getType(), is("both"));
     }
 
