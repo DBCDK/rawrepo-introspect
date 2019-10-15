@@ -1,6 +1,6 @@
 #!groovy
 
-def workerNode = "devel8"
+def workerNode = "devel9"
 
 pipeline {
     agent { label workerNode }
@@ -11,6 +11,8 @@ pipeline {
 
     triggers {
         pollSCM("H/03 * * * *")
+        upstream(upstreamProjects: "Docker-payara5-bump-trigger",
+                threshold: hudson.model.Result.SUCCESS)
     }
 
     options {
