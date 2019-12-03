@@ -5,7 +5,7 @@ LABEL INSTANCE="Name of the instance of this introspect. Typically the name of t
 LABEL MOREINFO_DANBIB_URL="Database url to the moreinfo danbib database (mandatory)"
 LABEL MOREINFO_UPDATE_URL="Database url to the moreinfo update database (mandatory)"
 LABEL MOREINFO_BASIS_URL="Database url to the moreinfo basis database (mandatory)"
-LABEL HOLDING_ITEMS_URL="The holdings items database url"
+LABEL HOLDINGS_ITEMS_URL="The holdings items database url"
 LABEL HOLDINGS_ITEMS_INTROSPECT_URL="The holdings items introspect url"
 
 USER root
