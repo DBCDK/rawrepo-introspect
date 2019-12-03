@@ -75,6 +75,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.readCookie = this.readCookie.bind(this);
 
         RawrepoIntrospectGUI.getExpirationDate = RawrepoIntrospectGUI.getExpirationDate.bind(this);
+        RawrepoIntrospectGUI.formatTimestamp = RawrepoIntrospectGUI.formatTimestamp.bind(this);
 
         this.getURLParams = this.getURLParams.bind(this);
         this.setURLParams = this.setURLParams.bind(this);
@@ -518,9 +519,9 @@ class RawrepoIntrospectGUI extends React.Component {
 
     onCopyTimestampToClipboard() {
         if (this.state.version[0] === 'current') {
-            copy(this.state.history[0].modified);
+            copy(RawrepoIntrospectGUI.formatTimestamp(this.state.history[0].modified));
         } else {
-            copy(this.state.version[0]);
+            copy(RawrepoIntrospectGUI.formatTimestamp(this.state.version[0]));
         }
     }
 
@@ -559,6 +560,28 @@ class RawrepoIntrospectGUI extends React.Component {
         }
 
         window.history.replaceState(null, null, URL + '?' + queryString.stringify(urlParams));
+    }
+
+    static formatTimestamp(date) {
+        // The date is in gmt+0 timezone, but we need it in local/Danish timezone, plus we need the milliseconds as well
+        let dateValue = new Date(date);
+
+        // Used for making date and time segments two chars long.
+        let leftPad2 = function (val) {
+            return ("00" + val).slice(-2)
+        };
+
+        let leftPad3 = function (val) {
+            return ("000" + val).slice(-3)
+        };
+
+        return dateValue.getFullYear() +
+            '-' + leftPad2(dateValue.getMonth() + 1) +
+            '-' + leftPad2(dateValue.getDate()) +
+            ' ' + leftPad2(dateValue.getHours()) +
+            ':' + leftPad2(dateValue.getMinutes()) +
+            ':' + leftPad2(dateValue.getSeconds()) +
+            '.' + leftPad3(dateValue.getMilliseconds());
     }
 
     // Constructs 'expires' message for cookies
