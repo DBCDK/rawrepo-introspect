@@ -11,17 +11,16 @@ class RawrepoIntrospectRecordModeSelector extends React.Component {
     constructor(props) {
         super(props);
 
-        this.disableButton = this.disableButton.bind(this);
+        this.historyIsCurrent = this.historyIsCurrent.bind(this);
+        this.recordIsLoaded = this.recordIsLoaded.bind(this);
     }
 
-    disableButton() {
-        // If no record is loaded disable buttons
-        if (!this.props.recordLoaded) {
-            return true;
-        } else {
-            // If record is loaded and version contains exactly one value and that value is 'current and enable the buttons
-            return !(this.props.version.length === 1 && this.props.version[0] === 'current');
-        }
+    historyIsCurrent() {
+        return this.props.version.length === 1 && this.props.version[0] === 'current';
+    }
+
+    recordIsLoaded() {
+        return this.props.recordLoaded;
     }
 
     render() {
@@ -31,17 +30,17 @@ class RawrepoIntrospectRecordModeSelector extends React.Component {
             <div>
                 <ButtonGroup>
                     <Button onClick={this.props.onChangeMode}
-                            bsStyle={mode === 'raw' ? 'primary' : 'default'}
+                            bsStyle={mode === 'raw' || !this.historyIsCurrent() ? 'primary' : 'default'}
                             value='raw'
-                            disabled={this.disableButton()}>Raw</Button>
+                            disabled={!this.recordIsLoaded()}>Raw</Button>
                     <Button onClick={this.props.onChangeMode}
-                            bsStyle={mode === 'merged' ? 'primary' : 'default'}
+                            bsStyle={mode === 'merged' && this.historyIsCurrent() ? 'primary' : 'default'}
                             value='merged'
-                            disabled={this.disableButton()}>Merged</Button>
+                            disabled={!this.recordIsLoaded() || !this.historyIsCurrent()}>Merged</Button>
                     <Button onClick={this.props.onChangeMode}
-                            bsStyle={mode === 'expanded' ? 'primary' : 'default'}
+                            bsStyle={mode === 'expanded' && this.historyIsCurrent() ? 'primary' : 'default'}
                             value='expanded'
-                            disabled={this.disableButton()}>Expanded</Button>
+                            disabled={!this.recordIsLoaded() || !this.historyIsCurrent()}>Expanded</Button>
                 </ButtonGroup>
             </div>
         )
