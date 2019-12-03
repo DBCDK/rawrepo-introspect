@@ -67,7 +67,8 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getAttachmentInfoBasis = this.getAttachmentInfoBasis.bind(this);
         this.getHoldingsItems = this.getHoldingsItems.bind(this);
 
-        this.onCopyToClipboard = this.onCopyToClipboard.bind(this);
+        this.onCopyRecordToClipboard = this.onCopyRecordToClipboard.bind(this);
+        this.onCopyTimestampToClipboard = this.onCopyTimestampToClipboard.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
         this.addToCookie = this.addToCookie.bind(this);
@@ -505,7 +506,7 @@ class RawrepoIntrospectGUI extends React.Component {
             });
     }
 
-    onCopyToClipboard(e) {
+    onCopyRecordToClipboard(e) {
         let text = '';
         this.state.recordParts.map((item, key) => {
                 text = text + (item.content);
@@ -513,6 +514,14 @@ class RawrepoIntrospectGUI extends React.Component {
         );
 
         copy(text);
+    }
+
+    onCopyTimestampToClipboard() {
+        if (this.state.version[0] === 'current') {
+            copy(this.state.history[0].modified);
+        } else {
+            copy(this.state.version[0]);
+        }
     }
 
     getURLParams() {
@@ -617,7 +626,8 @@ class RawrepoIntrospectGUI extends React.Component {
                                     onChangeFormat={this.onChangeFormat}
                                     onChangeMode={this.onChangeMode}
                                     onChangeVersion={this.onChangeVersion}
-                                    onCopyToClipboard={this.onCopyToClipboard}
+                                    onCopyRecordToClipboard={this.onCopyRecordToClipboard}
+                                    onCopyTimestampToClipboard={this.onCopyTimestampToClipboard}
                                     recordLoaded={this.state.recordLoaded}
                                     history={this.state.history}
                                     version={this.state.version}/>
