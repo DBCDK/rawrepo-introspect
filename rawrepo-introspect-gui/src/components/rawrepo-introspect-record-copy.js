@@ -13,22 +13,18 @@ class RawrepoIntrospectRecordCopy extends React.Component {
     }
 
     render() {
-        if (navigator.clipboard) {
-            return (
-                <div>
-                    <div id='format-div'>
-                        <ButtonGroup id='button-tool-bar-format'>
-                            <Button onClick={this.props.onCopyToClipboard}
-                                    bsStyle='default'
-                                    id='button-copy'
-                                    disabled={!this.props.recordLoaded}>Kopiér post</Button>
-                        </ButtonGroup>
-                    </div>
+        return (
+            <div>
+                <div id='format-div'>
+                    <ButtonGroup id='button-tool-bar-format'>
+                        <Button onClick={this.props.onCopyToClipboard}
+                                bsStyle='default'
+                                id='button-copy'
+                                disabled={!this.props.recordLoaded}>Kopiér post</Button>
+                    </ButtonGroup>
                 </div>
-            )
-        } else {
-            return <div/>
-        }
+            </div>
+        )
     }
 }
 

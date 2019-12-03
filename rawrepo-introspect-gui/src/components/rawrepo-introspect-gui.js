@@ -10,6 +10,7 @@ import RawrepoIntrospectRelationsView from './rawrepo-introspect-relations-view'
 import RawrepoIntrospectRecordView from "./rawrepo-introspect-record-view";
 import RawrepoIntrospectAttachmentView from "./rawrepo-introspect-attachment-view";
 import RawrepoIntrospectHoldingsView from "./rawrepo-introspect-holdings-view";
+import copy from 'copy-to-clipboard';
 
 const request = require('superagent');
 const queryString = require('querystring');
@@ -511,7 +512,7 @@ class RawrepoIntrospectGUI extends React.Component {
             }
         );
 
-        navigator.clipboard.writeText(text);
+        copy(text);
     }
 
     getURLParams() {
