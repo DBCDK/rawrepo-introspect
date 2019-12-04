@@ -6,7 +6,7 @@
 import React from "react";
 import {Button, ButtonGroup} from "react-bootstrap";
 
-class RawrepoIntrospectRecordCopy extends React.Component {
+class RawrepoIntrospectTimestampCopy extends React.Component {
 
     constructor(props) {
         super(props);
@@ -20,7 +20,7 @@ class RawrepoIntrospectRecordCopy extends React.Component {
                         <Button onClick={this.props.onCopyToClipboard}
                                 bsStyle='default'
                                 id='button-copy'
-                                disabled={!this.props.recordLoaded}>Kopiér post</Button>
+                                disabled={!this.props.recordLoaded}>Kopiér tidsstempel</Button>
                     </ButtonGroup>
                 </div>
             </div>
@@ -28,4 +28,4 @@ class RawrepoIntrospectRecordCopy extends React.Component {
     }
 }
 
-export default RawrepoIntrospectRecordCopy;
+export default RawrepoIntrospectTimestampCopy;
