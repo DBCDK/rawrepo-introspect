@@ -104,6 +104,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                                    id='diff-enrichment-checkbox'
                                    checked={this.props.diffEnrichment}
                                    onChange={this.props.onChangeDiffEnrichment}
+                                   disabled={!(this.props.recordLoaded && ['merged', 'expanded'].indexOf(this.props.mode) > -1)}
                             />
                         </div>
                         <div style={{marginLeft: '25px', float: 'left'}}>
