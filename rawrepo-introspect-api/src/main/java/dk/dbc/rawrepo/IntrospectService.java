@@ -86,7 +86,8 @@ public class IntrospectService {
     public Response getRecord(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                               @PathParam("agencyId") int agencyId,
                               @DefaultValue("LINE") @QueryParam("format") String format,
-                              @DefaultValue("MERGED") @QueryParam("mode") String mode) {
+                              @DefaultValue("MERGED") @QueryParam("mode") String mode,
+                              @DefaultValue("false") @QueryParam("diffEnrichment") boolean diffEnrichment) {
         String res;
 
         try {
@@ -103,14 +104,24 @@ public class IntrospectService {
             params.withMode(RecordServiceConnector.Params.Mode.valueOf(mode.toUpperCase()));
             params.withAllowDeleted(true);
 
+            RecordDTO recordDTO;
             final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
 
-            RecordDTO recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format);
+            if (Arrays.asList("MERGED", "EXPANDED").contains(mode.toUpperCase()) && diffEnrichment) {
+                final RecordServiceConnector.Params enrichmentParams = new RecordServiceConnector.Params();
+                enrichmentParams.withMode(RecordServiceConnector.Params.Mode.RAW);
+                params.withAllowDeleted(true);
+
+                final RecordData enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
+                recordDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format);
+            } else {
+                recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format);
+            }
 
             res = mapper.marshall(recordDTO);
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
-        } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException | JSONBException e) {
+        } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
         }

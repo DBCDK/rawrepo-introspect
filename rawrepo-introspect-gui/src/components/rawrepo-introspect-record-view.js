@@ -88,12 +88,24 @@ class RawrepoIntrospectRecordView extends React.Component {
                             className='control-label'
                             style={{marginTop: '5px', float: 'left'}}
                             htmlFor='record-format-selector'>Visningsformat</label>
-                        <div style={{marginLeft: '10px', float: 'left'}}>
+                        <div style={{marginLeft: '10px', float: 'left', width: '200px'}}>
                             <RawrepoIntrospectRecordFormatSelector
                                 id='record-format-selector'
                                 format={this.props.format}
                                 onChangeFormat={this.props.onChangeFormat}
                                 recordLoaded={this.props.recordLoaded}/>
+                        </div>
+                        <label
+                            className='control-label'
+                            style={{marginTop: '5px', float: 'left'}}
+                            htmlFor='diff-enrichment-checkbox'>Markér påhængspost</label>
+                        <div style={{marginTop: '5px', marginLeft: '5px', float: 'left'}}>
+                            <input type="checkbox"
+                                   id='diff-enrichment-checkbox'
+                                   checked={this.props.diffEnrichment}
+                                   onChange={this.props.onChangeDiffEnrichment}
+                                   disabled={!(this.props.recordLoaded && ['merged', 'expanded'].indexOf(this.props.mode) > -1)}
+                            />
                         </div>
                         <div style={{marginLeft: '25px', float: 'left'}}>
                             <RawrepoIntrospectRecordCopy

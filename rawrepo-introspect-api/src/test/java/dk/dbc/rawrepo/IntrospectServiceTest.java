@@ -60,7 +60,7 @@ public class IntrospectServiceTest {
 
         when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordData);
 
-        final Response response = service.getRecord("22058037", 191919, "LINE", "EXPANDED");
+        final Response response = service.getRecord("22058037", 191919, "LINE", "EXPANDED", false);
 
         assertThat(response, is(notNullValue()));
         assertThat(response.getStatus(), is(200));

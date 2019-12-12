@@ -40,7 +40,8 @@ class RawrepoIntrospectGUI extends React.Component {
             attachmentInfoBasis: [],
             instance: '',
             holdingsItemsIntrospectUrl: '',
-            holdingsItems: []
+            holdingsItems: [],
+            diffEnrichment: false
         };
 
         this.handleSelect = this.handleSelect.bind(this);
@@ -58,6 +59,7 @@ class RawrepoIntrospectGUI extends React.Component {
         this.getRecordByMode = this.getRecordByMode.bind(this);
         this.getRecordByFormat = this.getRecordByFormat.bind(this);
         this.getRecordByVersion = this.getRecordByVersion.bind(this);
+        this.getRecordByDiffEnrichment = this.getRecordByDiffEnrichment.bind(this);
         this.getRecordByIdAndVersion = this.getRecordByIdAndVersion.bind(this);
         this.getHistory = this.getHistory.bind(this);
         this.getRelations = this.getRelations.bind(this);
@@ -69,6 +71,8 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.onCopyRecordToClipboard = this.onCopyRecordToClipboard.bind(this);
         this.onCopyTimestampToClipboard = this.onCopyTimestampToClipboard.bind(this);
+
+        this.onChangeDiffEnrichment = this.onChangeDiffEnrichment.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
         this.addToCookie = this.addToCookie.bind(this);
@@ -111,6 +115,13 @@ class RawrepoIntrospectGUI extends React.Component {
                 format = this.state.format;
             }
 
+            let diffEnrichment = queryParams.diffEnrichment;
+            if (diffEnrichment !== undefined) {
+                this.setState({diffEnrichment: 'true' === diffEnrichment})
+            } else {
+                diffEnrichment = this.state.diffEnrichment;
+            }
+
             let version = queryParams.version;
             if (version !== undefined) {
                 this.setState({version: version})
@@ -121,7 +132,7 @@ class RawrepoIntrospectGUI extends React.Component {
             if (bibliographicRecordId !== undefined && agencyId !== undefined) {
                 this.getAgencies(bibliographicRecordId);
                 if (version !== undefined) {
-                    this.getRecordByIdAndVersion(bibliographicRecordId, agencyId, mode, format, version)
+                    this.getRecordByIdAndVersion(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version)
                 } else {
                     this.getRecordById(bibliographicRecordId, agencyId);
                 }
@@ -178,7 +189,8 @@ class RawrepoIntrospectGUI extends React.Component {
             attachmentInfoDanbib: [],
             attachmentInfoUpdate: [],
             attachmentInfoBasis: [],
-            holdingsItems: []
+            holdingsItems: [],
+            diffEnrichment: false
         });
 
         // Reset url params
@@ -212,6 +224,12 @@ class RawrepoIntrospectGUI extends React.Component {
         this.setState({format: format});
 
         this.getRecordByFormat(format);
+    }
+
+    onChangeDiffEnrichment() {
+        this.setState({diffEnrichment: !this.state.diffEnrichment});
+
+        this.getRecordByDiffEnrichment(!this.state.diffEnrichment);
     }
 
     onChangeVersion(event) {
@@ -280,13 +298,14 @@ class RawrepoIntrospectGUI extends React.Component {
         const agencyId = this.state.agencyId;
         const format = this.state.format;
         const version = this.state.version;
+        const diffEnrichment = this.state.diffEnrichment;
 
         const urlParams = this.getURLParams();
         urlParams['mode'] = mode;
 
         this.setURLParams(urlParams);
 
-        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version);
     }
 
     getRecordByFormat(format) {
@@ -294,13 +313,14 @@ class RawrepoIntrospectGUI extends React.Component {
         const agencyId = this.state.agencyId;
         const mode = this.state.mode;
         const version = this.state.version;
+        const diffEnrichment = this.state.diffEnrichment;
 
         const urlParams = this.getURLParams();
         urlParams['format'] = format;
 
         this.setURLParams(urlParams);
 
-        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version);
     }
 
     getRecordByVersion(version) {
@@ -308,18 +328,20 @@ class RawrepoIntrospectGUI extends React.Component {
         const agencyId = this.state.agencyId;
         const mode = this.state.mode;
         const format = this.state.format;
+        const diffEnrichment = this.state.diffEnrichment;
 
         const urlParams = this.getURLParams();
         urlParams['version'] = version;
 
         this.setURLParams(urlParams);
 
-        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version);
     }
 
     getRecordById(bibliographicRecordId, agencyId) {
         const mode = this.state.mode;
         const format = this.state.format;
+        const diffEnrichment = this.state.diffEnrichment;
         const version = ['current'];
 
         const urlParams = this.getURLParams();
@@ -330,24 +352,40 @@ class RawrepoIntrospectGUI extends React.Component {
         this.setURLParams(urlParams);
 
         this.addToCookie(bibliographicRecordId);
-        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version);
         this.getHistory(bibliographicRecordId, agencyId);
     }
 
-    getRecordByIdAndVersion(bibliographicRecordId, agencyId, mode, format, version) {
+    getRecordByIdAndVersion(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version) {
         const urlParams = this.getURLParams();
         urlParams['bibliographicRecordId'] = bibliographicRecordId;
         urlParams['agencyId'] = agencyId;
         urlParams['version'] = version;
+        urlParams['diffEnrichment'] = diffEnrichment;
         this.setURLParams(urlParams);
 
         this.addToCookie(bibliographicRecordId);
-        this.getRecord(bibliographicRecordId, agencyId, mode, format, version);
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version);
         this.getHistory(bibliographicRecordId, agencyId);
     }
 
-    getRecord(bibliographicRecordId, agencyId, mode, format, version) {
-        const params = {mode: mode, format: format};
+    getRecordByDiffEnrichment(diffEnrichment) {
+        const bibliographicRecordId = this.state.bibliographicRecordId;
+        const agencyId = this.state.agencyId;
+        const mode = this.state.mode;
+        const format = this.state.format;
+        const version = this.state.version;
+
+        const urlParams = this.getURLParams();
+        urlParams['diffEnrichment'] = diffEnrichment;
+
+        this.setURLParams(urlParams);
+
+        this.getRecord(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version);
+    }
+
+    getRecord(bibliographicRecordId, agencyId, mode, format, diffEnrichment, version) {
+        const params = {mode: mode, format: format, diffEnrichment: diffEnrichment};
 
         if (version.length === 0) {
             this.setState({
@@ -651,9 +689,12 @@ class RawrepoIntrospectGUI extends React.Component {
                                     onChangeVersion={this.onChangeVersion}
                                     onCopyRecordToClipboard={this.onCopyRecordToClipboard}
                                     onCopyTimestampToClipboard={this.onCopyTimestampToClipboard}
+                                    onChangeDiffEnrichment={this.onChangeDiffEnrichment}
                                     recordLoaded={this.state.recordLoaded}
                                     history={this.state.history}
-                                    version={this.state.version}/>
+                                    version={this.state.version}
+                                    diffEnrichment={this.state.diffEnrichment}
+                                />
                             </div>
                         </Tab>
                         <Tab eventKey={'relations'} title="Relationer">
