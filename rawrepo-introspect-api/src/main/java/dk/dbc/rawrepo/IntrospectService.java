@@ -110,7 +110,7 @@ public class IntrospectService {
             if (Arrays.asList("MERGED", "EXPANDED").contains(mode.toUpperCase()) && diffEnrichment) {
                 final RecordServiceConnector.Params enrichmentParams = new RecordServiceConnector.Params();
                 enrichmentParams.withMode(RecordServiceConnector.Params.Mode.RAW);
-                params.withAllowDeleted(true);
+                enrichmentParams.withAllowDeleted(true);
 
                 final RecordData enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
                 recordDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format);
