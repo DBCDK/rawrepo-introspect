@@ -22,6 +22,8 @@ class RawrepoIntrospectRecordView extends React.Component {
         };
 
         this.updateDimensions = this.updateDimensions.bind(this);
+        this.checkDiffEnrichment = this.checkDiffEnrichment.bind(this);
+        this.enableDiffEnrichment = this.enableDiffEnrichment.bind(this);
     }
 
     updateDimensions() {
@@ -67,6 +69,14 @@ class RawrepoIntrospectRecordView extends React.Component {
         return toolTipText;
     }
 
+    checkDiffEnrichment() {
+        return this.props.diffEnrichment && this.props.version.length === 1 && this.props.version[0] === 'current';
+    }
+
+    enableDiffEnrichment() {
+        return this.props.recordLoaded && ['merged', 'expanded'].indexOf(this.props.mode) > -1 && this.props.version.length === 1 && this.props.version[0] === 'current';
+    }
+
     render() {
         return (
             <div>
@@ -102,9 +112,9 @@ class RawrepoIntrospectRecordView extends React.Component {
                         <div style={{marginTop: '5px', marginLeft: '5px', float: 'left'}}>
                             <input type="checkbox"
                                    id='diff-enrichment-checkbox'
-                                   checked={this.props.diffEnrichment}
+                                   checked={this.checkDiffEnrichment()}
                                    onChange={this.props.onChangeDiffEnrichment}
-                                   disabled={!(this.props.recordLoaded && ['merged', 'expanded'].indexOf(this.props.mode) > -1)}
+                                   disabled={!this.enableDiffEnrichment()}
                             />
                         </div>
                         <div style={{marginLeft: '25px', float: 'left'}}>
