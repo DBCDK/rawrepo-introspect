@@ -253,7 +253,14 @@ class RawrepoIntrospectGUI extends React.Component {
                 const agencyIdList = res.body;
 
                 if (agencyIdList.length > 0) {
-                    const agencyId = agencyIdList[0];
+                    let agencyId;
+
+                    if (agencyIdList.indexOf(191919) > -1) {
+                        agencyId = 191919;
+                    } else {
+                        agencyId = agencyIdList[0];
+                    }
+
                     this.setState({agencyIdList: agencyIdList, agencyId: agencyId, relations: []});
                     this.getRecordById(bibliographicRecordId, agencyId)
                 } else {
