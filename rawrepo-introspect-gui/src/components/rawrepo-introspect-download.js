@@ -15,11 +15,11 @@ class RawrepoIntrospectDownload extends React.Component {
     render() {
         return (
             <div>
-                <div id='format-div'>
-                    <ButtonGroup id='button-tool-bar-format'>
+                <div id='download-div'>
+                    <ButtonGroup id='button-tool-bar-download'>
                         <Button onClick={this.props.onDownload}
                                 bsStyle='default'
-                                id='button-copy'
+                                id='button-download'
                                 disabled={!this.props.recordLoaded}>Download</Button>
                     </ButtonGroup>
                 </div>
