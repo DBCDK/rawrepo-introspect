@@ -5,6 +5,7 @@
     "copy-to-clipboard": "^3.2.0",
     "d3": "^5.14.2",
     "dagre-d3": "^0.6.4",
+    "js-file-download": "^0.4.11",
     "popper": "^1.0.1",
     "query-string": "^6.9.0",
     "react": "^16.12.0",

@@ -11,6 +11,7 @@ import RawrepoIntrospectRecordView from "./rawrepo-introspect-record-view";
 import RawrepoIntrospectAttachmentView from "./rawrepo-introspect-attachment-view";
 import RawrepoIntrospectHoldingsView from "./rawrepo-introspect-holdings-view";
 import copy from 'copy-to-clipboard';
+import fileDownload from "js-file-download";
 
 const request = require('superagent');
 const queryString = require('querystring');
@@ -71,6 +72,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.onCopyRecordToClipboard = this.onCopyRecordToClipboard.bind(this);
         this.onCopyTimestampToClipboard = this.onCopyTimestampToClipboard.bind(this);
+        this.onDownload = this.onDownload.bind(this);
 
         this.onChangeDiffEnrichment = this.onChangeDiffEnrichment.bind(this);
 
@@ -570,6 +572,38 @@ class RawrepoIntrospectGUI extends React.Component {
         }
     }
 
+    onDownload() {
+        let text = '';
+        this.state.recordParts.map((item, key) => {
+                if (item.type === 'right') {
+                    text += '-' + (item.content);
+                } else if (item.type === 'left') {
+                    text += '+' + (item.content);
+                } else {
+                    text = text + (item.content);
+                }
+            }
+        );
+
+        let fileName = this.state.bibliographicRecordId + '_' + this.state.agencyId;
+
+        if (this.state.version.length === 1) {
+            if (this.state.version[0] !== 'current') {
+                fileName += '_' + this.state.version[0];
+            }
+        } else if (this.state.version.length === 2) {
+            fileName += '_diff_' + this.state.version[0] + '_' + this.state.version[1]
+        }
+
+        if (this.state.format === 'line') {
+            fileName += '.txt'
+        } else {
+            fileName += '.xml'
+        }
+
+        fileDownload(text, fileName);
+    }
+
     getURLParams() {
         const windowLocation = window.location.search;
         const urlParamsList = windowLocation.substring(1).split('&');
@@ -696,6 +730,7 @@ class RawrepoIntrospectGUI extends React.Component {
                                     onChangeVersion={this.onChangeVersion}
                                     onCopyRecordToClipboard={this.onCopyRecordToClipboard}
                                     onCopyTimestampToClipboard={this.onCopyTimestampToClipboard}
+                                    onDownload={this.onDownload}
                                     onChangeDiffEnrichment={this.onChangeDiffEnrichment}
                                     recordLoaded={this.state.recordLoaded}
                                     history={this.state.history}
