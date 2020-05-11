@@ -20,6 +20,7 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,16 +36,16 @@ public class RecordDataTransformer {
 
     public static final List<String> SUPPORTED_FORMATS = Arrays.asList(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML);
 
-    static String formatRecordDataToLine(RecordData recordData, String format) throws MarcWriterException, MarcReaderException {
+    static String formatRecordDataToLine(RecordData recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
         final MarcRecord record = reader.read();
 
         String rawLines;
 
         if (FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
-            rawLines = new String(STD_HENT_DM2_LINE_FORMAT_WRITER.write(record, StandardCharsets.UTF_8));
+            rawLines = new String(STD_HENT_DM2_LINE_FORMAT_WRITER.write(record, charset));
         } else {
-            rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, StandardCharsets.UTF_8));
+            rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, charset));
         }
 
         // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
@@ -59,8 +60,8 @@ public class RecordDataTransformer {
         return rawLines;
     }
 
-    static String formatRecordDataToXML(RecordData recordData) throws TransformerException {
-        final String recordContent = new String(recordData.getContent(), StandardCharsets.UTF_8);
+    static String formatRecordDataToXML(RecordData recordData, Charset charset) throws TransformerException {
+        final String recordContent = new String(recordData.getContent(), charset);
         final Source xmlInput = new StreamSource(new StringReader(recordContent));
         final StringWriter stringWriter = new StringWriter();
         final StreamResult xmlOutput = new StreamResult(stringWriter);
@@ -73,15 +74,15 @@ public class RecordDataTransformer {
         return xmlOutput.getWriter().toString();
     }
 
-    public static RecordDTO recordDataToDTO(RecordData recordData, String format) throws TransformerException, MarcReaderException, MarcWriterException {
+    public static RecordDTO recordDataToDTO(RecordData recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException {
         final RecordDTO recordDTO = new RecordDTO();
         final RecordPartDTO part = new RecordPartDTO();
         final List<RecordPartDTO> parts = new ArrayList<>();
 
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
-            part.setContent(formatRecordDataToLine(recordData, format));
+            part.setContent(formatRecordDataToLine(recordData, format, charset));
         } else {
-            part.setContent(formatRecordDataToXML(recordData));
+            part.setContent(formatRecordDataToXML(recordData, charset));
         }
 
         if (recordData.isDeleted()) {
@@ -95,7 +96,7 @@ public class RecordDataTransformer {
         return recordDTO;
     }
 
-    public static RecordDTO recordDiffToDTO(RecordData left, RecordData right, String format) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
+    public static RecordDTO recordDiffToDTO(RecordData left, RecordData right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
         final RecordDTO result = new RecordDTO();
 
         final ExternalToolDiffGenerator.Kind kind = FORMAT_XML.equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.XML : ExternalToolDiffGenerator.Kind.PLAINTEXT;
@@ -107,11 +108,11 @@ public class RecordDataTransformer {
 
         String current, next;
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
-            next = formatRecordDataToLine(left, format);
-            current = formatRecordDataToLine(right, format);
+            next = formatRecordDataToLine(left, format, charset);
+            current = formatRecordDataToLine(right, format, charset);
         } else {
-            next = formatRecordDataToXML(left);
-            current = formatRecordDataToXML(right);
+            next = formatRecordDataToXML(left, charset);
+            current = formatRecordDataToXML(right, charset);
         }
 
         String diff = externalToolDiffGenerator.getDiff(kind, current.getBytes(), next.getBytes());
@@ -120,7 +121,7 @@ public class RecordDataTransformer {
 
         // No diff, so just use the left record
         if ("".equals(diff)) {
-            return recordDataToDTO(left, format);
+            return recordDataToDTO(left, format, charset);
         }
 
         for (String line : diff.split("\n")) {

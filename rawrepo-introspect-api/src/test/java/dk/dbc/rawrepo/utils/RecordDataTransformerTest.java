@@ -4,6 +4,8 @@ import dk.dbc.rawrepo.RecordData;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -38,7 +40,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *a DBC\n$\n";
 
-        assertThat(RecordDataTransformer.formatRecordDataToLine(recordData, RecordDataTransformer.FORMAT_LINE), is(content));
+        assertThat(RecordDataTransformer.formatRecordDataToLine(recordData, RecordDataTransformer.FORMAT_LINE, StandardCharsets.UTF_8), is(content));
     }
 
     @Test
@@ -58,7 +60,8 @@ public class RecordDataTransformerTest {
                 "@0003\n" +
                 "@0004\n";
 
-        assertThat(RecordDataTransformer.formatRecordDataToLine(recordData, RecordDataTransformer.FORMAT_STDHENTDM2), is(content));
+        // The charset should be ISO_8859_1 but the test will look weird then
+        assertThat(RecordDataTransformer.formatRecordDataToLine(recordData, RecordDataTransformer.FORMAT_STDHENTDM2, StandardCharsets.UTF_8), is(content));
     }
 
     @Test
@@ -87,7 +90,7 @@ public class RecordDataTransformerTest {
                 "    </datafield>\n" +
                 "</record>\n";
 
-        assertThat(RecordDataTransformer.formatRecordDataToXML(recordData), is(content));
+        assertThat(RecordDataTransformer.formatRecordDataToXML(recordData, StandardCharsets.UTF_8), is(content));
     }
 
 
@@ -102,7 +105,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *a DBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "LINE");
+        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "LINE", StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(actual.getRecordParts().get(0).getContent(), is(content));
@@ -121,7 +124,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *a DBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "LINE");
+        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "LINE", StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(actual.getRecordParts().get(0).getContent(), is(content));
@@ -154,7 +157,7 @@ public class RecordDataTransformerTest {
                 "    </datafield>\n" +
                 "</record>\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "XML");
+        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "XML", StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(actual.getRecordParts().get(0).getContent(), is(content));
@@ -168,7 +171,7 @@ public class RecordDataTransformerTest {
 
         ExternalToolDiffGenerator.path = "script/";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "LINE");
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "LINE", StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(10));
 
@@ -210,7 +213,7 @@ public class RecordDataTransformerTest {
 
         ExternalToolDiffGenerator.path = "script/";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "XML");
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "XML", StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(23));
 
@@ -298,7 +301,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *a DBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "LINE");
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "LINE", StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(actual.getRecordParts().get(0).getContent(), is(content));

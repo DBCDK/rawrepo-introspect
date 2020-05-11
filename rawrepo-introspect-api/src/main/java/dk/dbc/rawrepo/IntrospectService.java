@@ -35,6 +35,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.xml.transform.TransformerException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ import java.util.List;
 import java.util.Set;
 
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.SUPPORTED_FORMATS;
 
 @Interceptors(StopwatchInterceptor.class)
@@ -109,6 +112,7 @@ public class IntrospectService {
 
             RecordDTO recordDTO;
             final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
+            final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
             if (Arrays.asList("MERGED", "EXPANDED").contains(mode.toUpperCase()) && diffEnrichment) {
                 final RecordServiceConnector.Params enrichmentParams = new RecordServiceConnector.Params();
@@ -116,9 +120,9 @@ public class IntrospectService {
                 enrichmentParams.withAllowDeleted(true);
 
                 final RecordData enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
-                recordDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format);
+                recordDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format, charset);
             } else {
-                recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format);
+                recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
             }
 
             res = mapper.marshall(recordDTO);
@@ -166,8 +170,9 @@ public class IntrospectService {
             }
 
             final RecordData recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
+            final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
-            RecordDTO recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format);
+            RecordDTO recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
 
             res = mapper.marshall(recordDTO);
 
@@ -189,6 +194,10 @@ public class IntrospectService {
 
         try {
             String[] versionList = versions.split("\\|");
+
+            if (!SUPPORTED_FORMATS.contains(format.toUpperCase())) {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
 
             if (versionList.length != 2) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
@@ -216,7 +225,9 @@ public class IntrospectService {
                 recordData2 = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, version2);
             }
 
-            RecordDTO recordDTO = RecordDataTransformer.recordDiffToDTO(recordData1, recordData2, format);
+            final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
+
+            RecordDTO recordDTO = RecordDataTransformer.recordDiffToDTO(recordData1, recordData2, format, charset);
 
             res = mapper.marshall(recordDTO);
 
