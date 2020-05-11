@@ -74,6 +74,8 @@ class RawrepoIntrospectGUI extends React.Component {
         this.onCopyTimestampToClipboard = this.onCopyTimestampToClipboard.bind(this);
         this.onDownload = this.onDownload.bind(this);
 
+        this.fileNameFriendlyTimestamp = this.fileNameFriendlyTimestamp.bind(this);
+
         this.onChangeDiffEnrichment = this.onChangeDiffEnrichment.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
@@ -588,20 +590,34 @@ class RawrepoIntrospectGUI extends React.Component {
         let fileName = this.state.bibliographicRecordId + '_' + this.state.agencyId;
 
         if (this.state.version.length === 1) {
-            if (this.state.version[0] !== 'current') {
-                fileName += '_' + this.state.version[0];
+            if (this.state.version[0] === 'current') {
+                fileName += '_' + this.fileNameFriendlyTimestamp(this.state.history[0].modified)
+            } else {
+                fileName += '_' + this.fileNameFriendlyTimestamp(this.state.version[0])
             }
         } else if (this.state.version.length === 2) {
-            fileName += '_diff_' + this.state.version[0] + '_' + this.state.version[1]
+            fileName += '_diff_' + this.fileNameFriendlyTimestamp(this.state.version[0]) + '_' + this.fileNameFriendlyTimestamp(this.state.version[1]);
         }
 
-        if (this.state.format === 'line') {
-            fileName += '.txt'
-        } else {
+        if (this.state.format === 'xml') {
             fileName += '.xml'
+        } else {
+            fileName += '.txt'
         }
 
         fileDownload(text, fileName);
+    }
+
+    fileNameFriendlyTimestamp(timestamp) {
+        let res = RawrepoIntrospectGUI.formatTimestamp(timestamp)
+
+        res = res.replace(':', '_');
+        res = res.replace(':', '_');
+        res = res.replace(' ', '_');
+        res = res.replace('.', '_');
+        res = res.replace('-', '_');
+
+        return res;
     }
 
     getURLParams() {

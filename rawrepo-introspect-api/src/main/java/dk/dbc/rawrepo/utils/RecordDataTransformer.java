@@ -5,6 +5,7 @@ import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
+import dk.dbc.marc.writer.StdHentDM2LineFormatWriter;
 import dk.dbc.rawrepo.RecordData;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
@@ -21,17 +22,30 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RecordDataTransformer {
-
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
+    private static final DanMarc2LineFormatWriter STD_HENT_DM2_LINE_FORMAT_WRITER = new StdHentDM2LineFormatWriter();
 
-    static String formatRecordDataToLine(RecordData recordData) throws MarcWriterException, MarcReaderException {
+    public static final String FORMAT_XML = "XML";
+    public static final String FORMAT_LINE = "LINE";
+    public static final String FORMAT_STDHENTDM2 = "STDHENTDM2";
+
+    public static final List<String> SUPPORTED_FORMATS = Arrays.asList(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML);
+
+    static String formatRecordDataToLine(RecordData recordData, String format) throws MarcWriterException, MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
         final MarcRecord record = reader.read();
 
-        String rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, StandardCharsets.UTF_8));
+        String rawLines;
+
+        if (FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
+            rawLines = new String(STD_HENT_DM2_LINE_FORMAT_WRITER.write(record, StandardCharsets.UTF_8));
+        } else {
+            rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, StandardCharsets.UTF_8));
+        }
 
         // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
         rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
@@ -64,8 +78,8 @@ public class RecordDataTransformer {
         final RecordPartDTO part = new RecordPartDTO();
         final List<RecordPartDTO> parts = new ArrayList<>();
 
-        if ("LINE".equalsIgnoreCase(format)) {
-            part.setContent(formatRecordDataToLine(recordData));
+        if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
+            part.setContent(formatRecordDataToLine(recordData, format));
         } else {
             part.setContent(formatRecordDataToXML(recordData));
         }
@@ -84,7 +98,7 @@ public class RecordDataTransformer {
     public static RecordDTO recordDiffToDTO(RecordData left, RecordData right, String format) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
         final RecordDTO result = new RecordDTO();
 
-        final ExternalToolDiffGenerator.Kind kind = "LINE".equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.PLAINTEXT : ExternalToolDiffGenerator.Kind.XML;
+        final ExternalToolDiffGenerator.Kind kind = FORMAT_XML.equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.XML : ExternalToolDiffGenerator.Kind.PLAINTEXT;
         final ExternalToolDiffGenerator externalToolDiffGenerator = new ExternalToolDiffGenerator();
 
         // First argument is "current" value and second argument is "next" value
@@ -92,9 +106,9 @@ public class RecordDataTransformer {
         // In order to match this with getDiff the order is reversed so "current" is the earlier record and "next" the is newer record
 
         String current, next;
-        if ("LINE".equalsIgnoreCase(format)) {
-            next = formatRecordDataToLine(left);
-            current = formatRecordDataToLine(right);
+        if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
+            next = formatRecordDataToLine(left, format);
+            current = formatRecordDataToLine(right, format);
         } else {
             next = formatRecordDataToXML(left);
             current = formatRecordDataToXML(right);

@@ -41,6 +41,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.SUPPORTED_FORMATS;
+
 @Interceptors(StopwatchInterceptor.class)
 @Stateless
 @Path("")
@@ -85,14 +88,14 @@ public class IntrospectService {
     @Path("v1/record/{bibliographicRecordId}/{agencyId}")
     public Response getRecord(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                               @PathParam("agencyId") int agencyId,
-                              @DefaultValue("LINE") @QueryParam("format") String format,
+                              @DefaultValue(FORMAT_LINE) @QueryParam("format") String format,
                               @DefaultValue("MERGED") @QueryParam("mode") String mode,
                               @DefaultValue("false") @QueryParam("diffEnrichment") boolean diffEnrichment) {
         String res;
 
         try {
             // Validate input
-            if (!Arrays.asList("LINE", "XML").contains(format.toUpperCase())) {
+            if (!SUPPORTED_FORMATS.contains(format.toUpperCase())) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
@@ -153,12 +156,12 @@ public class IntrospectService {
     public Response getHistoricRecord(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                                       @PathParam("agencyId") int agencyId,
                                       @PathParam("modifiedDate") String modifiedDate,
-                                      @DefaultValue("LINE") @QueryParam("format") String format) {
+                                      @DefaultValue(FORMAT_LINE) @QueryParam("format") String format) {
         String res;
 
         try {
             // Validate input
-            if (!Arrays.asList("LINE", "XML").contains(format.toUpperCase())) {
+            if (!SUPPORTED_FORMATS.contains(format.toUpperCase())) {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
@@ -181,7 +184,7 @@ public class IntrospectService {
     public Response getRecordDiff(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                                   @PathParam("agencyId") int agencyId,
                                   @PathParam("versions") String versions,
-                                  @DefaultValue("LINE") @QueryParam("format") String format) {
+                                  @DefaultValue(FORMAT_LINE) @QueryParam("format") String format) {
         String res;
 
         try {

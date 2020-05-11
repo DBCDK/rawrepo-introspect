@@ -99,7 +99,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                             className='control-label'
                             style={{marginTop: '5px', float: 'left'}}
                             htmlFor='record-format-selector'>Visningsformat</label>
-                        <div style={{marginLeft: '10px', float: 'left', width: '200px'}}>
+                        <div style={{marginLeft: '10px', float: 'left', width: '300px'}}>
                             <RawrepoIntrospectRecordFormatSelector
                                 id='record-format-selector'
                                 format={this.props.format}
