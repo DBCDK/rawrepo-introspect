@@ -38,7 +38,27 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *a DBC\n$\n";
 
-        assertThat(RecordDataTransformer.formatRecordDataToLine(recordData), is(content));
+        assertThat(RecordDataTransformer.formatRecordDataToLine(recordData, RecordDataTransformer.FORMAT_LINE), is(content));
+    }
+
+    @Test
+    public void testFormatRecordDataToStdHentDm2() throws Exception {
+        RecordData recordData = getRecordDataCurrent();
+
+        String content = "@0001\n" +
+                "@0002\n" +
+                "47097886\n" +
+                "001 00 *a 47097886 *b 870970 *c 20190930123826 *d 20190911 *f a\n" +
+                "004 00 *r n *a e\n" +
+                "010 00 *a 47097886\n" +
+                "504 00 *& 1 *a Fra en flodpram på Hudson River i New York i 1950'erne fortæller he\n" +
+                "    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n" +
+                "     en bog\n" +
+                "996 00 *a DBC\n" +
+                "@0003\n" +
+                "@0004\n";
+
+        assertThat(RecordDataTransformer.formatRecordDataToLine(recordData, RecordDataTransformer.FORMAT_STDHENTDM2), is(content));
     }
 
     @Test
