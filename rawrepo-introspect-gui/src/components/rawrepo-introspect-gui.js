@@ -74,8 +74,6 @@ class RawrepoIntrospectGUI extends React.Component {
         this.onCopyTimestampToClipboard = this.onCopyTimestampToClipboard.bind(this);
         this.onDownload = this.onDownload.bind(this);
 
-        this.fileNameFriendlyTimestamp = this.fileNameFriendlyTimestamp.bind(this);
-
         this.onChangeDiffEnrichment = this.onChangeDiffEnrichment.bind(this);
 
         this.clearRecord = this.clearRecord.bind(this);
@@ -84,6 +82,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         RawrepoIntrospectGUI.getExpirationDate = RawrepoIntrospectGUI.getExpirationDate.bind(this);
         RawrepoIntrospectGUI.formatTimestamp = RawrepoIntrospectGUI.formatTimestamp.bind(this);
+        RawrepoIntrospectGUI.formatTimestampFileNameFriendly = RawrepoIntrospectGUI.formatTimestampFileNameFriendly.bind(this);
 
         this.getURLParams = this.getURLParams.bind(this);
         this.setURLParams = this.setURLParams.bind(this);
@@ -591,12 +590,25 @@ class RawrepoIntrospectGUI extends React.Component {
 
         if (this.state.version.length === 1) {
             if (this.state.version[0] === 'current') {
-                fileName += '_' + this.fileNameFriendlyTimestamp(this.state.history[0].modified)
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.history[0].modified)
             } else {
-                fileName += '_' + this.fileNameFriendlyTimestamp(this.state.version[0])
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.version[0])
             }
         } else if (this.state.version.length === 2) {
-            fileName += '_diff_' + this.fileNameFriendlyTimestamp(this.state.version[0]) + '_' + this.fileNameFriendlyTimestamp(this.state.version[1]);
+            fileName += '_diff';
+            if (this.state.version[0] === 'current') {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.history[0].modified)
+            } else {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.version[0])
+            }
+
+            if (this.state.version[1] === 'current') {
+                // If the timestamps are selected in reverse order then the second value can be "current" and if so we
+                // need to use the first value in history instead
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.history[0].modified)
+            } else {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.version[1])
+            }
         }
 
         if (this.state.format === 'xml') {
@@ -606,18 +618,6 @@ class RawrepoIntrospectGUI extends React.Component {
         }
 
         fileDownload(text, fileName);
-    }
-
-    fileNameFriendlyTimestamp(timestamp) {
-        let res = RawrepoIntrospectGUI.formatTimestamp(timestamp)
-
-        res = res.replace(':', '_');
-        res = res.replace(':', '_');
-        res = res.replace(' ', '_');
-        res = res.replace('.', '_');
-        res = res.replace('-', '_');
-
-        return res;
     }
 
     getURLParams() {
@@ -677,6 +677,28 @@ class RawrepoIntrospectGUI extends React.Component {
             ':' + leftPad2(dateValue.getMinutes()) +
             ':' + leftPad2(dateValue.getSeconds()) +
             '.' + leftPad3(dateValue.getMilliseconds());
+    }
+
+    static formatTimestampFileNameFriendly(date) {
+        // The date is in gmt+0 timezone, but we need it in local/Danish timezone, plus we need the milliseconds as well
+        let dateValue = new Date(date);
+
+        // Used for making date and time segments two chars long.
+        let leftPad2 = function (val) {
+            return ("00" + val).slice(-2)
+        };
+
+        let leftPad3 = function (val) {
+            return ("000" + val).slice(-3)
+        };
+
+        return dateValue.getFullYear() +
+            '-' + leftPad2(dateValue.getMonth() + 1) +
+            '-' + leftPad2(dateValue.getDate()) +
+            '_' + leftPad2(dateValue.getHours()) +
+            '-' + leftPad2(dateValue.getMinutes()) +
+            '-' + leftPad2(dateValue.getSeconds()) +
+            '-' + leftPad3(dateValue.getMilliseconds());
     }
 
     // Constructs 'expires' message for cookies
