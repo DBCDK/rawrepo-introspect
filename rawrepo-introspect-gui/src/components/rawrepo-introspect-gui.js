@@ -577,11 +577,11 @@ class RawrepoIntrospectGUI extends React.Component {
         let text = '';
         this.state.recordParts.map((item, key) => {
                 if (item.type === 'right') {
-                    text += '-' + (item.content);
+                    text += '-' + Buffer.from(item.content, 'base64').toString(item.encoding);
                 } else if (item.type === 'left') {
-                    text += '+' + (item.content);
+                    text += '+' + Buffer.from(item.content, 'base64').toString(item.encoding);
                 } else {
-                    text = text + (item.content);
+                    text = text + Buffer.from(item.content, 'base64').toString(item.encoding);
                 }
             }
         );
