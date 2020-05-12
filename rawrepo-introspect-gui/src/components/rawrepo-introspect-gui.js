@@ -12,6 +12,7 @@ import RawrepoIntrospectAttachmentView from "./rawrepo-introspect-attachment-vie
 import RawrepoIntrospectHoldingsView from "./rawrepo-introspect-holdings-view";
 import copy from 'copy-to-clipboard';
 import fileDownload from "js-file-download";
+const iconv = require('iconv-lite');
 
 const request = require('superagent');
 const queryString = require('querystring');
@@ -617,7 +618,7 @@ class RawrepoIntrospectGUI extends React.Component {
             fileName += '.txt'
         }
 
-        fileDownload(text, fileName);
+        fileDownload(iconv.encode(text, this.state.recordParts[0].encoding), fileName, 'binary');
     }
 
     getURLParams() {
