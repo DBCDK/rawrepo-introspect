@@ -2,22 +2,24 @@ package dk.dbc.rawrepo.dto;
 
 public class RecordPartDTO {
 
-    private String content;
+    private byte[] content;
     private String type;
+    private String encoding;
 
     public RecordPartDTO() {
     }
 
-    public RecordPartDTO(String content, String type) {
+    public RecordPartDTO(byte[] content, String type, String encoding) {
         this.content = content;
         this.type = type;
+        this.encoding = encoding;
     }
 
-    public String getContent() {
+    public byte[] getContent() {
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(byte[] content) {
         this.content = content;
     }
 
@@ -27,5 +29,13 @@ public class RecordPartDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
     }
 }

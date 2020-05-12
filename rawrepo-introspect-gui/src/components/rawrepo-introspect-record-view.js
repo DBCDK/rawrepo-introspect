@@ -145,7 +145,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                                     <span
                                         key={key}
                                         className={item.type}>
-                                {item.content}
+                                {Buffer.from(item.content, 'base64').toString(item.encoding)}
                             </span>
                             )}
                         </div>

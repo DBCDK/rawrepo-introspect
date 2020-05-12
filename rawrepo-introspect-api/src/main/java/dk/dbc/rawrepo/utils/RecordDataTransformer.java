@@ -18,8 +18,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -36,42 +36,41 @@ public class RecordDataTransformer {
 
     public static final List<String> SUPPORTED_FORMATS = Arrays.asList(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML);
 
-    static String formatRecordDataToLine(RecordData recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
+    static byte[] formatRecordDataToLine(RecordData recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
         final MarcRecord record = reader.read();
 
-        String rawLines;
+        //String rawLines;
 
         if (FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
-            rawLines = new String(STD_HENT_DM2_LINE_FORMAT_WRITER.write(record, charset));
+            return STD_HENT_DM2_LINE_FORMAT_WRITER.write(record, charset);
         } else {
-            rawLines = new String(DANMARC_2_LINE_FORMAT_WRITER.write(record, charset));
+            return DANMARC_2_LINE_FORMAT_WRITER.write(record, charset);
         }
 
-        // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
-        rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
-
-        // Replace double space with single space in front of subfield marker
-        rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
-
-        // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-        rawLines = rawLines.replaceAll(" {4}\n", "");
-
-        return rawLines;
+//        // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
+//        rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
+//
+//        // Replace double space with single space in front of subfield marker
+//        rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
+//
+//        // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
+//        rawLines = rawLines.replaceAll(" {4}\n", "");
+//
+//        return reader.read();
     }
 
-    static String formatRecordDataToXML(RecordData recordData, Charset charset) throws TransformerException {
-        final String recordContent = new String(recordData.getContent(), charset);
-        final Source xmlInput = new StreamSource(new StringReader(recordContent));
-        final StringWriter stringWriter = new StringWriter();
-        final StreamResult xmlOutput = new StreamResult(stringWriter);
+    static byte[] formatRecordDataToXML(RecordData recordData, Charset charset) throws TransformerException {
+        final Source xmlInput = new StreamSource(new InputStreamReader(new ByteArrayInputStream(recordData.getContent())));
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        final StreamResult xmlOutput = new StreamResult(bos);
         final TransformerFactory transformerFactory = TransformerFactory.newInstance();
         transformerFactory.setAttribute("indent-number", 4);
         final Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(xmlInput, xmlOutput);
 
-        return xmlOutput.getWriter().toString();
+        return bos.toByteArray();
     }
 
     public static RecordDTO recordDataToDTO(RecordData recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException {
@@ -90,6 +89,9 @@ public class RecordDataTransformer {
         } else {
             part.setType("both"); // 'both' translates to black text color
         }
+
+        part.setEncoding(javaCharsetToJavascriptEncoding(charset));
+
         parts.add(part);
         recordDTO.setRecordParts(parts);
 
@@ -106,7 +108,7 @@ public class RecordDataTransformer {
         // The "left" record will always be the newest version while "right" is an earlier version
         // In order to match this with getDiff the order is reversed so "current" is the earlier record and "next" the is newer record
 
-        String current, next;
+        byte[] current, next;
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
             next = formatRecordDataToLine(left, format, charset);
             current = formatRecordDataToLine(right, format, charset);
@@ -115,7 +117,7 @@ public class RecordDataTransformer {
             current = formatRecordDataToXML(right, charset);
         }
 
-        String diff = externalToolDiffGenerator.getDiff(kind, current.getBytes(), next.getBytes());
+        String diff = externalToolDiffGenerator.getDiff(kind, current, next);
 
         final List<RecordPartDTO> recordParts = new ArrayList<>();
 
@@ -137,12 +139,30 @@ public class RecordDataTransformer {
                 // However the "+" takes up more pixels than "-" which means the lines aren't properly aligned on the web page
                 // So instead we remove the first char and then use type to indicate if that line should be colored
                 // Also, since we split on new line we must remember to add it each line again
-                recordParts.add(new RecordPartDTO(line.substring(1) + "\n", type));
+                recordParts.add(new RecordPartDTO((line.substring(1) + "\n").getBytes(), type, javaCharsetToJavascriptEncoding(charset)));
             }
         }
 
         result.setRecordParts(recordParts);
 
         return result;
+    }
+
+    // List of supported javascript (nodejs) can be found here: https://github.com/nodejs/node/blob/master/lib/buffer.js
+    /*
+        utf8
+        ucs2
+        utf16le
+        latin1
+        ascii
+        base64
+        hex
+     */
+    private static String javaCharsetToJavascriptEncoding(Charset charset) {
+        if (StandardCharsets.ISO_8859_1.name().equals(charset.name())) {
+            return "latin1";
+        } else {
+            return "utf8";
+        }
     }
 }
