@@ -81,7 +81,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
         } catch (JSONBException | RecordServiceConnectorException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
@@ -129,7 +129,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
@@ -149,7 +149,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
         } catch (RecordServiceConnectorException | JSONBException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
@@ -178,7 +178,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
         } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException | JSONBException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
@@ -233,7 +233,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
@@ -301,7 +301,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
         } catch (RecordServiceConnectorException | JSONBException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
@@ -326,7 +326,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
         } catch (JSONBException | SQLException | HoldingsItemsException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
@@ -346,7 +346,7 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
         } catch (JSONBException e) {
-            LOGGER.error(e.getMessage());
+            LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
     }
