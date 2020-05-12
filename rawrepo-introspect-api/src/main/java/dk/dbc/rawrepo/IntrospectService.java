@@ -16,7 +16,6 @@ import dk.dbc.rawrepo.dto.EdgeDTO;
 import dk.dbc.rawrepo.dto.HoldingsItemsDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RelationDTO;
-import dk.dbc.rawrepo.utils.DiffGeneratorException;
 import dk.dbc.rawrepo.utils.RecordDataTransformer;
 import dk.dbc.util.StopwatchInterceptor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -33,24 +32,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import javax.xml.transform.TransformerException;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
@@ -137,67 +128,6 @@ public class IntrospectService {
             res = mapper.marshall(recordDTO);
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            return Response.serverError().build();
-        }
-    }
-
-    @GET
-    @Produces({MediaType.TEXT_PLAIN})
-    @Path("v1/record/{bibliographicRecordId}/{agencyId}/stream")
-    public Response getRecordStream(@PathParam("bibliographicRecordId") String bibliographicRecordId,
-                                    @PathParam("agencyId") int agencyId,
-                                    @DefaultValue(FORMAT_LINE) @QueryParam("format") String format,
-                                    @DefaultValue("MERGED") @QueryParam("mode") String mode,
-                                    @DefaultValue("false") @QueryParam("diffEnrichment") boolean diffEnrichment) {
-        String res;
-
-        try {
-            // Validate input
-            if (!SUPPORTED_FORMATS.contains(format.toUpperCase())) {
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-
-            if (!Arrays.asList("RAW", "MERGED", "EXPANDED").contains(mode.toUpperCase())) {
-                return Response.status(Response.Status.BAD_REQUEST).build();
-            }
-
-            final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
-
-            final StreamingOutput output = new StreamingOutput() {
-                @Override
-                public void write(OutputStream out) throws WebApplicationException {
-                    try {
-                        final RecordServiceConnector.Params params = new RecordServiceConnector.Params();
-                        params.withMode(RecordServiceConnector.Params.Mode.valueOf(mode.toUpperCase()));
-                        params.withAllowDeleted(true);
-
-                        RecordDTO recordDTO;
-                        final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
-
-                        if (Arrays.asList("MERGED", "EXPANDED").contains(mode.toUpperCase()) && diffEnrichment) {
-                            final RecordServiceConnector.Params enrichmentParams = new RecordServiceConnector.Params();
-                            enrichmentParams.withMode(RecordServiceConnector.Params.Mode.RAW);
-                            enrichmentParams.withAllowDeleted(true);
-
-                            final RecordData enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
-                            recordDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format, charset);
-                        } else {
-                            recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
-                        }
-
-                        byte[] b = mapper.marshall(recordDTO).getBytes(charset);
-
-                        out.write(b);
-                    } catch (TransformerException | MarcReaderException | MarcWriterException | DiffGeneratorException | RecordServiceConnectorException | JSONBException | IOException e) {
-                        LOGGER.error("Caught exception during write", e);
-                        throw new WebApplicationException("Caught exception during write", e);
-                    }
-                }
-            };
-
-            return Response.ok(output).encoding(charset.name()).build();
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
