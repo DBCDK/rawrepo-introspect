@@ -1,16 +1,12 @@
-//package dk.dbc.rawrepo.utils;
-//
-//import dk.dbc.rawrepo.RecordData;
-//import dk.dbc.rawrepo.dto.RecordDTO;
-//import org.junit.Test;
-//
-//import java.nio.charset.StandardCharsets;
-//
-//import static org.hamcrest.CoreMatchers.is;
-//import static org.junit.Assert.assertThat;
-//
-//public class RecordDataTransformerTest {
-//
+package dk.dbc.rawrepo.utils;
+
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+public class RecordDataTransformerTest {
+
 //    private RecordData getRecordDataCurrent() {
 //        String content = "<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'><leader>00000     22000000 4500 </leader><datafield ind1='0' ind2='0' tag='001'><subfield code='a'>47097886</subfield><subfield code='b'>870970</subfield><subfield code='c'>20190930123826</subfield><subfield code='d'>20190911</subfield><subfield code='f'>a</subfield></datafield><datafield ind1='0' ind2='0' tag='004'><subfield code='r'>n</subfield><subfield code='a'>e</subfield></datafield><datafield ind1='0' ind2='0' tag='504'><subfield code='&amp;'>1</subfield><subfield code='a'>Fra en flodpram på Hudson River i New York i 1950&apos;erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield></datafield><datafield ind1='0' ind2='0' tag='996'><subfield code='a'>DBC</subfield></datafield></record>";
 //        RecordData recordData = new RecordData();
@@ -28,7 +24,12 @@
 //
 //        return recordData;
 //    }
-//
+
+    @Test
+    public void dummy() {
+        assertThat(true, is(true));
+    }
+
 //    @Test
 //    public void testFormatRecordDataToLine() throws Exception {
 //        RecordData recordData = getRecordDataCurrent();
@@ -307,5 +308,5 @@
 //        assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));
 //        assertThat(actual.getRecordParts().get(0).getType(), is("both"));
 //    }
-//
-//}
+
+}
