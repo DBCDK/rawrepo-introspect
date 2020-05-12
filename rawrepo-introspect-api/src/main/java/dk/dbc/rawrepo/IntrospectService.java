@@ -8,8 +8,11 @@ package dk.dbc.rawrepo;
 import dk.dbc.holdingsitems.HoldingsItemsException;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
+import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.MarcReaderException;
+import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.MarcWriterException;
+import dk.dbc.marc.writer.StdHentDM2LineFormatWriter;
 import dk.dbc.rawrepo.dao.HoldingsItemsBean;
 import dk.dbc.rawrepo.dto.ConfigDTO;
 import dk.dbc.rawrepo.dto.EdgeDTO;
@@ -41,16 +44,13 @@ import javax.xml.transform.TransformerException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Callable;
 
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
@@ -198,6 +198,39 @@ public class IntrospectService {
             };
 
             return Response.ok(output).encoding(charset.name()).build();
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            return Response.serverError().build();
+        }
+    }
+
+    @GET
+    @Produces({MediaType.APPLICATION_OCTET_STREAM})
+    @Path("v1/record/{bibliographicRecordId}/{agencyId}/binary")
+    public Response getRecordBinary(@PathParam("bibliographicRecordId") String bibliographicRecordId,
+                                    @PathParam("agencyId") int agencyId,
+                                    @DefaultValue(FORMAT_LINE) @QueryParam("format") String format,
+                                    @DefaultValue("MERGED") @QueryParam("mode") String mode,
+                                    @DefaultValue("false") @QueryParam("diffEnrichment") boolean diffEnrichment) {
+        try {
+            final Charset charset = StandardCharsets.ISO_8859_1;
+
+            try {
+                final RecordServiceConnector.Params params = new RecordServiceConnector.Params();
+                params.withMode(RecordServiceConnector.Params.Mode.valueOf(mode.toUpperCase()));
+                params.withAllowDeleted(true);
+
+                final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
+
+                final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
+                final MarcRecord record = reader.read();
+                final StdHentDM2LineFormatWriter writer = new StdHentDM2LineFormatWriter();
+                final byte[] bytes = writer.write(record, charset);
+                return Response.ok(bytes, MediaType.APPLICATION_OCTET_STREAM).build();
+            } catch (MarcReaderException | MarcWriterException | RecordServiceConnectorException e) {
+                LOGGER.error("Caught exception during write", e);
+                throw new WebApplicationException("Caught exception during write", e);
+            }
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             return Response.serverError().build();
