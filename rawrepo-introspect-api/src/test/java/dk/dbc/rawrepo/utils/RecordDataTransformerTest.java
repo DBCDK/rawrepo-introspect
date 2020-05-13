@@ -2,10 +2,15 @@ package dk.dbc.rawrepo.utils;
 
 import dk.dbc.rawrepo.RecordData;
 import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.rawrepo.dto.RecordPartDTO;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_XML;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -104,7 +109,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *aDBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "LINE", StandardCharsets.UTF_8);
+        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));
@@ -124,7 +129,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *aDBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "LINE", StandardCharsets.UTF_8);
+        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));
@@ -158,7 +163,7 @@ public class RecordDataTransformerTest {
                 "</datafield>\n" +
                 "</record>\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, "XML", StandardCharsets.UTF_8);
+        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_XML, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));
@@ -173,49 +178,149 @@ public class RecordDataTransformerTest {
 
         ExternalToolDiffGenerator.path = "script/";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "LINE", StandardCharsets.UTF_8);
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(10));
+        Iterator<RecordPartDTO> recordPartDTOIterator = actual.getRecordParts().iterator();
 
-        assertThat(new String(actual.getRecordParts().get(0).getContent()), is("001 00 *a47097886*b870970*c20190930123826*d20190911*fa\n"));
-        assertThat(actual.getRecordParts().get(0).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(0).getEncoding(), is("utf8"));
+        RecordPartDTO recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("001 00 *a47097886*b870970*c20190930123826*d20190911*fa\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(1).getContent()), is("004 00 *rn*ae\n"));
-        assertThat(actual.getRecordParts().get(1).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(1).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("004 00 *rn*ae\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(2).getContent()), is("504 00 *&1*aFra en gummibåd på Hudson River i Seattle i 1950'erne fortæller her\n"));
-        assertThat(actual.getRecordParts().get(2).getType(), is("right"));
-        assertThat(actual.getRecordParts().get(2).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("504 00 *&1*aFra en gummibåd på Hudson River i Seattle i 1950'erne fortæller her\n"));
+        assertThat(recordPartDTO.getType(), is("right"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(3).getContent()), is("    oinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive \n"));
-        assertThat(actual.getRecordParts().get(3).getType(), is("right"));
-        assertThat(actual.getRecordParts().get(3).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    oinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive \n"));
+        assertThat(recordPartDTO.getType(), is("right"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(4).getContent()), is("    en bog\n"));
-        assertThat(actual.getRecordParts().get(4).getType(), is("right"));
-        assertThat(actual.getRecordParts().get(4).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    en bog\n"));
+        assertThat(recordPartDTO.getType(), is("right"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(5).getContent()), is("504 00 *&1*aFra en flodpram på Hudson River i New York i 1950'erne fortæller he\n"));
-        assertThat(actual.getRecordParts().get(5).getType(), is("left"));
-        assertThat(actual.getRecordParts().get(5).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("504 00 *&1*aFra en flodpram på Hudson River i New York i 1950'erne fortæller he\n"));
+        assertThat(recordPartDTO.getType(), is("left"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(6).getContent()), is("    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n"));
-        assertThat(actual.getRecordParts().get(6).getType(), is("left"));
-        assertThat(actual.getRecordParts().get(6).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n"));
+        assertThat(recordPartDTO.getType(), is("left"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(7).getContent()), is("     en bog\n"));
-        assertThat(actual.getRecordParts().get(7).getType(), is("left"));
-        assertThat(actual.getRecordParts().get(7).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("     en bog\n"));
+        assertThat(recordPartDTO.getType(), is("left"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(8).getContent()), is("996 00 *aDBC\n"));
-        assertThat(actual.getRecordParts().get(8).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(8).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("996 00 *aDBC\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(9).getContent()), is("$\n"));
-        assertThat(actual.getRecordParts().get(9).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(9).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("$\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
+    }
+
+    @Test
+    public void testRecordDiffToText_FORMAT_STDHENTDM2() throws Exception {
+        RecordData current = getRecordDataCurrent();
+        RecordData previous = getRecordDataPrevious();
+
+        ExternalToolDiffGenerator.path = "script/";
+
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_STDHENTDM2, StandardCharsets.ISO_8859_1);
+
+        assertThat(actual.getRecordParts().size(), is(15));
+
+        Iterator<RecordPartDTO> recordPartDTOIterator = actual.getRecordParts().iterator();
+        
+        RecordPartDTO recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("@0001\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("@0002\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("47097886\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("001 00 *a47097886*b870970*c20190930123826*d20190911*fa\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("004 00 *rn*ae\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("010 00 *a47097886\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("504 00 *&1*aFra en gummib�d p� Hudson River i Seattle i 1950'erne fort�ller her\n"));
+        assertThat(recordPartDTO.getType(), is("right"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    oinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive \n"));
+        assertThat(recordPartDTO.getType(), is("right"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    en bog\n"));
+        assertThat(recordPartDTO.getType(), is("right"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("504 00 *&1*aFra en flodpram p� Hudson River i New York i 1950'erne fort�ller he\n"));
+        assertThat(recordPartDTO.getType(), is("left"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    roinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive\n"));
+        assertThat(recordPartDTO.getType(), is("left"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("     en bog\n"));
+        assertThat(recordPartDTO.getType(), is("left"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("996 00 *aDBC\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("@0003\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
+
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("@0004\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("latin1"));
     }
 
     @Test
@@ -225,101 +330,125 @@ public class RecordDataTransformerTest {
 
         ExternalToolDiffGenerator.path = "script/";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "XML", StandardCharsets.UTF_8);
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_XML, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(23));
+        Iterator<RecordPartDTO> recordPartDTOIterator = actual.getRecordParts().iterator();
 
-        assertThat(new String(actual.getRecordParts().get(0).getContent()), is("<?xml version=\"1.0\" encoding=\"utf8\"?>\n"));
-        assertThat(actual.getRecordParts().get(0).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(0).getEncoding(), is("utf8"));
+        RecordPartDTO recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("<?xml version=\"1.0\" encoding=\"utf8\"?>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(1).getContent()), is("<record xmlns=\"urn:info:lc/xmlns/marcxchange-v1\" xmlns:xsi=\"urn:http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd\">\n"));
-        assertThat(actual.getRecordParts().get(1).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(1).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("<record xmlns=\"urn:info:lc/xmlns/marcxchange-v1\" xmlns:xsi=\"urn:http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd\">\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(2).getContent()), is("    <leader>00000     22000000 4500 </leader>\n"));
-        assertThat(actual.getRecordParts().get(2).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(2).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    <leader>00000     22000000 4500 </leader>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(3).getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"001\">\n"));
-        assertThat(actual.getRecordParts().get(3).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(3).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"001\">\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(4).getContent()), is("        <subfield code=\"a\">47097886</subfield>\n"));
-        assertThat(actual.getRecordParts().get(4).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(4).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"a\">47097886</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(5).getContent()), is("        <subfield code=\"b\">870970</subfield>\n"));
-        assertThat(actual.getRecordParts().get(5).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(5).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"b\">870970</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(6).getContent()), is("        <subfield code=\"c\">20190930123826</subfield>\n"));
-        assertThat(actual.getRecordParts().get(6).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(6).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"c\">20190930123826</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(7).getContent()), is("        <subfield code=\"d\">20190911</subfield>\n"));
-        assertThat(actual.getRecordParts().get(7).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(7).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"d\">20190911</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(8).getContent()), is("        <subfield code=\"f\">a</subfield>\n"));
-        assertThat(actual.getRecordParts().get(8).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(8).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"f\">a</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(9).getContent()), is("    </datafield>\n"));
-        assertThat(actual.getRecordParts().get(9).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(9).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    </datafield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(10).getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"004\">\n"));
-        assertThat(actual.getRecordParts().get(10).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(10).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"004\">\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(11).getContent()), is("        <subfield code=\"r\">n</subfield>\n"));
-        assertThat(actual.getRecordParts().get(11).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(11).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"r\">n</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(12).getContent()), is("        <subfield code=\"a\">e</subfield>\n"));
-        assertThat(actual.getRecordParts().get(12).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(12).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"a\">e</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(13).getContent()), is("    </datafield>\n"));
-        assertThat(actual.getRecordParts().get(13).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(13).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    </datafield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(14).getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"504\">\n"));
-        assertThat(actual.getRecordParts().get(14).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(14).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"504\">\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(15).getContent()), is("        <subfield code=\"&amp;\">1</subfield>\n"));
-        assertThat(actual.getRecordParts().get(15).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(15).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"&amp;\">1</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(16).getContent()), is("        <subfield code=\"a\">Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
-        assertThat(actual.getRecordParts().get(16).getType(), is("right"));
-        assertThat(actual.getRecordParts().get(16).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"a\">Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("right"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(17).getContent()), is("        <subfield code=\"a\">Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
-        assertThat(actual.getRecordParts().get(17).getType(), is("left"));
-        assertThat(actual.getRecordParts().get(17).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"a\">Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("left"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(18).getContent()), is("    </datafield>\n"));
-        assertThat(actual.getRecordParts().get(18).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(18).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    </datafield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(19).getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"996\">\n"));
-        assertThat(actual.getRecordParts().get(19).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(19).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    <datafield ind1=\"0\" ind2=\"0\" tag=\"996\">\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(20).getContent()), is("        <subfield code=\"a\">DBC</subfield>\n"));
-        assertThat(actual.getRecordParts().get(20).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(20).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("        <subfield code=\"a\">DBC</subfield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(21).getContent()), is("    </datafield>\n"));
-        assertThat(actual.getRecordParts().get(21).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(21).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("    </datafield>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
 
-        assertThat(new String(actual.getRecordParts().get(22).getContent()), is("</record>\n"));
-        assertThat(actual.getRecordParts().get(22).getType(), is("both"));
-        assertThat(actual.getRecordParts().get(22).getEncoding(), is("utf8"));
+        recordPartDTO = recordPartDTOIterator.next();
+        assertThat(new String(recordPartDTO.getContent()), is("</record>\n"));
+        assertThat(recordPartDTO.getType(), is("both"));
+        assertThat(recordPartDTO.getEncoding(), is("utf8"));
     }
 
     @Test
@@ -336,7 +465,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *aDBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, "LINE", StandardCharsets.UTF_8);
+        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));

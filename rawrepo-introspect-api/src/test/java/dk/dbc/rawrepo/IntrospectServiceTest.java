@@ -13,6 +13,8 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -60,12 +62,27 @@ public class IntrospectServiceTest {
 
         when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordData);
 
-        final Response response = service.getRecord("22058037", 191919, "LINE", "EXPANDED", false);
+        final Response response = service.getRecord("22058037", 191919, FORMAT_LINE, "EXPANDED", false);
 
         assertThat(response, is(notNullValue()));
         assertThat(response.getStatus(), is(200));
         assertThat(response.hasEntity(), is(true));
         assertThat(response.getEntity(), is(loadFileContent("get-record-output.json")));
+    }
+
+    @Test
+    public void testGetRecord_STDHENTDM2() throws Exception {
+        final RecordData recordData = new RecordData();
+        recordData.setContent(loadFileContent("record-data-from-record-service.xml").getBytes());
+
+        when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordData);
+
+        final Response response = service.getRecord("22058037", 191919, FORMAT_STDHENTDM2, "EXPANDED", false);
+
+        assertThat(response, is(notNullValue()));
+        assertThat(response.getStatus(), is(200));
+        assertThat(response.hasEntity(), is(true));
+        assertThat(response.getEntity(), is(loadFileContent("get-record-output-stdhentdm2.json")));
     }
 
     @Test
@@ -107,7 +124,7 @@ public class IntrospectServiceTest {
 
         when(service.rawRepoRecordServiceConnector.getHistoricRecord("870970", "44783851", "2015-03-16T23:35:30.467032Z")).thenReturn(recordData);
 
-        final Response response = service.getHistoricRecord("44783851",870970, "2015-03-16T23:35:30.467032Z", "LINE");
+        final Response response = service.getHistoricRecord("44783851",870970, "2015-03-16T23:35:30.467032Z", FORMAT_LINE);
 
         assertThat(response, is(notNullValue()));
         assertThat(response.getStatus(), is(200));
