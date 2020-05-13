@@ -409,7 +409,7 @@ class RawrepoIntrospectGUI extends React.Component {
                 .query(params)
                 .then(res => {
                     this.setState({
-                        recordParts: res.body.recordParts,
+                        recordParts: RawrepoIntrospectGUI.formatRecordParts(res.body.recordParts, format),
                         recordLoaded: true,
                         version: ['current'],
                         format: format
@@ -438,7 +438,7 @@ class RawrepoIntrospectGUI extends React.Component {
                 .query(params)
                 .then(res => {
                     this.setState({
-                        recordParts: res.body.recordParts,
+                        recordParts: RawrepoIntrospectGUI.formatRecordParts(res.body.recordParts, format),
                         recordLoaded: true,
                         version: version,
                         format: format
@@ -455,7 +455,7 @@ class RawrepoIntrospectGUI extends React.Component {
                 .query(params)
                 .then(res => {
                     this.setState({
-                        recordParts: res.body.recordParts,
+                        recordParts: RawrepoIntrospectGUI.formatRecordParts(res.body.recordParts, format),
                         recordLoaded: true,
                         version: version,
                         format: format
@@ -560,7 +560,7 @@ class RawrepoIntrospectGUI extends React.Component {
     onCopyRecordToClipboard(e) {
         let text = '';
         this.state.recordParts.map((item, key) => {
-                text = text + (item.content);
+                text = text + (item.contentFormatted);
             }
         );
 
@@ -577,16 +577,13 @@ class RawrepoIntrospectGUI extends React.Component {
 
     onDownload() {
         let text = '';
-        this.state.recordParts.map((item, key) => {
+        this.state.recordParts.map((item) => {
                 if (item.type === 'right') {
-                    text += '-' +
-                        RawrepoIntrospectGUI.formatRecordPart(Buffer.from(item.content, 'base64').toString(item.encoding), this.state.format);
+                    text += '-' + item.contentFormatted;
                 } else if (item.type === 'left') {
-                    text += '+' +
-                        RawrepoIntrospectGUI.formatRecordPart(Buffer.from(item.content, 'base64').toString(item.encoding), this.state.format);
+                    text += '+' + item.contentFormatted;
                 } else {
-                    text = text +
-                        RawrepoIntrospectGUI.formatRecordPart(Buffer.from(item.content, 'base64').toString(item.encoding), this.state.format);
+                    text = text + item.contentFormatted;
                 }
             }
         );
@@ -631,7 +628,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         const urlParamsDict = {};
 
-        urlParamsList.forEach(function (item, index) {
+        urlParamsList.forEach(function (item) {
             const split = item.split('=');
             const key = split[0];
             var value = split[1];
@@ -706,48 +703,49 @@ class RawrepoIntrospectGUI extends React.Component {
             '-' + leftPad3(dateValue.getMilliseconds());
     }
 
-    static formatRecordPart(recordPart, format) {
-        let res = '';
-        if (format === 'line') {
-            const lines = recordPart.split('\n');
+    static formatRecordParts(recordParts, format) {
+        recordParts.map((recordPart) => {
+            let contentFormatted = '';
+            const buffer = Buffer.from(recordPart.content, 'base64').toString(recordPart.encoding);
+            const lines = buffer.split('\n');
+
             lines.map((line) => {
-                // During diff empty lines can occur
-                if (line !== '') {
-                    // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
-                    let r = line.replace(/(\*[aA0-zZ9|&])/g, ' $1 ') + '\n';
+                if (line !== '') { // During diff empty lines can occur
+                    if (format === 'line') {
+                        // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
+                        let r = line.replace(/(\*[aA0-zZ9|&])/g, ' $1 ') + '\n';
 
-                    // Replace double space with single space in front of subfield marker
-                    r = r.replace( /\s{2}\*/g, ' *');
+                        // Replace double space with single space in front of subfield marker
+                        r = r.replace(/\s{2}\*/g, ' *');
 
-                    // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-                    r = r.replace(/^\s{0,}\n/g, '');
+                        // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
+                        r = r.replace(/^\s{0,}\n/g, '');
 
-                    res += r;
-                }
-            });
-        } else if (format === 'xml') {
-            const lines = recordPart.split('\n');
-            lines.map((line) => {
-                if (line !== '') {
-                    if (line.startsWith('<leader') || line.startsWith('<datafield') || line.startsWith('</datafield')) {
-                        res += '    ' + line + '\n';
-                    } else if (line.startsWith('<subfield')) {
-                        res += '        ' + line + '\n';
-                    } else {
-                        res += line + '\n';
+                        contentFormatted += r;
+                    } else if (format === 'xml') {
+                        // Add indentation to fields
+                        if (line.startsWith('<leader') || line.startsWith('<datafield') || line.startsWith('</datafield')) {
+                            contentFormatted += '    ' + line + '\n';
+                        } else if (line.startsWith('<subfield')) {
+                            contentFormatted += '        ' + line + '\n';
+                        } else {
+                            contentFormatted += line + '\n';
+                        }
+                    } else { //stdhentdm2
+                        // Do not touch subfield formatting but remove empty lines
+                        let r = line + '\n';
+
+                        r = r.replace(/^\s{0,}\n/g, '');
+
+                        contentFormatted += r;
                     }
                 }
-            })
-        } else { //stdhentdm2
-            const lines = recordPart.split('\n');
-            lines.map((line) => {
-                // Do not touch subfield formatting but remove empty lines
-                let r = line + '\n';
-                r = r.replace(/^\s{0,}\n/g, '');
-                res += r;
             });
-        }
-        return res;
+
+            recordPart.contentFormatted = contentFormatted;
+        })
+
+        return recordParts;
     }
 
     // Constructs 'expires' message for cookies
