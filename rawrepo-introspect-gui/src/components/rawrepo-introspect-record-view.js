@@ -9,6 +9,7 @@ import RawrepoIntrospectRecordFormatSelector from './rawrepo-introspect-record-f
 import RawrepoIntrospectRecordCopy from './rawrepo-introspect-record-copy';
 import RawrepoIntrospectTimestampCopy from './rawrepo-introspect-timestamp-copy';
 import RawrepoIntrospectDownload from "./rawrepo-introspect-download";
+import RawrepoIntrospectGUI from "./rawrepo-introspect-gui";
 
 const HEIGHT_OFFSET = 225;
 
@@ -145,7 +146,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                                     <span
                                         key={key}
                                         className={item.type}>
-                                {Buffer.from(item.content, 'base64').toString(item.encoding)}
+                                {RawrepoIntrospectGUI.formatRecordPart(Buffer.from(item.content, 'base64').toString(item.encoding), this.props.format)}
                             </span>
                             )}
                         </div>

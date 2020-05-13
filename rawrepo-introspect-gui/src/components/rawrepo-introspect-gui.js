@@ -12,6 +12,7 @@ import RawrepoIntrospectAttachmentView from "./rawrepo-introspect-attachment-vie
 import RawrepoIntrospectHoldingsView from "./rawrepo-introspect-holdings-view";
 import copy from 'copy-to-clipboard';
 import fileDownload from "js-file-download";
+
 const iconv = require('iconv-lite');
 
 const request = require('superagent');
@@ -225,8 +226,6 @@ class RawrepoIntrospectGUI extends React.Component {
     onChangeFormat(event) {
         const format = event.target.value;
 
-        this.setState({format: format});
-
         this.getRecordByFormat(format);
     }
 
@@ -412,9 +411,9 @@ class RawrepoIntrospectGUI extends React.Component {
                     this.setState({
                         recordParts: res.body.recordParts,
                         recordLoaded: true,
-                        version: ['current']
+                        version: ['current'],
+                        format: format
                     });
-
                     if (this.state.view === 'relations') {
                         this.getRelations(bibliographicRecordId, agencyId);
                     }
@@ -441,7 +440,8 @@ class RawrepoIntrospectGUI extends React.Component {
                     this.setState({
                         recordParts: res.body.recordParts,
                         recordLoaded: true,
-                        version: version
+                        version: version,
+                        format: format
                     });
                 })
                 .catch(err => {
@@ -457,7 +457,8 @@ class RawrepoIntrospectGUI extends React.Component {
                     this.setState({
                         recordParts: res.body.recordParts,
                         recordLoaded: true,
-                        version: version
+                        version: version,
+                        format: format
                     });
                 })
                 .catch(err => {
@@ -578,11 +579,14 @@ class RawrepoIntrospectGUI extends React.Component {
         let text = '';
         this.state.recordParts.map((item, key) => {
                 if (item.type === 'right') {
-                    text += '-' + Buffer.from(item.content, 'base64').toString(item.encoding);
+                    text += '-' +
+                        RawrepoIntrospectGUI.formatRecordPart(Buffer.from(item.content, 'base64').toString(item.encoding), this.state.format);
                 } else if (item.type === 'left') {
-                    text += '+' + Buffer.from(item.content, 'base64').toString(item.encoding);
+                    text += '+' +
+                        RawrepoIntrospectGUI.formatRecordPart(Buffer.from(item.content, 'base64').toString(item.encoding), this.state.format);
                 } else {
-                    text = text + Buffer.from(item.content, 'base64').toString(item.encoding);
+                    text = text +
+                        RawrepoIntrospectGUI.formatRecordPart(Buffer.from(item.content, 'base64').toString(item.encoding), this.state.format);
                 }
             }
         );
@@ -700,6 +704,50 @@ class RawrepoIntrospectGUI extends React.Component {
             '-' + leftPad2(dateValue.getMinutes()) +
             '-' + leftPad2(dateValue.getSeconds()) +
             '-' + leftPad3(dateValue.getMilliseconds());
+    }
+
+    static formatRecordPart(recordPart, format) {
+        let res = '';
+        if (format === 'line') {
+            const lines = recordPart.split('\n');
+            lines.map((line) => {
+                // During diff empty lines can occur
+                if (line !== '') {
+                    // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
+                    let r = line.replace(/(\*[aA0-zZ9|&])/g, ' $1 ') + '\n';
+
+                    // Replace double space with single space in front of subfield marker
+                    r = r.replace( /\s{2}\*/g, ' *');
+
+                    // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
+                    r = r.replace(/^\s{0,}\n/g, '');
+
+                    res += r;
+                }
+            });
+        } else if (format === 'xml') {
+            const lines = recordPart.split('\n');
+            lines.map((line) => {
+                if (line !== '') {
+                    if (line.startsWith('<leader') || line.startsWith('<datafield') || line.startsWith('</datafield')) {
+                        res += '    ' + line + '\n';
+                    } else if (line.startsWith('<subfield')) {
+                        res += '        ' + line + '\n';
+                    } else {
+                        res += line + '\n';
+                    }
+                }
+            })
+        } else { //stdhentdm2
+            const lines = recordPart.split('\n');
+            lines.map((line) => {
+                // Do not touch subfield formatting but remove empty lines
+                let r = line + '\n';
+                r = r.replace(/^\s{0,}\n/g, '');
+                res += r;
+            });
+        }
+        return res;
     }
 
     // Constructs 'expires' message for cookies
