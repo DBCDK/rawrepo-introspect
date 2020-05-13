@@ -40,24 +40,11 @@ public class RecordDataTransformer {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
         final MarcRecord record = reader.read();
 
-        //String rawLines;
-
         if (FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
             return STD_HENT_DM2_LINE_FORMAT_WRITER.write(record, charset);
         } else {
             return DANMARC_2_LINE_FORMAT_WRITER.write(record, charset);
         }
-
-//        // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
-//        rawLines = rawLines.replaceAll("(\\*[aA0-zZ9|&])", " $1 ");
-//
-//        // Replace double space with single space in front of subfield marker
-//        rawLines = rawLines.replaceAll(" {2}\\*", " \\*");
-//
-//        // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
-//        rawLines = rawLines.replaceAll(" {4}\n", "");
-//
-//        return reader.read();
     }
 
     static byte[] formatRecordDataToXML(RecordData recordData, Charset charset) throws TransformerException {
