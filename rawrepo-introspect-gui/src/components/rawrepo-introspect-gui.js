@@ -11,6 +11,9 @@ import RawrepoIntrospectRecordView from "./rawrepo-introspect-record-view";
 import RawrepoIntrospectAttachmentView from "./rawrepo-introspect-attachment-view";
 import RawrepoIntrospectHoldingsView from "./rawrepo-introspect-holdings-view";
 import copy from 'copy-to-clipboard';
+import fileDownload from "js-file-download";
+
+const iconv = require('iconv-lite');
 
 const request = require('superagent');
 const queryString = require('querystring');
@@ -71,6 +74,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         this.onCopyRecordToClipboard = this.onCopyRecordToClipboard.bind(this);
         this.onCopyTimestampToClipboard = this.onCopyTimestampToClipboard.bind(this);
+        this.onDownload = this.onDownload.bind(this);
 
         this.onChangeDiffEnrichment = this.onChangeDiffEnrichment.bind(this);
 
@@ -80,6 +84,7 @@ class RawrepoIntrospectGUI extends React.Component {
 
         RawrepoIntrospectGUI.getExpirationDate = RawrepoIntrospectGUI.getExpirationDate.bind(this);
         RawrepoIntrospectGUI.formatTimestamp = RawrepoIntrospectGUI.formatTimestamp.bind(this);
+        RawrepoIntrospectGUI.formatTimestampFileNameFriendly = RawrepoIntrospectGUI.formatTimestampFileNameFriendly.bind(this);
 
         this.getURLParams = this.getURLParams.bind(this);
         this.setURLParams = this.setURLParams.bind(this);
@@ -220,8 +225,6 @@ class RawrepoIntrospectGUI extends React.Component {
 
     onChangeFormat(event) {
         const format = event.target.value;
-
-        this.setState({format: format});
 
         this.getRecordByFormat(format);
     }
@@ -406,11 +409,11 @@ class RawrepoIntrospectGUI extends React.Component {
                 .query(params)
                 .then(res => {
                     this.setState({
-                        recordParts: res.body.recordParts,
+                        recordParts: RawrepoIntrospectGUI.formatRecordParts(res.body.recordParts, format),
                         recordLoaded: true,
-                        version: ['current']
+                        version: ['current'],
+                        format: format
                     });
-
                     if (this.state.view === 'relations') {
                         this.getRelations(bibliographicRecordId, agencyId);
                     }
@@ -435,9 +438,10 @@ class RawrepoIntrospectGUI extends React.Component {
                 .query(params)
                 .then(res => {
                     this.setState({
-                        recordParts: res.body.recordParts,
+                        recordParts: RawrepoIntrospectGUI.formatRecordParts(res.body.recordParts, format),
                         recordLoaded: true,
-                        version: version
+                        version: version,
+                        format: format
                     });
                 })
                 .catch(err => {
@@ -451,9 +455,10 @@ class RawrepoIntrospectGUI extends React.Component {
                 .query(params)
                 .then(res => {
                     this.setState({
-                        recordParts: res.body.recordParts,
+                        recordParts: RawrepoIntrospectGUI.formatRecordParts(res.body.recordParts, format),
                         recordLoaded: true,
-                        version: version
+                        version: version,
+                        format: format
                     });
                 })
                 .catch(err => {
@@ -555,7 +560,7 @@ class RawrepoIntrospectGUI extends React.Component {
     onCopyRecordToClipboard(e) {
         let text = '';
         this.state.recordParts.map((item, key) => {
-                text = text + (item.content);
+                text = text + (item.contentFormatted);
             }
         );
 
@@ -570,13 +575,60 @@ class RawrepoIntrospectGUI extends React.Component {
         }
     }
 
+    onDownload() {
+        let text = '';
+        this.state.recordParts.map((item) => {
+                if (item.type === 'right') {
+                    text += '-' + item.contentFormatted;
+                } else if (item.type === 'left') {
+                    text += '+' + item.contentFormatted;
+                } else {
+                    text = text + item.contentFormatted;
+                }
+            }
+        );
+
+        let fileName = this.state.bibliographicRecordId + '_' + this.state.agencyId;
+
+        if (this.state.version.length === 1) {
+            if (this.state.version[0] === 'current') {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.history[0].modified)
+            } else {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.version[0])
+            }
+        } else if (this.state.version.length === 2) {
+            fileName += '_diff';
+            if (this.state.version[0] === 'current') {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.history[0].modified)
+            } else {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.version[0])
+            }
+
+            if (this.state.version[1] === 'current') {
+                // If the timestamps are selected in reverse order then the second value can be "current" and if so we
+                // need to use the first value in history instead
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.history[0].modified)
+            } else {
+                fileName += '_' + RawrepoIntrospectGUI.formatTimestampFileNameFriendly(this.state.version[1])
+            }
+        }
+
+        if (this.state.format === 'xml') {
+            fileName += '.xml'
+        } else {
+            fileName += '.txt'
+        }
+
+        fileDownload(iconv.encode(text, this.state.recordParts[0].encoding), fileName, 'binary');
+    }
+
     getURLParams() {
         const windowLocation = window.location.search;
         const urlParamsList = windowLocation.substring(1).split('&');
 
         const urlParamsDict = {};
 
-        urlParamsList.forEach(function (item, index) {
+        urlParamsList.forEach(function (item) {
             const split = item.split('=');
             const key = split[0];
             var value = split[1];
@@ -627,6 +679,73 @@ class RawrepoIntrospectGUI extends React.Component {
             ':' + leftPad2(dateValue.getMinutes()) +
             ':' + leftPad2(dateValue.getSeconds()) +
             '.' + leftPad3(dateValue.getMilliseconds());
+    }
+
+    static formatTimestampFileNameFriendly(date) {
+        // The date is in gmt+0 timezone, but we need it in local/Danish timezone, plus we need the milliseconds as well
+        let dateValue = new Date(date);
+
+        // Used for making date and time segments two chars long.
+        let leftPad2 = function (val) {
+            return ("00" + val).slice(-2)
+        };
+
+        let leftPad3 = function (val) {
+            return ("000" + val).slice(-3)
+        };
+
+        return dateValue.getFullYear() +
+            '-' + leftPad2(dateValue.getMonth() + 1) +
+            '-' + leftPad2(dateValue.getDate()) +
+            '_' + leftPad2(dateValue.getHours()) +
+            '-' + leftPad2(dateValue.getMinutes()) +
+            '-' + leftPad2(dateValue.getSeconds()) +
+            '-' + leftPad3(dateValue.getMilliseconds());
+    }
+
+    static formatRecordParts(recordParts, format) {
+        recordParts.map((recordPart) => {
+            let contentFormatted = '';
+            const buffer = Buffer.from(recordPart.content, 'base64').toString(recordPart.encoding);
+            const lines = buffer.split('\n');
+
+            lines.map((line) => {
+                if (line !== '') { // During diff empty lines can occur
+                    if (format === 'line') {
+                        // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
+                        let r = line.replace(/(\*[aA0-zZ9|&])/g, ' $1 ') + '\n';
+
+                        // Replace double space with single space in front of subfield marker
+                        r = r.replace(/\s{2}\*/g, ' *');
+
+                        // If the previous line is exactly 82 chars long it will result in an blank line with 4 spaces, so we'll remove that
+                        r = r.replace(/^\s{0,}\n/g, '');
+
+                        contentFormatted += r;
+                    } else if (format === 'xml') {
+                        // Add indentation to fields
+                        if (line.startsWith('<leader') || line.startsWith('<datafield') || line.startsWith('</datafield')) {
+                            contentFormatted += '    ' + line + '\n';
+                        } else if (line.startsWith('<subfield')) {
+                            contentFormatted += '        ' + line + '\n';
+                        } else {
+                            contentFormatted += line + '\n';
+                        }
+                    } else { //stdhentdm2
+                        // Do not touch subfield formatting but remove empty lines
+                        let r = line + '\n';
+
+                        r = r.replace(/^\s{0,}\n/g, '');
+
+                        contentFormatted += r;
+                    }
+                }
+            });
+
+            recordPart.contentFormatted = contentFormatted;
+        })
+
+        return recordParts;
     }
 
     // Constructs 'expires' message for cookies
@@ -696,6 +815,7 @@ class RawrepoIntrospectGUI extends React.Component {
                                     onChangeVersion={this.onChangeVersion}
                                     onCopyRecordToClipboard={this.onCopyRecordToClipboard}
                                     onCopyTimestampToClipboard={this.onCopyTimestampToClipboard}
+                                    onDownload={this.onDownload}
                                     onChangeDiffEnrichment={this.onChangeDiffEnrichment}
                                     recordLoaded={this.state.recordLoaded}
                                     history={this.state.history}

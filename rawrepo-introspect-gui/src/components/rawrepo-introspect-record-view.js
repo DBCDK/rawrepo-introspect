@@ -8,6 +8,8 @@ import RawrepoIntrospectRecordModeSelector from './rawrepo-introspect-record-mod
 import RawrepoIntrospectRecordFormatSelector from './rawrepo-introspect-record-format-selector';
 import RawrepoIntrospectRecordCopy from './rawrepo-introspect-record-copy';
 import RawrepoIntrospectTimestampCopy from './rawrepo-introspect-timestamp-copy';
+import RawrepoIntrospectDownload from "./rawrepo-introspect-download";
+import RawrepoIntrospectGUI from "./rawrepo-introspect-gui";
 
 const HEIGHT_OFFSET = 225;
 
@@ -98,7 +100,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                             className='control-label'
                             style={{marginTop: '5px', float: 'left'}}
                             htmlFor='record-format-selector'>Visningsformat</label>
-                        <div style={{marginLeft: '10px', float: 'left', width: '200px'}}>
+                        <div style={{marginLeft: '10px', float: 'left', width: '300px'}}>
                             <RawrepoIntrospectRecordFormatSelector
                                 id='record-format-selector'
                                 format={this.props.format}
@@ -127,6 +129,11 @@ class RawrepoIntrospectRecordView extends React.Component {
                                 onCopyToClipboard={this.props.onCopyTimestampToClipboard}
                                 recordLoaded={this.props.recordLoaded}/>
                         </div>
+                        <div style={{marginLeft: '25px', float: 'left'}}>
+                            <RawrepoIntrospectDownload
+                                onDownload={this.props.onDownload}
+                                recordLoaded={this.props.recordLoaded}/>
+                        </div>
                     </div>
                 </div>
                 <div className="flex-container">
@@ -139,7 +146,7 @@ class RawrepoIntrospectRecordView extends React.Component {
                                     <span
                                         key={key}
                                         className={item.type}>
-                                {item.content}
+                                {item.contentFormatted}
                             </span>
                             )}
                         </div>

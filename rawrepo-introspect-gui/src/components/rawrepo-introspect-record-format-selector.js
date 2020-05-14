@@ -30,6 +30,11 @@ class RawrepoIntrospectRecordFormatSelector extends React.Component {
                                 id='button-format-xml'
                                 value='xml'
                                 disabled={!this.props.recordLoaded}>MarcXchange</Button>
+                        <Button onClick={this.props.onChangeFormat}
+                                bsStyle={format === 'stdhentdm2' ? 'primary' : 'default'}
+                                id='button-format-stdhentdm2'
+                                value='stdhentdm2'
+                                disabled={!this.props.recordLoaded}>Stdhentdm2</Button>
                     </ButtonGroup>
                 </div>
             </div>
