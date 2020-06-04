@@ -713,7 +713,14 @@ class RawrepoIntrospectGUI extends React.Component {
                 if (line !== '') { // During diff empty lines can occur
                     if (format === 'line') {
                         // Replace all *<single char><value> with <space>*<single char><space><value>. E.g. *aThis is the value -> *a This is the value
-                        let r = line.replace(/(\*[aA0-zZ9|&])/g, ' $1 ') + '\n';
+                        // \w = aA0-zZ9
+                        // \u00E6 = æ
+                        // \u00C6 = Æ
+                        // \u00F8 = ø
+                        // \u00D8 = Ø
+                        // \u00E5 = å
+                        // \u00C5 = Å
+                        let r = line.replace(/(\*[\w|&\u00E6\u00C6\u00F8\u00D8\u00E5\u00C5])/g, ' $1 ') + '\n';
 
                         // Replace double space with single space in front of subfield marker
                         r = r.replace(/\s{2}\*/g, ' *');
