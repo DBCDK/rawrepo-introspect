@@ -5,15 +5,12 @@
 
 package dk.dbc.rawrepo;
 
-import dk.dbc.holdingsitems.HoldingsItemsException;
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.writer.MarcWriterException;
-import dk.dbc.rawrepo.dao.HoldingsItemsBean;
 import dk.dbc.rawrepo.dto.ConfigDTO;
 import dk.dbc.rawrepo.dto.EdgeDTO;
-import dk.dbc.rawrepo.dto.HoldingsItemsDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RelationDTO;
 import dk.dbc.rawrepo.utils.RecordDataTransformer;
@@ -22,7 +19,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -37,11 +33,9 @@ import javax.ws.rs.core.Response;
 import javax.xml.transform.TransformerException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
@@ -64,9 +58,6 @@ public class IntrospectService {
     @Inject
     @ConfigProperty(name = "HOLDINGS_ITEMS_INTROSPECT_URL", defaultValue = "")
     private String HOLDINGS_ITEMS_INTROSPECT_URL;
-
-    @EJB
-    private HoldingsItemsBean holdingsItemsBean;
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -301,31 +292,6 @@ public class IntrospectService {
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
         } catch (RecordServiceConnectorException | JSONBException e) {
-            LOGGER.error(e.getMessage(), e);
-            return Response.serverError().build();
-        }
-    }
-
-    @GET
-    @Produces({MediaType.APPLICATION_JSON})
-    @Path("v1/holdingsitems/{bibliographicRecordId}")
-    public Response getAgenciesWithHoldings(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
-        String res;
-        final List<HoldingsItemsDTO> holdingsItemsDTOList = new ArrayList<>();
-
-        try {
-            final Set<Integer> holdingsItems = holdingsItemsBean.getAgenciesWithHoldings(bibliographicRecordId);
-
-            for (Integer holdingsItem : holdingsItems) {
-                final HoldingsItemsDTO dto = new HoldingsItemsDTO();
-                dto.setAgencyId(holdingsItem);
-                holdingsItemsDTOList.add(dto);
-            }
-
-            res = mapper.marshall(holdingsItemsDTOList);
-
-            return Response.ok(res, MediaType.APPLICATION_JSON).build();
-        } catch (JSONBException | SQLException | HoldingsItemsException e) {
             LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }

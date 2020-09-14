@@ -4,7 +4,6 @@
  */
 
 import React from "react";
-import {BootstrapTable, TableHeaderColumn} from "react-bootstrap-table";
 
 class RawrepoIntrospectHoldingsView extends React.Component {
 
@@ -14,23 +13,29 @@ class RawrepoIntrospectHoldingsView extends React.Component {
         this.linkFormatter = this.linkFormatter.bind(this);
     }
 
-    linkFormatter(cell) {
-        return `<a href='${this.props.holdingsItemsIntrospectUrl}/holdings-items-introspection/app/items/?agencyId=${cell}&bibRecId=${this.props.bibliographicRecordId}'} target="_blank">Åben i holdings items introspect</a>`
+    linkFormatter(cell, row) {
+        return `<a href='${this.props.holdingsItemsIntrospectUrl}/holdings-items-introspection/app/items/?agencyId=${cell}&bibRecId=${row.bibliographicRecordId}'} target="_blank">Åben i holdings items introspect</a>`
     }
 
     render() {
         return (
-            <div>
-                <h2>Biblioteker med beholding</h2><br/>
-                <BootstrapTable data={this.props.holdingsItems}
-                                options={{noDataText: 'Der blev ikke fundet nogen beholdning for denne post'}}>
-                    <TableHeaderColumn dataField='agencyId'
-                                       isKey={true}
-                                       dataSort>Agency Id</TableHeaderColumn>
-                    <TableHeaderColumn dataField='agencyId'
-                                       dataSort
-                                       dataFormat={this.linkFormatter}>Link</TableHeaderColumn>
-                </BootstrapTable>
+            <div key='holdingsitems'>
+                {this.props.holdingsItems.map(holdingsItem =>
+                    <div key={holdingsItem.bibliographicRecordId}>
+                        <h2>Biblioteker med beholding
+                            på {holdingsItem.bibliographicRecordId === this.props.bibliographicRecordId ? 'denne post' : 'tidligere post (' + holdingsItem.bibliographicRecordId + ')'}</h2>
+                        <BootstrapTable data={holdingsItem.holdingsAgencies}
+                                        options={{noDataText: 'Der blev ikke fundet nogen beholdning for denne post'}}>
+                            <TableHeaderColumn dataField='agencyId'
+                                               isKey={true}
+                                               dataSort>Agency Id</TableHeaderColumn>
+                            <TableHeaderColumn dataField='agencyId'
+                                               dataSort
+                                               dataFormat={this.linkFormatter}>Link</TableHeaderColumn>
+                        </BootstrapTable>
+                    </div>
+                )
+                }
             </div>
         );
     }

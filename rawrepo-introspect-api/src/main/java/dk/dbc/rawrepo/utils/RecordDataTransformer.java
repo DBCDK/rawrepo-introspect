@@ -135,6 +135,11 @@ public class RecordDataTransformer {
         return result;
     }
 
+    public static MarcRecord recordDataToMarcRecord(RecordData recordData) throws MarcReaderException {
+        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
+        return reader.read();
+    }
+
     // List of supported javascript (nodejs) can be found here: https://github.com/nodejs/node/blob/master/lib/buffer.js
     /*
         utf8
