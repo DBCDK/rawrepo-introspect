@@ -7,8 +7,8 @@ package dk.dbc.rawrepo;
 
 import dk.dbc.jsonb.JSONBContext;
 import dk.dbc.jsonb.JSONBException;
-import dk.dbc.rawrepo.dto.AttachmentDataDTO;
 import dk.dbc.rawrepo.dao.MoreInfoBean;
+import dk.dbc.rawrepo.dto.AttachmentDataDTO;
 import dk.dbc.rawrepo.dto.AttachmentInfoDTO;
 import dk.dbc.rawrepo.exception.AttachmentException;
 import dk.dbc.util.StopwatchInterceptor;

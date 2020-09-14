@@ -28,10 +28,10 @@ public class HoldingsItemsBean {
     private DataSource holdingsItems;
 
     public Set<Integer> getAgenciesWithHoldings(String bibliographicRecordId) throws SQLException, HoldingsItemsException {
-        try (Connection connection = holdingsItems.getConnection()){
-              final HoldingsItemsDAO dao = HoldingsItemsDAO.newInstance(connection);
+        try (Connection connection = holdingsItems.getConnection()) {
+            final HoldingsItemsDAO dao = HoldingsItemsDAO.newInstance(connection);
 
-              return dao.getAgenciesThatHasHoldingsFor(bibliographicRecordId);
+            return dao.getAgenciesThatHasHoldingsFor(bibliographicRecordId);
         } catch (SQLException ex) {
             LOGGER.error(ex.getMessage(), ex);
             throw ex;
