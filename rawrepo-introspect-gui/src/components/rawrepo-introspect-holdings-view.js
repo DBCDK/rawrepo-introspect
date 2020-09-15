@@ -25,7 +25,7 @@ class RawrepoIntrospectHoldingsView extends React.Component {
                         <h2>Biblioteker med beholding
                             på {holdingsItem.bibliographicRecordId === this.props.bibliographicRecordId ? 'denne post' : 'tidligere post (' + holdingsItem.bibliographicRecordId + ')'}</h2>
                         <BootstrapTable data={holdingsItem.holdingsAgencies}
-                                        options={{noDataText: 'Der blev ikke fundet nogen beholdning i holdings-items-db for denne post'}}>
+                                        options={{noDataText: 'Der blev ikke fundet aktive beholdninger i holdings-items-DB for denne post'}}>
                             <TableHeaderColumn dataField='agencyId'
                                                isKey={true}
                                                dataSort>Agency Id</TableHeaderColumn>
