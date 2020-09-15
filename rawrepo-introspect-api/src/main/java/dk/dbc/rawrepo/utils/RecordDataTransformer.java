@@ -1,3 +1,8 @@
+/*
+ * Copyright Dansk Bibliotekscenter a/s. Licensed under GNU GPL v3
+ *  See license text at https://opensource.dbc.dk/licenses/gpl-3.0
+ */
+
 package dk.dbc.rawrepo.utils;
 
 import dk.dbc.marc.binding.MarcRecord;
@@ -133,6 +138,11 @@ public class RecordDataTransformer {
         result.setRecordParts(recordParts);
 
         return result;
+    }
+
+    public static MarcRecord recordDataToMarcRecord(RecordData recordData) throws MarcReaderException {
+        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
+        return reader.read();
     }
 
     // List of supported javascript (nodejs) can be found here: https://github.com/nodejs/node/blob/master/lib/buffer.js
