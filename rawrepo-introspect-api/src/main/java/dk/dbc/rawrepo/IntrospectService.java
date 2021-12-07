@@ -12,7 +12,13 @@ import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.rawrepo.dto.ConfigDTO;
 import dk.dbc.rawrepo.dto.EdgeDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
+import dk.dbc.rawrepo.dto.RecordHistoryDTO;
+import dk.dbc.rawrepo.dto.RecordIdDTO;
+import dk.dbc.rawrepo.dto.RecordPartsDTO;
 import dk.dbc.rawrepo.dto.RelationDTO;
+import dk.dbc.rawrepo.record.RecordServiceConnector;
+import dk.dbc.rawrepo.record.RecordServiceConnectorException;
 import dk.dbc.rawrepo.utils.RecordDataTransformer;
 import dk.dbc.util.StopwatchInterceptor;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -101,8 +107,8 @@ public class IntrospectService {
             params.withMode(RecordServiceConnector.Params.Mode.valueOf(mode.toUpperCase()));
             params.withAllowDeleted(true);
 
-            RecordDTO recordDTO;
-            final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
+            RecordPartsDTO recordPartsDTO;
+            final RecordDTO recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
             if (Arrays.asList("MERGED", "EXPANDED").contains(mode.toUpperCase()) && diffEnrichment) {
@@ -110,13 +116,13 @@ public class IntrospectService {
                 enrichmentParams.withMode(RecordServiceConnector.Params.Mode.RAW);
                 enrichmentParams.withAllowDeleted(true);
 
-                final RecordData enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
-                recordDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format, charset);
+                final RecordDTO enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
+                recordPartsDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format, charset);
             } else {
-                recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
+                recordPartsDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
             }
 
-            res = mapper.marshall(recordDTO);
+            res = mapper.marshall(recordPartsDTO);
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
         } catch (Exception e) {
@@ -133,8 +139,8 @@ public class IntrospectService {
         String res;
 
         try {
-            final RecordHistoryCollection recordHistoryCollection = rawRepoRecordServiceConnector.getRecordHistory(Integer.toString(agencyId), bibliographicRecordId);
-            final List<RecordHistory> recordHistoryList = recordHistoryCollection.getRecordHistoryList();
+            final RecordHistoryCollectionDTO recordHistoryCollection = rawRepoRecordServiceConnector.getRecordHistory(Integer.toString(agencyId), bibliographicRecordId);
+            final List<RecordHistoryDTO> recordHistoryList = recordHistoryCollection.getRecordHistoryList();
 
             res = mapper.marshall(recordHistoryList);
 
@@ -160,12 +166,12 @@ public class IntrospectService {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
-            final RecordData recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
+            final RecordDTO recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
-            RecordDTO recordDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
+            RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
 
-            res = mapper.marshall(recordDTO);
+            res = mapper.marshall(recordPartsDTO);
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
         } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException | JSONBException e) {
@@ -197,8 +203,8 @@ public class IntrospectService {
             String version1 = versionList[0];
             String version2 = versionList[1];
 
-            RecordData recordData1;
-            RecordData recordData2;
+            RecordDTO recordData1;
+            RecordDTO recordData2;
 
             final RecordServiceConnector.Params params = new RecordServiceConnector.Params();
             params.withMode(RecordServiceConnector.Params.Mode.RAW);
@@ -218,9 +224,9 @@ public class IntrospectService {
 
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
-            RecordDTO recordDTO = RecordDataTransformer.recordDiffToDTO(recordData1, recordData2, format, charset);
+            RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDiffToDTO(recordData1, recordData2, format, charset);
 
-            res = mapper.marshall(recordDTO);
+            res = mapper.marshall(recordPartsDTO);
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
         } catch (Exception e) {
@@ -241,12 +247,12 @@ public class IntrospectService {
             relationDTO.setNodes(new ArrayList<>());
             relationDTO.setEdges(new ArrayList<>());
 
-            RecordId currentNode = new RecordId(bibliographicRecordId, agencyId);
+            RecordIdDTO currentNode = new RecordIdDTO(bibliographicRecordId, agencyId);
             relationDTO.getNodes().add(currentNode);
 
             // Children
-            RecordId[] recordIds = rawRepoRecordServiceConnector.getRecordChildren(agencyId, bibliographicRecordId);
-            for (RecordId recordId : recordIds) {
+            RecordIdDTO[] recordIds = rawRepoRecordServiceConnector.getRecordChildren(agencyId, bibliographicRecordId);
+            for (RecordIdDTO recordId : recordIds) {
                 relationDTO.getNodes().add(recordId);
 
                 EdgeDTO edgeDTO = new EdgeDTO();
@@ -257,7 +263,7 @@ public class IntrospectService {
 
             // Parents
             recordIds = rawRepoRecordServiceConnector.getRecordParents(agencyId, bibliographicRecordId);
-            for (RecordId recordId : recordIds) {
+            for (RecordIdDTO recordId : recordIds) {
                 relationDTO.getNodes().add(recordId);
 
                 EdgeDTO edgeDTO = new EdgeDTO();
@@ -268,7 +274,7 @@ public class IntrospectService {
 
             // Siblings from this record
             recordIds = rawRepoRecordServiceConnector.getRecordSiblingsFrom(agencyId, bibliographicRecordId);
-            for (RecordId recordId : recordIds) {
+            for (RecordIdDTO recordId : recordIds) {
                 relationDTO.getNodes().add(recordId);
 
                 EdgeDTO edgeDTO = new EdgeDTO();
@@ -279,7 +285,7 @@ public class IntrospectService {
 
             // Siblings to this record
             recordIds = rawRepoRecordServiceConnector.getRecordSiblingsTo(agencyId, bibliographicRecordId);
-            for (RecordId recordId : recordIds) {
+            for (RecordIdDTO recordId : recordIds) {
                 relationDTO.getNodes().add(recordId);
 
                 EdgeDTO edgeDTO = new EdgeDTO();

@@ -11,9 +11,9 @@ import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.marc.writer.StdHentDM2LineFormatWriter;
-import dk.dbc.rawrepo.RecordData;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
+import dk.dbc.rawrepo.dto.RecordPartsDTO;
 
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
@@ -41,7 +41,7 @@ public class RecordDataTransformer {
 
     public static final List<String> SUPPORTED_FORMATS = Arrays.asList(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML);
 
-    static byte[] formatRecordDataToLine(RecordData recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
+    static byte[] formatRecordDataToLine(RecordDTO recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
         final MarcRecord record = reader.read();
 
@@ -52,7 +52,7 @@ public class RecordDataTransformer {
         }
     }
 
-    static byte[] formatRecordDataToXML(RecordData recordData, Charset charset) throws TransformerException {
+    static byte[] formatRecordDataToXML(RecordDTO recordData, Charset charset) throws TransformerException {
         final Source xmlInput = new StreamSource(new InputStreamReader(new ByteArrayInputStream(recordData.getContent())));
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final StreamResult xmlOutput = new StreamResult(bos);
@@ -65,8 +65,8 @@ public class RecordDataTransformer {
         return bos.toByteArray();
     }
 
-    public static RecordDTO recordDataToDTO(RecordData recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException {
-        final RecordDTO recordDTO = new RecordDTO();
+    public static RecordPartsDTO recordDataToDTO(RecordDTO recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException {
+        final RecordPartsDTO recordPartsDTO = new RecordPartsDTO();
         final RecordPartDTO part = new RecordPartDTO();
         final List<RecordPartDTO> parts = new ArrayList<>();
 
@@ -85,13 +85,13 @@ public class RecordDataTransformer {
         part.setEncoding(javaCharsetToJavascriptEncoding(charset));
 
         parts.add(part);
-        recordDTO.setRecordParts(parts);
+        recordPartsDTO.setRecordParts(parts);
 
-        return recordDTO;
+        return recordPartsDTO;
     }
 
-    public static RecordDTO recordDiffToDTO(RecordData left, RecordData right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
-        final RecordDTO result = new RecordDTO();
+    public static RecordPartsDTO recordDiffToDTO(RecordDTO left, RecordDTO right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
+        final RecordPartsDTO result = new RecordPartsDTO();
 
         final ExternalToolDiffGenerator.Kind kind = FORMAT_XML.equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.XML : ExternalToolDiffGenerator.Kind.PLAINTEXT;
         final ExternalToolDiffGenerator externalToolDiffGenerator = new ExternalToolDiffGenerator();
@@ -140,7 +140,7 @@ public class RecordDataTransformer {
         return result;
     }
 
-    public static MarcRecord recordDataToMarcRecord(RecordData recordData) throws MarcReaderException {
+    public static MarcRecord recordDataToMarcRecord(RecordDTO recordData) throws MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
         return reader.read();
     }

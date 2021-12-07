@@ -13,6 +13,9 @@ import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.rawrepo.dao.HoldingsItemsBean;
 import dk.dbc.rawrepo.dto.HoldingsItemsDTO;
 import dk.dbc.rawrepo.dto.HoldingsItemsListDTO;
+import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.rawrepo.record.RecordServiceConnector;
+import dk.dbc.rawrepo.record.RecordServiceConnectorException;
 import dk.dbc.rawrepo.utils.RecordDataTransformer;
 import dk.dbc.util.StopwatchInterceptor;
 import org.slf4j.Logger;
@@ -67,7 +70,7 @@ public class HoldingsService {
             // Next get holdings of all previous bibliographic records
             final List<Integer> agencies = Arrays.asList(rawRepoRecordServiceConnector.getAllAgenciesForBibliographicRecordId(bibliographicRecordId));
             if (agencies.contains(870970)) {
-                final RecordData recordData = rawRepoRecordServiceConnector.getRecordData(870970, bibliographicRecordId);
+                final RecordDTO recordData = rawRepoRecordServiceConnector.getRecordData(870970, bibliographicRecordId);
                 final MarcRecord marcRecord = RecordDataTransformer.recordDataToMarcRecord(recordData);
                 final List<String> previousBibliographicRecordIds = marcRecord.getSubFieldValues("002", 'a');
 

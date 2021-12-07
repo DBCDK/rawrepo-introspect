@@ -5,20 +5,19 @@
 
 package dk.dbc.rawrepo.dto;
 
-import dk.dbc.rawrepo.RecordId;
 
 import java.util.List;
 
 public class RelationDTO {
 
-    private List<RecordId> nodes;
+    private List<RecordIdDTO> nodes;
     private List<EdgeDTO> edges;
 
-    public List<RecordId> getNodes() {
+    public List<RecordIdDTO> getNodes() {
         return nodes;
     }
 
-    public void setNodes(List<RecordId> nodes) {
+    public void setNodes(List<RecordIdDTO> nodes) {
         this.nodes = nodes;
     }
 

@@ -1,5 +1,10 @@
 package dk.dbc.rawrepo;
 
+import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
+import dk.dbc.rawrepo.dto.RecordHistoryDTO;
+import dk.dbc.rawrepo.dto.RecordIdDTO;
+import dk.dbc.rawrepo.record.RecordServiceConnector;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -57,7 +62,7 @@ public class IntrospectServiceTest {
 
     @Test
     public void testGetRecord() throws Exception {
-        final RecordData recordData = new RecordData();
+        final RecordDTO recordData = new RecordDTO();
         recordData.setContent(loadFileContent("record-data-from-record-service.xml").getBytes());
 
         when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordData);
@@ -72,7 +77,7 @@ public class IntrospectServiceTest {
 
     @Test
     public void testGetRecord_STDHENTDM2() throws Exception {
-        final RecordData recordData = new RecordData();
+        final RecordDTO recordData = new RecordDTO();
         recordData.setContent(loadFileContent("record-data-from-record-service.xml").getBytes());
 
         when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordData);
@@ -87,18 +92,18 @@ public class IntrospectServiceTest {
 
     @Test
     public void testGetHistory() throws Exception {
-        final RecordHistoryCollection recordHistoryCollection = new RecordHistoryCollection();
+        final RecordHistoryCollectionDTO recordHistoryCollection = new RecordHistoryCollectionDTO();
 
-        final RecordHistory recordHistory1 = new RecordHistory();
-        recordHistory1.setId(new RecordId("44783851", 870970));
+        final RecordHistoryDTO recordHistory1 = new RecordHistoryDTO();
+        recordHistory1.setId(new RecordIdDTO("44783851", 870970));
         recordHistory1.setCreated("2010-01-27T23:00:00Z");
         recordHistory1.setDeleted(false);
         recordHistory1.setMimeType("text/marcxchange");
         recordHistory1.setModified("2016-06-15T08:58:06.640Z");
         recordHistory1.setTrackingId("");
 
-        final RecordHistory recordHistory2 = new RecordHistory();
-        recordHistory2.setId(new RecordId("44783851", 870970));
+        final RecordHistoryDTO recordHistory2 = new RecordHistoryDTO();
+        recordHistory2.setId(new RecordIdDTO("44783851", 870970));
         recordHistory2.setCreated("2010-01-27T23:00:00Z");
         recordHistory2.setDeleted(false);
         recordHistory2.setMimeType("text/enrichment+marcxchange");
@@ -119,7 +124,7 @@ public class IntrospectServiceTest {
 
     @Test
     public void testGetHistoricRecord() throws Exception {
-        final RecordData recordData = new RecordData();
+        final RecordDTO recordData = new RecordDTO();
         recordData.setContent(loadFileContent("historic-record-data-from-record-service.xml").getBytes());
 
         when(service.rawRepoRecordServiceConnector.getHistoricRecord("870970", "44783851", "2015-03-16T23:35:30.467032Z")).thenReturn(recordData);

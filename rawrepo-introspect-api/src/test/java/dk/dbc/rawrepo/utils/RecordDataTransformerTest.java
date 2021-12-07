@@ -1,7 +1,7 @@
 package dk.dbc.rawrepo.utils;
 
-import dk.dbc.rawrepo.RecordData;
 import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.rawrepo.dto.RecordPartsDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
 import org.junit.Test;
 
@@ -16,18 +16,18 @@ import static org.junit.Assert.assertThat;
 
 public class RecordDataTransformerTest {
 
-    private RecordData getRecordDataCurrent() {
+    private RecordDTO getRecordDTOCurrent() {
         String content = "<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'><leader>00000     22000000 4500 </leader><datafield ind1='0' ind2='0' tag='001'><subfield code='a'>47097886</subfield><subfield code='b'>870970</subfield><subfield code='c'>20190930123826</subfield><subfield code='d'>20190911</subfield><subfield code='f'>a</subfield></datafield><datafield ind1='0' ind2='0' tag='004'><subfield code='r'>n</subfield><subfield code='a'>e</subfield></datafield><datafield ind1='0' ind2='0' tag='504'><subfield code='&amp;'>1</subfield><subfield code='a'>Fra en flodpram på Hudson River i New York i 1950&apos;erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield></datafield><datafield ind1='0' ind2='0' tag='996'><subfield code='a'>DBC</subfield></datafield></record>";
-        RecordData recordData = new RecordData();
+        RecordDTO recordData = new RecordDTO();
         recordData.setDeleted(false);
         recordData.setContent(content.getBytes());
 
         return recordData;
     }
 
-    private RecordData getRecordDataPrevious() {
+    private RecordDTO getRecordDTOPrevious() {
         String content = "<record xmlns='info:lc/xmlns/marcxchange-v1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd'><leader>00000     22000000 4500 </leader><datafield ind1='0' ind2='0' tag='001'><subfield code='a'>47097886</subfield><subfield code='b'>870970</subfield><subfield code='c'>20190930123826</subfield><subfield code='d'>20190911</subfield><subfield code='f'>a</subfield></datafield><datafield ind1='0' ind2='0' tag='004'><subfield code='r'>n</subfield><subfield code='a'>e</subfield></datafield><datafield ind1='0' ind2='0' tag='504'><subfield code='&amp;'>1</subfield><subfield code='a'>Fra en gummibåd på Hudson River i Seattle i 1950&apos;erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield></datafield><datafield ind1='0' ind2='0' tag='996'><subfield code='a'>DBC</subfield></datafield></record>";
-        RecordData recordData = new RecordData();
+        RecordDTO recordData = new RecordDTO();
         recordData.setDeleted(false);
         recordData.setContent(content.getBytes());
 
@@ -35,8 +35,8 @@ public class RecordDataTransformerTest {
     }
 
     @Test
-    public void testFormatRecordDataToLine() throws Exception {
-        RecordData recordData = getRecordDataCurrent();
+    public void testFormatRecordDTOToLine() throws Exception {
+        RecordDTO recordData = getRecordDTOCurrent();
 
         String content = "001 00 *a47097886*b870970*c20190930123826*d20190911*fa\n" +
                 "004 00 *rn*ae\n" +
@@ -49,8 +49,8 @@ public class RecordDataTransformerTest {
     }
 
     @Test
-    public void testFormatRecordDataToStdHentDm2() throws Exception {
-        RecordData recordData = getRecordDataCurrent();
+    public void testFormatRecordDTOToStdHentDm2() throws Exception {
+        RecordDTO recordData = getRecordDTOCurrent();
 
         String content = "@0001\n" +
                 "@0002\n" +
@@ -70,8 +70,8 @@ public class RecordDataTransformerTest {
     }
 
     @Test
-    public void testFormatRecordDataToXML() throws Exception {
-        RecordData recordData = getRecordDataCurrent();
+    public void testFormatRecordDTOToXML() throws Exception {
+        RecordDTO recordData = getRecordDTOCurrent();
 
         String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><record xmlns=\"info:lc/xmlns/marcxchange-v1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd\">\n" +
                 "<leader>00000     22000000 4500 </leader>\n" +
@@ -99,8 +99,8 @@ public class RecordDataTransformerTest {
     }
 
     @Test
-    public void testRecordDataToText_LINE() throws Exception {
-        RecordData recordData = getRecordDataCurrent();
+    public void testRecordDTOToText_LINE() throws Exception {
+        RecordDTO recordData = getRecordDTOCurrent();
 
         String content = "001 00 *a47097886*b870970*c20190930123826*d20190911*fa\n" +
                 "004 00 *rn*ae\n" +
@@ -109,7 +109,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *aDBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_LINE, StandardCharsets.UTF_8);
+        RecordPartsDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));
@@ -118,8 +118,8 @@ public class RecordDataTransformerTest {
     }
 
     @Test
-    public void testRecordDataToText_LINE_Deleted() throws Exception {
-        RecordData recordData = getRecordDataCurrent();
+    public void testRecordDTOToText_LINE_Deleted() throws Exception {
+        RecordDTO recordData = getRecordDTOCurrent();
         recordData.setDeleted(true);
 
         String content = "001 00 *a47097886*b870970*c20190930123826*d20190911*fa\n" +
@@ -129,7 +129,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *aDBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_LINE, StandardCharsets.UTF_8);
+        RecordPartsDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));
@@ -138,8 +138,8 @@ public class RecordDataTransformerTest {
     }
 
     @Test
-    public void testRecordDataToText_XML() throws Exception {
-        RecordData recordData = getRecordDataCurrent();
+    public void testRecordDTOToText_XML() throws Exception {
+        RecordDTO recordData = getRecordDTOCurrent();
 
         String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><record xmlns=\"info:lc/xmlns/marcxchange-v1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd\">\n" +
                 "<leader>00000     22000000 4500 </leader>\n" +
@@ -163,7 +163,7 @@ public class RecordDataTransformerTest {
                 "</datafield>\n" +
                 "</record>\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_XML, StandardCharsets.UTF_8);
+        RecordPartsDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_XML, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));
@@ -173,12 +173,12 @@ public class RecordDataTransformerTest {
 
     @Test
     public void testRecordDiffToText_LINE() throws Exception {
-        RecordData current = getRecordDataCurrent();
-        RecordData previous = getRecordDataPrevious();
+        RecordDTO current = getRecordDTOCurrent();
+        RecordDTO previous = getRecordDTOPrevious();
 
         ExternalToolDiffGenerator.path = "script/";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_LINE, StandardCharsets.UTF_8);
+        RecordPartsDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(10));
         Iterator<RecordPartDTO> recordPartDTOIterator = actual.getRecordParts().iterator();
@@ -236,12 +236,12 @@ public class RecordDataTransformerTest {
 
     @Test
     public void testRecordDiffToText_FORMAT_STDHENTDM2() throws Exception {
-        RecordData current = getRecordDataCurrent();
-        RecordData previous = getRecordDataPrevious();
+        RecordDTO current = getRecordDTOCurrent();
+        RecordDTO previous = getRecordDTOPrevious();
 
         ExternalToolDiffGenerator.path = "script/";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_STDHENTDM2, StandardCharsets.ISO_8859_1);
+        RecordPartsDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_STDHENTDM2, StandardCharsets.ISO_8859_1);
 
         assertThat(actual.getRecordParts().size(), is(15));
 
@@ -325,12 +325,12 @@ public class RecordDataTransformerTest {
 
     @Test
     public void testRecordDiffToText_XML() throws Exception {
-        RecordData current = getRecordDataCurrent();
-        RecordData previous = getRecordDataPrevious();
+        RecordDTO current = getRecordDTOCurrent();
+        RecordDTO previous = getRecordDTOPrevious();
 
         ExternalToolDiffGenerator.path = "script/";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_XML, StandardCharsets.UTF_8);
+        RecordPartsDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_XML, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(23));
         Iterator<RecordPartDTO> recordPartDTOIterator = actual.getRecordParts().iterator();
@@ -453,8 +453,8 @@ public class RecordDataTransformerTest {
 
     @Test
     public void testRecordDiffToText_LINE_NoDiff() throws Exception {
-        RecordData current = getRecordDataCurrent();
-        RecordData previous = getRecordDataCurrent();
+        RecordDTO current = getRecordDTOCurrent();
+        RecordDTO previous = getRecordDTOCurrent();
 
         ExternalToolDiffGenerator.path = "script/";
 
@@ -465,7 +465,7 @@ public class RecordDataTransformerTest {
                 "     en bog\n" +
                 "996 00 *aDBC\n$\n";
 
-        RecordDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_LINE, StandardCharsets.UTF_8);
+        RecordPartsDTO actual = RecordDataTransformer.recordDiffToDTO(current, previous, FORMAT_LINE, StandardCharsets.UTF_8);
 
         assertThat(actual.getRecordParts().size(), is(1));
         assertThat(new String(actual.getRecordParts().get(0).getContent()), is(content));

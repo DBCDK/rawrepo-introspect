@@ -7,7 +7,7 @@ package dk.dbc.rawrepo.dto;
 
 import java.util.List;
 
-public class RecordDTO {
+public class RecordPartsDTO {
 
     private List<RecordPartDTO> recordParts;
 

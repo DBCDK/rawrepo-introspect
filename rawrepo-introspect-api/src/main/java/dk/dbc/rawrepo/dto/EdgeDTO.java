@@ -5,26 +5,24 @@
 
 package dk.dbc.rawrepo.dto;
 
-import dk.dbc.rawrepo.RecordId;
-
 public class EdgeDTO {
 
-    private RecordId parent;
-    private RecordId child;
+    private RecordIdDTO parent;
+    private RecordIdDTO child;
 
-    public RecordId getParent() {
+    public RecordIdDTO getParent() {
         return parent;
     }
 
-    public void setParent(RecordId parent) {
+    public void setParent(RecordIdDTO parent) {
         this.parent = parent;
     }
 
-    public RecordId getChild() {
+    public RecordIdDTO getChild() {
         return child;
     }
 
-    public void setChild(RecordId child) {
+    public void setChild(RecordIdDTO child) {
         this.child = child;
     }
 }
