@@ -1,6 +1,6 @@
 #!groovy
 
-def workerNode = "devel9"
+def workerNode = "devel10"
 
 pipeline {
     agent { label workerNode }
@@ -20,7 +20,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE_NAME = "docker-io.dbc.dk/rawrepo-introspect"
+        DOCKER_IMAGE_NAME = "docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect"
         DOCKER_IMAGE_VERSION = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
         DOCKER_IMAGE_DIT_VERSION = "DIT-${env.BUILD_NUMBER}"
         GITLAB_PRIVATE_TOKEN = credentials("metascrum-gitlab-api-token")
