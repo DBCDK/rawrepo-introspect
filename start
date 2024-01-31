@@ -1,21 +1,19 @@
 ./stop || true
 ./build docker || exit 1
 
-echo "### Starting rawrepo-introspect docker ###"
+echo "### Starting rawrepo-introspect-backend docker ###"
 
 rawrepo_introspect_port=${RAWREPO_INTROSPECT_PORT:-8080}
-docker run --rm --name rawrepo-introspect -d -p ${rawrepo_introspect_port}:8080 \
+docker run --rm --name rawrepo-introspect-backend -d -p ${rawrepo_introspect_port}:8080 \
     -e RAWREPO_RECORD_SERVICE_URL=${RAWREPO_RECORD_SERVICE_URL} \
     -e MOREINFO_DANBIB_URL=${MOREINFO_DANBIB_URL} \
     -e MOREINFO_UPDATE_URL=${MOREINFO_UPDATE_URL} \
     -e MOREINFO_BASIS_URL=${MOREINFO_BASIS_URL} \
-    -e HOLDINGS_ITEMS_URL=${HOLDINGS_ITEMS_URL} \
-    -e HOLDINGS_ITEMS_INTROSPECT_URL=${HOLDINGS_ITEMS_INTROSPECT_URL} \
     -e JAVA_MAX_HEAP_SIZE=2G \
-    -e INSTANCE=dev rawrepo-introspect
+    docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend:devel
 attempts=0
 max_attempts=60
-until $(curl --output /dev/null --silent --head --fail http://localhost:${rawrepo_introspect_port}/api/status); do
+until $(curl --output /dev/null --silent --head --fail http://localhost:${rawrepo_introspect_port}/api/howru); do
     if [ ${attempts} -eq ${max_attempts} ]; then
         break
     fi
