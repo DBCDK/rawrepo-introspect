@@ -30,8 +30,8 @@ import org.slf4j.LoggerFactory;
 import javax.xml.transform.TransformerException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
@@ -226,8 +226,8 @@ public class IntrospectService {
 
         try {
             RelationDTO relationDTO = new RelationDTO();
-            relationDTO.setNodes(Collections.<RecordIdDTO>emptyList());
-            relationDTO.setEdges(Collections.<EdgeDTO>emptyList());
+            relationDTO.setNodes(new ArrayList<>());
+            relationDTO.setEdges(new ArrayList<>());
 
             RecordIdDTO currentNode = new RecordIdDTO(bibliographicRecordId, agencyId);
             relationDTO.getNodes().add(currentNode);
