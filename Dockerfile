@@ -5,6 +5,10 @@ LABEL MOREINFO_DANBIB_URL="Database url to the moreinfo danbib database (mandato
 LABEL MOREINFO_UPDATE_URL="Database url to the moreinfo update database (mandatory)"
 LABEL MOREINFO_BASIS_URL="Database url to the moreinfo basis database (mandatory)"
 
+USER root
+
 RUN apt-get update && apt-get install -y --no-install-recommends diffutils colordiff sed libxml2-utils jq && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+USER gfish
 
 COPY target/*.war app.json deployments/
