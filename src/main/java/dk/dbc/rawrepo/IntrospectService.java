@@ -4,7 +4,6 @@ import dk.dbc.commons.jsonb.JSONBContext;
 import dk.dbc.commons.jsonb.JSONBException;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.writer.MarcWriterException;
-import dk.dbc.rawrepo.dto.ConfigDTO;
 import dk.dbc.rawrepo.dto.EdgeDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
@@ -27,7 +26,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
