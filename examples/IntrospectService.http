@@ -1,0 +1,21 @@
+GET http://localhost:8080/api/v1/agencies-for/133957065
+
+###
+
+GET http://localhost:8080/api/v1/record/133957065/870970
+
+###
+
+GET http://localhost:8080/api/v1/record/{bibliographicRecordId}/{agencyId}/diff/{versions}
+
+###
+
+GET http://localhost:8080/api/v1/record/133957065/191919/history
+
+###
+
+GET http://localhost:8080/api/v1/record/133957065/191919/relations
+
+###
+
+GET http://localhost:8080/api/v1/record/{bibliographicRecordId}/{agencyId}/{modifiedDate}

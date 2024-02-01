@@ -1,0 +1,5 @@
+GET     /api//v1/attachment/{base}/{bibliographicRecordId}
+
+###
+
+GET     /api//v1/attachment/{base}/{bibliographicRecordId}/{agencyId}/{attachment-type}
