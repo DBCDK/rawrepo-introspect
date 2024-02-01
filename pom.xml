@@ -40,11 +40,6 @@
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
-            <artifactId>stopwatch</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
             <artifactId>dbc-commons-marc</artifactId>
             <version>2.0-SNAPSHOT</version>
         </dependency>

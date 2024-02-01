@@ -26,6 +26,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,6 @@ import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.SUPPORTED_FORMATS;
 
-@Interceptors(StopwatchInterceptor.class)
 @Stateless
 @Path("")
 public class IntrospectService {
@@ -55,7 +55,6 @@ public class IntrospectService {
     @Path("v1/agencies-for/{bibliographicRecordId}")
     public Response getAllAgenciesForBibliographicRecordId(@PathParam("bibliographicRecordId") String bibliographicRecordId) {
         String res;
-
         try {
             final List<Integer> agencies = Arrays.asList(rawRepoRecordServiceConnector.getAllAgenciesForBibliographicRecordId(bibliographicRecordId));
 
