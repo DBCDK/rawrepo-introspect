@@ -6,10 +6,8 @@ import dk.dbc.rawrepo.dao.MoreInfoBean;
 import dk.dbc.rawrepo.dto.AttachmentDataDTO;
 import dk.dbc.rawrepo.dto.AttachmentInfoDTO;
 import dk.dbc.rawrepo.exception.AttachmentException;
-import dk.dbc.util.StopwatchInterceptor;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.interceptor.Interceptors;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
@@ -22,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.List;
 
-@Interceptors(StopwatchInterceptor.class)
 @Stateless
 @Path("")
 public class AttachmentService {

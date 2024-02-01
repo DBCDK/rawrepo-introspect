@@ -3,10 +3,8 @@ package dk.dbc.rawrepo.dao;
 import dk.dbc.rawrepo.dto.AttachmentDataDTO;
 import dk.dbc.rawrepo.dto.AttachmentInfoDTO;
 import dk.dbc.rawrepo.exception.AttachmentException;
-import dk.dbc.util.StopwatchInterceptor;
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
-import jakarta.interceptor.Interceptors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,7 +16,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Interceptors(StopwatchInterceptor.class)
 @Stateless
 public class MoreInfoBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(MoreInfoBean.class);
