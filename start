@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ./stop || true
 ./build docker || exit 1
 
@@ -13,7 +15,7 @@ docker run --rm --name rawrepo-introspect-backend -d -p ${rawrepo_introspect_por
     docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend:devel
 attempts=0
 max_attempts=60
-until $(curl --output /dev/null --silent --head --fail http://localhost:${rawrepo_introspect_port}/api/howru); do
+until $(curl --output /dev/null --silent --head --fail http://localhost:${rawrepo_introspect_port}/health/ready); do
     if [ ${attempts} -eq ${max_attempts} ]; then
         break
     fi
@@ -25,5 +27,5 @@ done
 
 echo ""
 echo "### Status for rawrepo-introspect service ###"
-curl -vs http://localhost:${rawrepo_introspect_port}/api/status
+curl -vs http://localhost:${rawrepo_introspect_port}/health/ready
 echo ""
