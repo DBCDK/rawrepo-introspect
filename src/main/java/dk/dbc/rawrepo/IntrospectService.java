@@ -14,10 +14,8 @@ import dk.dbc.rawrepo.dto.RelationDTO;
 import dk.dbc.rawrepo.record.RecordServiceConnector;
 import dk.dbc.rawrepo.record.RecordServiceConnectorException;
 import dk.dbc.rawrepo.utils.RecordDataTransformer;
-import dk.dbc.util.StopwatchInterceptor;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.interceptor.Interceptors;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -26,7 +24,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
