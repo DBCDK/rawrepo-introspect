@@ -1,6 +1,7 @@
 #!groovy
 
-def workerNode = "devel11"
+String workerNode = "devel11"
+String slackChannel = "meta-notifications"
 
 pipeline {
     agent { label workerNode }
@@ -21,7 +22,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE_NAME = "docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect"
+        DOCKER_IMAGE_NAME = "docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend"
         DOCKER_IMAGE_VERSION = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
         GITLAB_PRIVATE_TOKEN = credentials("metascrum-gitlab-api-token")
     }
@@ -42,10 +43,10 @@ pipeline {
                 script {
                     def java = scanForIssues tool: [$class: 'Java']
                     def javadoc = scanForIssues tool: [$class: 'JavaDoc']
-                    publishIssues issues: [java, javadoc], unstableTotalAll:0
+                    publishIssues issues: [java, javadoc], unstableTotalAll: 0
 
                     def pmd = scanForIssues tool: [$class: 'Pmd']
-                    publishIssues issues: [pmd], unstableTotalAll:1
+                    publishIssues issues: [pmd], unstableTotalAll: 1
 
                     // spotbugs still has some outstanding issues with regard
                     // to analyzing Java 11 bytecode.
@@ -62,7 +63,7 @@ pipeline {
             }
             steps {
                 script {
-                    def image = docker.build("docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend:${DOCKER_IMAGE_VERSION}", '--pull --no-cache .')
+                    def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}", '--pull --no-cache .')
 
                     image.push()
                 }
@@ -100,5 +101,42 @@ pipeline {
             }
         }
     }
+    post {
+        always {
+            sh """
+                docker rmi "${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}"
+            """
+        }
+        failure {
+            script {
+                if (BRANCH_NAME == "master") {
+                    slackSend(channel: "${slackChannel}",
+                            color: 'warning',
+                            message: "${JOB_NAME} #${BUILD_NUMBER} failed and needs attention: ${BUILD_URL}",
+                            tokenCredentialId: 'slack-global-integration-token')
+                }
+            }
+        }
+        success {
+            script {
+                if (BRANCH_NAME == 'master') {
+                    slackSend(channel: "${slackChannel}",
+                            color: 'good',
+                            message: "${JOB_NAME} #${BUILD_NUMBER} completed, and pushed ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION} to artifactory.",
+                            tokenCredentialId: 'slack-global-integration-token')
 
+                }
+            }
+        }
+        fixed {
+            script {
+                if (BRANCH_NAME == 'master') {
+                    slackSend(channel: "${slackChannel}",
+                            color: 'good',
+                            message: "${JOB_NAME} #${BUILD_NUMBER} back to normal: ${BUILD_URL}",
+                            tokenCredentialId: 'slack-global-integration-token')
+                }
+            }
+        }
+    }
 }
