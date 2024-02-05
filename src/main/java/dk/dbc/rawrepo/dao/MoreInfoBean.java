@@ -40,73 +40,21 @@ public class MoreInfoBean {
     public List<AttachmentInfoDTO> getAttachmentInfo(String base, String bibliographicRecordId) throws AttachmentException, SQLException {
         switch (base) {
             case "danbib":
-                return getAttachmentInfoDanbib(bibliographicRecordId);
+                return getAttachmentInfoDTOS(bibliographicRecordId, moreinfoDanbib, ATTACHMENT_INFO_DANBIB_QUERY);
             case "update":
-                return getAttachmentInfoUpdate(bibliographicRecordId);
+                return getAttachmentInfoDTOS(bibliographicRecordId, moreinfoUpdate, ATTACHMENT_INFO_UPDATE_QUERY);
             case "basis":
-                return getAttachmentInfoBasis(bibliographicRecordId);
+                return getAttachmentInfoDTOS(bibliographicRecordId, moreinfoBasis, ATTACHMENT_INFO_BASIS_QUERY);
             default:
                 throw new AttachmentException("The base '" + base + "' is not a valid moreinfo base");
         }
     }
 
-    private List<AttachmentInfoDTO> getAttachmentInfoDanbib(String bibliographicRecordId) throws SQLException {
-        final List<AttachmentInfoDTO> result = new ArrayList<>();
-
-        try (Connection connection = moreinfoDanbib.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(ATTACHMENT_INFO_DANBIB_QUERY)) {
-            stmt.setString(1, bibliographicRecordId);
-            try (ResultSet resultSet = stmt.executeQuery()) {
-                while (resultSet.next()) {
-                    final AttachmentInfoDTO dto = new AttachmentInfoDTO(
-                            resultSet.getString("attachment_type"),
-                            resultSet.getInt("source_id"),
-                            resultSet.getString("ajourdato"),
-                            resultSet.getString("opretdato"),
-                            resultSet.getInt("size")
-                    );
-                    result.add(dto);
-                }
-            }
-        } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            throw ex;
-        }
-
-        return result;
-    }
-
-    private List<AttachmentInfoDTO> getAttachmentInfoUpdate(String bibliographicRecordId) throws SQLException {
+    private List<AttachmentInfoDTO> getAttachmentInfoDTOS(String bibliographicRecordId, DataSource moreinfoUpdate, String attachmentInfoUpdateQuery) throws SQLException {
         final List<AttachmentInfoDTO> result = new ArrayList<>();
 
         try (Connection connection = moreinfoUpdate.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(ATTACHMENT_INFO_UPDATE_QUERY)) {
-            stmt.setString(1, bibliographicRecordId);
-            try (ResultSet resultSet = stmt.executeQuery()) {
-                while (resultSet.next()) {
-                    final AttachmentInfoDTO dto = new AttachmentInfoDTO(
-                            resultSet.getString("attachment_type"),
-                            resultSet.getInt("source_id"),
-                            resultSet.getString("ajourdato"),
-                            resultSet.getString("opretdato"),
-                            resultSet.getInt("size")
-                    );
-                    result.add(dto);
-                }
-            }
-        } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            throw ex;
-        }
-
-        return result;
-    }
-
-    private List<AttachmentInfoDTO> getAttachmentInfoBasis(String bibliographicRecordId) throws SQLException {
-        final List<AttachmentInfoDTO> result = new ArrayList<>();
-
-        try (Connection connection = moreinfoBasis.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(ATTACHMENT_INFO_BASIS_QUERY)) {
+             PreparedStatement stmt = connection.prepareStatement(attachmentInfoUpdateQuery)) {
             stmt.setString(1, bibliographicRecordId);
             try (ResultSet resultSet = stmt.executeQuery()) {
                 while (resultSet.next()) {
@@ -131,41 +79,19 @@ public class MoreInfoBean {
     public AttachmentDataDTO getAttachmentData(String base, String bibliographicRecordId, int sourceId, String attachmentType) throws SQLException, AttachmentException {
         switch (base) {
             case "danbib":
-                return getAttachmentDataDanbib(bibliographicRecordId, sourceId, attachmentType);
+                return getAttachmentDataDTO(bibliographicRecordId, sourceId, attachmentType, moreinfoDanbib, ATTACHMENT_DATA_DANBIB_QUERY, "danbib");
             case "update":
-                return getAttachmentDataUpdate(bibliographicRecordId, sourceId, attachmentType);
+                return getAttachmentDataDTO(bibliographicRecordId, sourceId, attachmentType, moreinfoUpdate, ATTACHMENT_DATA_UPDATE_QUERY, "update");
             case "basis":
-                return getAttachmentDataBasis(bibliographicRecordId, sourceId, attachmentType);
+                return getAttachmentDataDTO(bibliographicRecordId, sourceId, attachmentType, moreinfoBasis, ATTACHMENT_DATA_BASIS_QUERY, "basis");
             default:
                 throw new AttachmentException("The base '" + base + "' is not a valid moreinfo base");
         }
     }
 
-    private AttachmentDataDTO getAttachmentDataDanbib(String bibliographicRecordId, int sourceId, String attachmentType) throws SQLException, AttachmentException {
-        try (Connection connection = moreinfoDanbib.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(ATTACHMENT_DATA_DANBIB_QUERY)) {
-            stmt.setString(1, bibliographicRecordId);
-            stmt.setInt(2, sourceId);
-            stmt.setString(3, attachmentType);
-            try (ResultSet resultSet = stmt.executeQuery()) {
-                if (resultSet.next()) {
-                    return new AttachmentDataDTO(
-                            resultSet.getBytes("data"),
-                            resultSet.getString("mimetype")
-                    );
-                } else {
-                    throw new AttachmentException(String.format("Attachment type '%s' for %s:%s does not exist in moreinfo danbib", attachmentType, bibliographicRecordId, sourceId));
-                }
-            }
-        } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            throw ex;
-        }
-    }
-
-    private AttachmentDataDTO getAttachmentDataUpdate(String bibliographicRecordId, int sourceId, String attachmentType) throws SQLException, AttachmentException {
+    private AttachmentDataDTO getAttachmentDataDTO(String bibliographicRecordId, int sourceId, String attachmentType, DataSource moreinfoUpdate, String attachmentDataUpdateQuery, String base) throws AttachmentException, SQLException {
         try (Connection connection = moreinfoUpdate.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(ATTACHMENT_DATA_UPDATE_QUERY)) {
+             PreparedStatement stmt = connection.prepareStatement(attachmentDataUpdateQuery)) {
             stmt.setString(1, bibliographicRecordId);
             stmt.setInt(2, sourceId);
             stmt.setString(3, attachmentType);
@@ -176,7 +102,7 @@ public class MoreInfoBean {
                             resultSet.getString("mimetype")
                     );
                 } else {
-                    throw new AttachmentException(String.format("Attachment type '%s' for %s:%s does not exist in moreinfo update", attachmentType, bibliographicRecordId, sourceId));
+                    throw new AttachmentException(String.format("Attachment type '%s' for %s:%s does not exist in moreinfo %s", attachmentType, bibliographicRecordId, sourceId, base));
                 }
             }
         } catch (SQLException ex) {
@@ -184,27 +110,4 @@ public class MoreInfoBean {
             throw ex;
         }
     }
-
-    private AttachmentDataDTO getAttachmentDataBasis(String bibliographicRecordId, int sourceId, String attachmentType) throws SQLException, AttachmentException {
-        try (Connection connection = moreinfoBasis.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(ATTACHMENT_DATA_BASIS_QUERY)) {
-            stmt.setString(1, bibliographicRecordId);
-            stmt.setInt(2, sourceId);
-            stmt.setString(3, attachmentType);
-            try (ResultSet resultSet = stmt.executeQuery()) {
-                if (resultSet.next()) {
-                    return new AttachmentDataDTO(
-                            resultSet.getBytes("data"),
-                            resultSet.getString("mimetype")
-                    );
-                } else {
-                    throw new AttachmentException(String.format("Attachment type '%s' for %s:%s does not exist in moreinfo basis", attachmentType, bibliographicRecordId, sourceId));
-                }
-            }
-        } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            throw ex;
-        }
-    }
-
 }
