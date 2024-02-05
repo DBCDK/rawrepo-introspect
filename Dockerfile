@@ -7,7 +7,10 @@ LABEL MOREINFO_BASIS_URL="Database url to the moreinfo basis database (mandatory
 
 USER root
 
-RUN apt-get update && apt-get install -y --no-install-recommends diffutils colordiff sed libxml2-utils jq && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y diffutils colordiff sed libxml2-utils jq && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY script/* /bin/
+RUN chmod +x /bin/*
 
 USER gfish
 
