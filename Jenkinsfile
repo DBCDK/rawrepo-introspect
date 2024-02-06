@@ -1,17 +1,19 @@
 #!groovy
 
-def workerNode = "devel10"
+String workerNode = "devel11"
+String slackChannel = "meta-notifications"
 
 pipeline {
     agent { label workerNode }
 
     tools {
         maven "Maven 3"
+        jdk "jdk11"
     }
 
     triggers {
         pollSCM("H/03 * * * *")
-        upstream(upstreamProjects: "Docker-payara5-bump-trigger",
+        upstream(upstreamProjects: "Docker-payara6-bump-trigger",
                 threshold: hudson.model.Result.SUCCESS)
     }
 
@@ -20,9 +22,8 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE_NAME = "docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect"
+        DOCKER_IMAGE_NAME = "docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend"
         DOCKER_IMAGE_VERSION = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
-        DOCKER_IMAGE_DIT_VERSION = "DIT-${env.BUILD_NUMBER}"
         GITLAB_PRIVATE_TOKEN = credentials("metascrum-gitlab-api-token")
     }
 
@@ -33,23 +34,27 @@ pipeline {
                 checkout scm
             }
         }
-
-        stage("Verify") {
+        stage('Build') {
             steps {
-                sh "mvn verify pmd:pmd"
-                junit "**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/TEST-*.xml"
+                sh "mvn verify pmd:pmd pmd:cpd spotbugs:spotbugs"
+
+                junit testResults: '**/target/surefire-reports/TEST-*.xml,**/target/failsafe-reports/TEST-*.xml'
+
+                script {
+                    def java = scanForIssues tool: [$class: 'Java']
+                    def javadoc = scanForIssues tool: [$class: 'JavaDoc']
+                    publishIssues issues: [java, javadoc], unstableTotalAll: 0
+
+                    def pmd = scanForIssues tool: [$class: 'Pmd']
+                    publishIssues issues: [pmd], unstableTotalAll: 1
+
+                    // spotbugs still has some outstanding issues with regard
+                    // to analyzing Java 11 bytecode.
+                    // def spotbugs = scanForIssues tool: [$class: 'SpotBugs']
+                    // publishIssues issues:[spotbugs], unstableTotalAll:1
+                }
             }
         }
-
-        stage("Publish PMD Results") {
-            steps {
-                step([$class          : 'hudson.plugins.pmd.PmdPublisher',
-                      pattern         : '**/target/pmd.xml',
-                      unstableTotalAll: "0",
-                      failedTotalAll  : "0"])
-            }
-        }
-
         stage("Docker build") {
             when {
                 expression {
@@ -58,15 +63,9 @@ pipeline {
             }
             steps {
                 script {
-                    def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}")
-                    image.push()
+                    def image = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}", '--pull --no-cache .')
 
-                    if (env.BRANCH_NAME == 'master') {
-                        sh """
-                            docker tag ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION} ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_DIT_VERSION}
-                            docker push ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_DIT_VERSION}
-                        """
-                    }
+                    image.push()
                 }
             }
         }
@@ -90,16 +89,54 @@ pipeline {
 
                     if (env.BRANCH_NAME == 'master') {
                         sh """
-                            set-new-version rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b metascrum-staging
-                            set-new-version rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b fbstest
-                            set-new-version rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b basismig
+                            set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b metascrum-staging
+                            set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b fbstest
+                            set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b fbstest-dm3
+                            set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_DIT_VERSION} -b basismig
 
-                            set-new-version services/rawrepo-introspect-service.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/dit-gitops-secrets ${DOCKER_IMAGE_DIT_VERSION} -b master
+                            set-new-version services/rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/dit-gitops-secrets ${DOCKER_IMAGE_DIT_VERSION} -b master
                         """
                     }
                 }
             }
         }
     }
+    post {
+        always {
+            sh """
+                docker rmi "${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION}"
+            """
+        }
+        failure {
+            script {
+                if (BRANCH_NAME == "master") {
+                    slackSend(channel: "${slackChannel}",
+                            color: 'warning',
+                            message: "${JOB_NAME} #${BUILD_NUMBER} failed and needs attention: ${BUILD_URL}",
+                            tokenCredentialId: 'slack-global-integration-token')
+                }
+            }
+        }
+        success {
+            script {
+                if (BRANCH_NAME == 'master') {
+                    slackSend(channel: "${slackChannel}",
+                            color: 'good',
+                            message: "${JOB_NAME} #${BUILD_NUMBER} completed, and pushed ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION} to artifactory.",
+                            tokenCredentialId: 'slack-global-integration-token')
 
+                }
+            }
+        }
+        fixed {
+            script {
+                if (BRANCH_NAME == 'master') {
+                    slackSend(channel: "${slackChannel}",
+                            color: 'good',
+                            message: "${JOB_NAME} #${BUILD_NUMBER} back to normal: ${BUILD_URL}",
+                            tokenCredentialId: 'slack-global-integration-token')
+                }
+            }
+        }
+    }
 }

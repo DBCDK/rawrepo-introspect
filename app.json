@@ -1,5 +1,5 @@
 {
-  "appName": "rawrepo-introspect",
+  "appName": "rawrepo-introspect-backend",
   "jdbc": {
     "jdbc/moreinfoDanbib": {
       "url": "${MOREINFO_DANBIB_URL}"
@@ -9,9 +9,6 @@
     },
     "jdbc/moreinfoBasis": {
       "url": "${MOREINFO_BASIS_URL}"
-    },
-    "jdbc/holdingsItems": {
-      "url": "${HOLDINGS_ITEMS_URL}"
     }
   }
 }

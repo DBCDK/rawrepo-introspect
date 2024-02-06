@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Copyright Dansk Bibliotekscenter a/s. Licensed under GNU GPL v3
-  ~ See license text at https://opensource.dbc.dk/licenses/gpl-3.0
-  -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
@@ -11,45 +6,12 @@
     <parent>
         <groupId>dk.dbc</groupId>
         <artifactId>microservice-pom</artifactId>
-        <version>latest-SNAPSHOT</version>
+        <version>java11-SNAPSHOT</version>
     </parent>
 
     <artifactId>rawrepo-introspect</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>rawrepo-introspect</name>
-
-    <modules>
-        <module>rawrepo-introspect-api</module>
-        <module>rawrepo-introspect-gui</module>
-    </modules>
-
-    <properties>
-        <dbc.common.records.version>1.0-SNAPSHOT</dbc.common.records.version>
-        <dbc.holdings.items.version>1.1.1-SNAPSHOT</dbc.holdings.items.version>
-        <dbc.openagency.ws.client.version>2.32-SNAPSHOT</dbc.openagency.ws.client.version>
-        <dbc.rawrepo.version>1.9-SNAPSHOT</dbc.rawrepo.version>
-        <dbc.xmldiff.version>1.2-SNAPSHOT</dbc.xmldiff.version>
-        <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
-        <frontend.maven.plugin.version>1.4</frontend.maven.plugin.version>
-        <javax.json.version>1.0.4</javax.json.version>
-        <jaxb.runtime.version>2.2.11</jaxb.runtime.version>
-        <jaxb2-maven-plugin.version>2.3</jaxb2-maven-plugin.version>
-        <maven.install.plugin.version>2.5.2</maven.install.plugin.version>
-        <maven.javadoc.plugin.version>2.10.1</maven.javadoc.plugin.version>
-        <maven.surefire.version>2.20.1</maven.surefire.version>
-        <net.logstash.logback.version>3.1</net.logstash.logback.version>
-        <org.apache.commons.collection4.version>4.1</org.apache.commons.collection4.version>
-        <org.apache.commons.version>4.0</org.apache.commons.version>
-        <org.apache.email.version>1.5</org.apache.email.version>
-        <org.bouncycastle.mail.version>1.57</org.bouncycastle.mail.version>
-        <org.bouncycastle.provider.version>1.57</org.bouncycastle.provider.version>
-        <postgresql.driver.version>9.4-1206-jdbc41</postgresql.driver.version>
-        <serviceutils.version>0.1-SNAPSHOT</serviceutils.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <skip.install>true</skip.install>
-    </properties>
+    <version>2.0-SNAPSHOT</version>
+    <packaging>war</packaging>
 
     <pluginRepositories>
         <pluginRepository>
@@ -65,35 +27,30 @@
         </repository>
     </repositories>
 
+    <properties>
+        <rawrepo.project.version>2.3-SNAPSHOT</rawrepo.project.version>
+    </properties>
+
+
     <dependencies>
         <dependency>
             <groupId>dk.dbc</groupId>
-            <artifactId>serviceutils</artifactId>
-            <version>${serviceutils.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
             <artifactId>rawrepo-record-service-connector</artifactId>
-            <version>1.7-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>stopwatch</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${rawrepo.project.version}</version>
         </dependency>
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>dbc-commons-marc</artifactId>
-            <version>1.5-SNAPSHOT</version>
+            <version>2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>dk.dbc</groupId>
-            <artifactId>holdings-items-access</artifactId>
-            <version>1.1.4-SNAPSHOT</version>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-web-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
+            <groupId>jakarta.xml.ws</groupId>
+            <artifactId>jakarta.xml.ws-api</artifactId>
+            <version>3.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -102,36 +59,49 @@
         <dependency>
             <groupId>dk.dbc</groupId>
             <artifactId>rawrepo-record-service-dto</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${rawrepo.project.version}</version>
         </dependency>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>dk.dbc</groupId>
+            <artifactId>dbc-commons-json-binding</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit5.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-core</artifactId>
+            <artifactId>hamcrest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.eclipse.microprofile.config</groupId>
             <artifactId>microprofile-config-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.eclipse.microprofile.health</groupId>
+            <artifactId>microprofile-health-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.metrics</groupId>
+            <artifactId>microprofile-metrics-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
             <artifactId>jersey-common</artifactId>
             <version>${jersey.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit5.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -140,36 +110,17 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>${maven.install.plugin.version}</version>
-                <configuration>
-                    <skip>${skip.install}</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven.surefire.version}</version>
+                <version>3.7.0</version>
                 <configuration>
-                    <systemPropertyVariables>
-                        <targetClasses>${project.build.outputDirectory}</targetClasses>
-                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>${maven.javadoc.plugin.version}</version>
-                <configuration>
-                    <nohelp>true</nohelp>
+                    <source>${jdk.target.version}</source>
+                    <target>${jdk.target.version}</target>
+                    <testSource>${jdk.target.version}</testSource>
+                    <testTarget>${jdk.target.version}</testTarget>
+                    <showDeprecation>true</showDeprecation>
+                    <showWarnings>true</showWarnings>
                 </configuration>
             </plugin>
         </plugins>
     </build>
-
 </project>

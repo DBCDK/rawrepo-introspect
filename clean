@@ -2,5 +2,5 @@ echo "### cleaning rawrepo-introspect project ###"
 
 mvn clean
 git pull --ff-only
-docker rm -f rawrepo-introspect &>/dev/null || true
+docker rm -f docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend:devel &>/dev/null || true
 exit 0

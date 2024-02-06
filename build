@@ -1,11 +1,16 @@
+#!/usr/bin/env bash
+
 case "$1" in
     docker)
-        echo "### building rawrepo-introspect docker ###"
-        docker build . -t rawrepo-introspect || exit 1
+        echo "### building rawrepo-introspect-backend docker ###"
+        docker build . --pull --no-cache -t docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend:devel || exit 1
+        if [[ ! -z "$BUILD_NUMBER" ]]; then
+            docker tag docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend:devel docker-metascrum.artifacts.dbccloud.dk/rawrepo-introspect-backend:${BRANCH_NAME}-${BUILD_NUMBER}
+        fi
         ;;
 
     *)
-        echo "### building rawrepo-introspect project ###"
+        echo "### building rawrepo-introspect-backend project ###"
         echo "### Look for build artifacts in target/ ###"
 
         mvn package -Dmaven.test.skip=true || exit 1
