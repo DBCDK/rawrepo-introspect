@@ -93,6 +93,8 @@ pipeline {
                             set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_VERSION} -b fbstest
                             set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_VERSION} -b fbstest-dm3
                             set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_VERSION} -b basismig
+
+                            set-new-version services/rawrepo/rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/dit-gitops-secrets ${DOCKER_IMAGE_VERSION} -b master
                         """
                     }
                 }
