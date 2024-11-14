@@ -10,6 +10,7 @@ import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
 import dk.dbc.rawrepo.dto.RecordPartsDTO;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -23,7 +24,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RecordDataTransformer {
@@ -33,8 +33,12 @@ public class RecordDataTransformer {
     public static final String FORMAT_XML = "XML";
     public static final String FORMAT_LINE = "LINE";
     public static final String FORMAT_STDHENTDM2 = "STDHENTDM2";
+    public static final String FORMAT_JSON = "JSON";
 
-    public static final List<String> SUPPORTED_FORMATS = Arrays.asList(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML);
+    public static final List<String> SUPPORTED_FORMATS = List.of(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML, FORMAT_JSON);
+
+    // Prevent instantiation of class with purely static functions
+    private RecordDataTransformer() {}
 
     static byte[] formatRecordDataToLine(RecordDTO recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
@@ -52,6 +56,9 @@ public class RecordDataTransformer {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final StreamResult xmlOutput = new StreamResult(bos);
         final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
         transformerFactory.setAttribute("indent-number", 4);
         final Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -137,7 +144,7 @@ public class RecordDataTransformer {
     }
 
 
-    // List of supported javascript (nodejs) can be found here: https://github.com/nodejs/node/blob/master/lib/buffer.js
+    // List of supported javascript (Node,js) can be found here: https://github.com/nodejs/node/blob/master/lib/buffer.js
     /*
         utf8
         ucs2
