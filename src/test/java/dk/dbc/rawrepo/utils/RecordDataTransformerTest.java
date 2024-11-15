@@ -570,9 +570,9 @@ class RecordDataTransformerTest {
         for (RecordPartDTO recordPartDTO : actual.getRecordParts()) {
             assertThat(recordPartDTO.getEncoding(), is("utf8"));
             if (Objects.equals(recordPartDTO.getType(), "right")) {
-                assertThat(new String(recordPartDTO.getContent()), is("      \"value\" : \"Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog\"\n"));
+                assertThat(new String(recordPartDTO.getContent()), is("            \"value\" : \"Fra en gummibåd på Hudson River i Seattle i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog\"\n"));
             } else if (Objects.equals(recordPartDTO.getType(), "left")) {
-                assertThat(new String(recordPartDTO.getContent()), is("      \"value\" : \"Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog\"\n"));
+                assertThat(new String(recordPartDTO.getContent()), is("            \"value\" : \"Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog\"\n"));
             } else {
                 assertThat(recordPartDTO.getType(), is("both"));
                 assertThat("No diff on record part", new String(recordPartDTO.getContent()).substring(0, 1), anyOf(is(" "), is("{"), is("}")));

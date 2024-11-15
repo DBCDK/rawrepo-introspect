@@ -1,5 +1,8 @@
 package dk.dbc.rawrepo.utils;
 
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import dk.dbc.commons.jsonb.JSONBContext;
 import dk.dbc.commons.jsonb.JSONBException;
 import dk.dbc.marc.binding.MarcRecord;
@@ -41,6 +44,12 @@ public class RecordDataTransformer {
     public static final List<String> SUPPORTED_FORMATS = List.of(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML, FORMAT_JSON);
 
     private static final JSONBContext mapper = new JSONBContext();
+
+    static {
+        // Return json prettyprinted with 4 indents instead of 2
+        mapper.getObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.getObjectMapper().setDefaultPrettyPrinter(new DefaultPrettyPrinter().withObjectIndenter(new DefaultIndenter("    ", "\n")));
+    }
 
     // Prevent instantiation of class with purely static functions
     private RecordDataTransformer() {}
