@@ -1,11 +1,14 @@
 package dk.dbc.rawrepo.utils;
 
+import dk.dbc.commons.jsonb.JSONBContext;
+import dk.dbc.commons.jsonb.JSONBException;
 import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.marc.writer.StdHentDM2LineFormatWriter;
+import dk.dbc.rawrepo.dto.ContentDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
 import dk.dbc.rawrepo.dto.RecordPartsDTO;
@@ -37,6 +40,8 @@ public class RecordDataTransformer {
 
     public static final List<String> SUPPORTED_FORMATS = List.of(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML, FORMAT_JSON);
 
+    private static final JSONBContext mapper = new JSONBContext();
+
     // Prevent instantiation of class with purely static functions
     private RecordDataTransformer() {}
 
@@ -67,13 +72,27 @@ public class RecordDataTransformer {
         return bos.toByteArray();
     }
 
-    public static RecordPartsDTO recordDataToDTO(RecordDTO recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException {
+    static byte[] formatRecordDataToJson(RecordDTO recordData, Charset charset) throws MarcWriterException, MarcReaderException, JSONBException {
+        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), charset);
+        final MarcRecord record = reader.read();
+
+        // There exists dbc-commons.marc writers that can write the content as json, but
+        // we do not want to convert the binary content, already converted from json to base64 content,
+        // back to json - instead we extract the raw json content to show the actual content of the record,
+        // instead of a twice-transformed version of it.
+        ContentDTO dto = recordData.getContentJSON();
+        return mapper.prettyPrint(mapper.marshall(dto)).getBytes();
+    }
+
+    public static RecordPartsDTO recordDataToDTO(RecordDTO recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException, JSONBException {
         final RecordPartsDTO recordPartsDTO = new RecordPartsDTO();
         final RecordPartDTO part = new RecordPartDTO();
         final List<RecordPartDTO> parts = new ArrayList<>();
 
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
             part.setContent(formatRecordDataToLine(recordData, format, charset));
+        } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
+            part.setContent(formatRecordDataToJson(recordData, charset));
         } else {
             part.setContent(formatRecordDataToXML(recordData));
         }
@@ -92,7 +111,7 @@ public class RecordDataTransformer {
         return recordPartsDTO;
     }
 
-    public static RecordPartsDTO recordDiffToDTO(RecordDTO left, RecordDTO right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
+    public static RecordPartsDTO recordDiffToDTO(RecordDTO left, RecordDTO right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException, JSONBException {
         final RecordPartsDTO result = new RecordPartsDTO();
 
         final ExternalToolDiffGenerator.Kind kind = FORMAT_XML.equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.XML : ExternalToolDiffGenerator.Kind.PLAINTEXT;
@@ -107,6 +126,9 @@ public class RecordDataTransformer {
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
             next = formatRecordDataToLine(left, format, charset);
             current = formatRecordDataToLine(right, format, charset);
+        } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
+            next = formatRecordDataToJson(left, charset);
+            current = formatRecordDataToJson(right, charset);
         } else {
             next = formatRecordDataToXML(left);
             current = formatRecordDataToXML(right);

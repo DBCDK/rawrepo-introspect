@@ -28,7 +28,7 @@
     </repositories>
 
     <properties>
-        <rawrepo.project.version>2.3-SNAPSHOT</rawrepo.project.version>
+        <rawrepo.project.version>3.1-SNAPSHOT</rawrepo.project.version>
     </properties>
 
 
