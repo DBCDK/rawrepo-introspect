@@ -565,7 +565,7 @@ class RecordDataTransformerTest {
         assertThat(actual.getRecordParts().size(), is(70));
         assertThat("Has all types", actual.getRecordParts().stream().anyMatch(recordPart -> Set.of("both", "left", "right").contains(recordPart.getType())));
 
-        // The diff contains 52 lines, and we do not want to compare meaningless things such as brackets and commas,
+        // The diff contains 70 lines, and we do not want to compare meaningless things such as brackets and commas,
         // so run through the diff looking for the only change, resulting in 1 '---' and 1 '+++' line
         for (RecordPartDTO recordPartDTO : actual.getRecordParts()) {
             assertThat(recordPartDTO.getEncoding(), is("utf8"));
