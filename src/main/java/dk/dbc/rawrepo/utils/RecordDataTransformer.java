@@ -89,8 +89,11 @@ public class RecordDataTransformer {
         // we do not want to convert the binary content, already converted from json to base64 content,
         // back to json - instead we extract the raw json content to show the actual content of the record,
         // instead of a twice-transformed version of it.
+        //
+        // Also, json data comes back from recordservice without a trailing newline, which causes the
+        // "No newline at end of line" warning when generating a diff, so we add the missing newline
         ContentDTO dto = recordData.getContentJSON();
-        return mapper.prettyPrint(mapper.marshall(dto)).getBytes();
+        return (mapper.prettyPrint(mapper.marshall(dto)) + "\n").getBytes();
     }
 
     public static RecordPartsDTO recordDataToDTO(RecordDTO recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException, JSONBException {
@@ -123,7 +126,14 @@ public class RecordDataTransformer {
     public static RecordPartsDTO recordDiffToDTO(RecordDTO left, RecordDTO right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException, JSONBException {
         final RecordPartsDTO result = new RecordPartsDTO();
 
-        final ExternalToolDiffGenerator.Kind kind = FORMAT_XML.equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.XML : ExternalToolDiffGenerator.Kind.PLAINTEXT;
+        ExternalToolDiffGenerator.Kind kind;
+        if(FORMAT_XML.equalsIgnoreCase(format)) {
+            kind = ExternalToolDiffGenerator.Kind.XML;
+        } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
+            kind = ExternalToolDiffGenerator.Kind.JSON;
+        } else {
+            kind = ExternalToolDiffGenerator.Kind.PLAINTEXT;
+        }
         final ExternalToolDiffGenerator externalToolDiffGenerator = new ExternalToolDiffGenerator();
 
         // First argument is "current" value and second argument is "next" value
