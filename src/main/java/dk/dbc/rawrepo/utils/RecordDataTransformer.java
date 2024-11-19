@@ -1,15 +1,22 @@
 package dk.dbc.rawrepo.utils;
 
+import com.fasterxml.jackson.core.util.DefaultIndenter;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import dk.dbc.commons.jsonb.JSONBContext;
+import dk.dbc.commons.jsonb.JSONBException;
 import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.reader.MarcXchangeV1Reader;
 import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.marc.writer.StdHentDM2LineFormatWriter;
+import dk.dbc.rawrepo.dto.ContentDTO;
 import dk.dbc.rawrepo.dto.RecordDTO;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
 import dk.dbc.rawrepo.dto.RecordPartsDTO;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -23,7 +30,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RecordDataTransformer {
@@ -33,8 +39,20 @@ public class RecordDataTransformer {
     public static final String FORMAT_XML = "XML";
     public static final String FORMAT_LINE = "LINE";
     public static final String FORMAT_STDHENTDM2 = "STDHENTDM2";
+    public static final String FORMAT_JSON = "JSON";
 
-    public static final List<String> SUPPORTED_FORMATS = Arrays.asList(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML);
+    public static final List<String> SUPPORTED_FORMATS = List.of(FORMAT_LINE, FORMAT_STDHENTDM2, FORMAT_XML, FORMAT_JSON);
+
+    private static final JSONBContext mapper = new JSONBContext();
+
+    static {
+        // Return json prettyprinted with 4 indents instead of 2
+        mapper.getObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.getObjectMapper().setDefaultPrettyPrinter(new DefaultPrettyPrinter().withObjectIndenter(new DefaultIndenter("    ", "\n")));
+    }
+
+    // Prevent instantiation of class with purely static functions
+    private RecordDataTransformer() {}
 
     static byte[] formatRecordDataToLine(RecordDTO recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
         final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
@@ -52,6 +70,9 @@ public class RecordDataTransformer {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final StreamResult xmlOutput = new StreamResult(bos);
         final TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        transformerFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
         transformerFactory.setAttribute("indent-number", 4);
         final Transformer transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -60,13 +81,30 @@ public class RecordDataTransformer {
         return bos.toByteArray();
     }
 
-    public static RecordPartsDTO recordDataToDTO(RecordDTO recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException {
+    static byte[] formatRecordDataToJson(RecordDTO recordData, Charset charset) throws MarcWriterException, MarcReaderException, JSONBException {
+        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), charset);
+        final MarcRecord record = reader.read();
+
+        // There exists dbc-commons.marc writers that can write the content as json, but
+        // we do not want to convert the binary content, already converted from json to base64 content,
+        // back to json - instead we extract the raw json content to show the actual content of the record,
+        // instead of a twice-transformed version of it.
+        //
+        // Also, json data comes back from recordservice without a trailing newline, which causes the
+        // "No newline at end of line" warning when generating a diff, so we add the missing newline
+        ContentDTO dto = recordData.getContentJSON();
+        return (mapper.prettyPrint(mapper.marshall(dto)) + "\n").getBytes();
+    }
+
+    public static RecordPartsDTO recordDataToDTO(RecordDTO recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException, JSONBException {
         final RecordPartsDTO recordPartsDTO = new RecordPartsDTO();
         final RecordPartDTO part = new RecordPartDTO();
         final List<RecordPartDTO> parts = new ArrayList<>();
 
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
             part.setContent(formatRecordDataToLine(recordData, format, charset));
+        } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
+            part.setContent(formatRecordDataToJson(recordData, charset));
         } else {
             part.setContent(formatRecordDataToXML(recordData));
         }
@@ -85,10 +123,17 @@ public class RecordDataTransformer {
         return recordPartsDTO;
     }
 
-    public static RecordPartsDTO recordDiffToDTO(RecordDTO left, RecordDTO right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException {
+    public static RecordPartsDTO recordDiffToDTO(RecordDTO left, RecordDTO right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException, JSONBException {
         final RecordPartsDTO result = new RecordPartsDTO();
 
-        final ExternalToolDiffGenerator.Kind kind = FORMAT_XML.equalsIgnoreCase(format) ? ExternalToolDiffGenerator.Kind.XML : ExternalToolDiffGenerator.Kind.PLAINTEXT;
+        ExternalToolDiffGenerator.Kind kind;
+        if(FORMAT_XML.equalsIgnoreCase(format)) {
+            kind = ExternalToolDiffGenerator.Kind.XML;
+        } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
+            kind = ExternalToolDiffGenerator.Kind.JSON;
+        } else {
+            kind = ExternalToolDiffGenerator.Kind.PLAINTEXT;
+        }
         final ExternalToolDiffGenerator externalToolDiffGenerator = new ExternalToolDiffGenerator();
 
         // First argument is "current" value and second argument is "next" value
@@ -100,6 +145,9 @@ public class RecordDataTransformer {
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
             next = formatRecordDataToLine(left, format, charset);
             current = formatRecordDataToLine(right, format, charset);
+        } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
+            next = formatRecordDataToJson(left, charset);
+            current = formatRecordDataToJson(right, charset);
         } else {
             next = formatRecordDataToXML(left);
             current = formatRecordDataToXML(right);
@@ -137,7 +185,7 @@ public class RecordDataTransformer {
     }
 
 
-    // List of supported javascript (nodejs) can be found here: https://github.com/nodejs/node/blob/master/lib/buffer.js
+    // List of supported javascript (Node,js) can be found here: https://github.com/nodejs/node/blob/master/lib/buffer.js
     /*
         utf8
         ucs2

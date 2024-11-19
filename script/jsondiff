@@ -19,5 +19,5 @@ if grep -vq -e '\-\-side-by-side' -e '\-U ' -e '\-\-unified' -e '\-C ' -e '\-\-c
     OPTIONS+=' -U 10000'
 fi
 
-${DIFF_TOOL} <(jq -S . $1) <(jq -S . $2) \
+${DIFF_TOOL} <(jq --indent 4 . $1) <(jq --indent 4 . $2) \
           ${OPTIONS}
