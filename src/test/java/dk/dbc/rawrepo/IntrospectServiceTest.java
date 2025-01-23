@@ -1,6 +1,5 @@
 package dk.dbc.rawrepo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.dbc.commons.jsonb.JSONBContext;
 import dk.dbc.rawrepo.dto.RecordEntryDTO;
 import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
@@ -23,7 +22,9 @@ import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

@@ -17,7 +17,10 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
 
-import static dk.dbc.rawrepo.utils.RecordDataTransformer.*;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_JSON;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_XML;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.is;
@@ -38,30 +41,6 @@ class RecordDataTransformerTest {
 
         return reader.read();
     }
-
-//    private ContentDTO getContentDTOFromContent(String content) throws MarcReaderException, JSONBException, MarcWriterException {
-//
-//        // Read input as MarcRecord (leader is an array of singlebyte characters)
-//        InputStream in = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
-//        MarcXchangeV1Reader marcXchangeV1Reader = new MarcXchangeV1Reader(in, StandardCharsets.UTF_8);
-//        MarcRecord marcRecord = marcXchangeV1Reader.read();
-//
-//        // Clone the MarcRecord object as a ContentDTOv3 object (leader is an array of singlebyte characters, indicator is an array)
-//        ContentDTOv3 contentDTOv3 = mapper.unmarshall(mapper.marshall(marcRecord), ContentDTOv3.class);
-//
-//        // Convert ContentDTOv3 to ContentDTO (leader is a string, indicators is a string)
-//        ContentDTO contentDTO = new ContentDTO();
-//        contentDTO.setFields(contentDTOv3.getFields().stream().map(f -> {
-//            FieldDTO fieldDTO = new FieldDTO();
-//            fieldDTO.setIndicators(String.join("", f.getIndicator()));
-//            fieldDTO.setName(f.getName());
-//            fieldDTO.setSubfields(f.getSubfields());
-//            return fieldDTO;
-//        }).collect(Collectors.toList()));
-//        contentDTO.setLeader(String.join("", contentDTOv3.getLeader()));
-//
-//        return contentDTO;
-//    }
 
     @Test
     void testFormatRecordDTOToLine() throws Exception {
@@ -502,39 +481,19 @@ class RecordDataTransformerTest {
         assertThat(actual.getRecordParts().get(0).getEncoding(), is("utf8"));
     }
 
-//    @Test
-//    void testRecordDTOToText_JSON() throws Exception {
-//        MarcRecord recordData = getRecordDTOCurrent();
-//
-//        String contentJson = mapper.marshall(getContentDTOFromContent("<?xml version=\"1.0\" encoding=\"UTF-8\"?><record xmlns=\"info:lc/xmlns/marcxchange-v1\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"info:lc/xmlns/marcxchange-v1 http://www.loc.gov/standards/iso25577/marcxchange-1-1.xsd\">\n" +
-//                "    <leader>00000     22000000 4500 </leader>\n" +
-//                "    <datafield ind1=\"0\" ind2=\"0\" tag=\"001\">\n" +
-//                "        <subfield code=\"a\">47097886</subfield>\n" +
-//                "        <subfield code=\"b\">870970</subfield>\n" +
-//                "        <subfield code=\"c\">20190930123826</subfield>\n" +
-//                "        <subfield code=\"d\">20190911</subfield>\n" +
-//                "        <subfield code=\"f\">a</subfield>\n" +
-//                "    </datafield>\n" +
-//                "    <datafield ind1=\"0\" ind2=\"0\" tag=\"004\">\n" +
-//                "        <subfield code=\"r\">n</subfield>\n" +
-//                "        <subfield code=\"a\">e</subfield>\n" +
-//                "    </datafield>\n" +
-//                "    <datafield ind1=\"0\" ind2=\"0\" tag=\"504\">\n" +
-//                "        <subfield code=\"&amp;\">1</subfield>\n" +
-//                "        <subfield code=\"a\">Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog</subfield>\n" +
-//                "    </datafield>\n" +
-//                "    <datafield ind1=\"0\" ind2=\"0\" tag=\"996\">\n" +
-//                "        <subfield code=\"a\">DBC</subfield>\n" +
-//                "    </datafield>\n" +
-//                "</record>\n"));
-//
-//        RecordPartsDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_JSON, StandardCharsets.UTF_8);
-//
-//        assertThat(actual.getRecordParts().size(), is(1));
-//        assertThat(mapper.prettyPrint(new String(actual.getRecordParts().get(0).getContent())), is(mapper.prettyPrint(contentJson)));
-//        assertThat(actual.getRecordParts().get(0).getType(), is("both"));
-//        assertThat(actual.getRecordParts().get(0).getEncoding(), is("utf8"));
-//    }
+    @Test
+    void testRecordDTOToText_JSON() throws Exception {
+        MarcRecord recordData = getRecordDTOCurrent();
+
+        String contentJson = "{\n  \"leader\" : [ \"0\", \"0\", \"0\", \"0\", \"0\", \" \", \" \", \" \", \" \", \" \", \"2\", \"2\", \"0\", \"0\", \"0\", \"0\", \"0\", \"0\", \" \", \"4\", \"5\", \"0\", \"0\", \" \" ],\n  \"fields\" : [ {\n    \"name\" : \"001\",\n    \"indicator\" : [ \"0\", \"0\" ],\n    \"subfields\" : [ {\n      \"name\" : \"a\",\n      \"value\" : \"47097886\"\n    }, {\n      \"name\" : \"b\",\n      \"value\" : \"870970\"\n    }, {\n      \"name\" : \"c\",\n      \"value\" : \"20190930123826\"\n    }, {\n      \"name\" : \"d\",\n      \"value\" : \"20190911\"\n    }, {\n      \"name\" : \"f\",\n      \"value\" : \"a\"\n    } ]\n  }, {\n    \"name\" : \"004\",\n    \"indicator\" : [ \"0\", \"0\" ],\n    \"subfields\" : [ {\n      \"name\" : \"r\",\n      \"value\" : \"n\"\n    }, {\n      \"name\" : \"a\",\n      \"value\" : \"e\"\n    } ]\n  }, {\n    \"name\" : \"504\",\n    \"indicator\" : [ \"0\", \"0\" ],\n    \"subfields\" : [ {\n      \"name\" : \"&\",\n      \"value\" : \"1\"\n    }, {\n      \"name\" : \"a\",\n      \"value\" : \"Fra en flodpram på Hudson River i New York i 1950'erne fortæller heroinmisbrugeren Joe Necchi om sit liv samtidig med han er i gang med skrive en bog\"\n    } ]\n  }, {\n    \"name\" : \"996\",\n    \"indicator\" : [ \"0\", \"0\" ],\n    \"subfields\" : [ {\n      \"name\" : \"a\",\n      \"value\" : \"DBC\"\n    } ]\n  } ]\n}";
+
+        RecordPartsDTO actual = RecordDataTransformer.recordDataToDTO(recordData, FORMAT_JSON, StandardCharsets.UTF_8);
+
+        assertThat(actual.getRecordParts().size(), is(1));
+        assertThat(mapper.prettyPrint(new String(actual.getRecordParts().get(0).getContent())), is(mapper.prettyPrint(contentJson)));
+        assertThat(actual.getRecordParts().get(0).getType(), is("both"));
+        assertThat(actual.getRecordParts().get(0).getEncoding(), is("utf8"));
+    }
 
     @Test
     void testRecordDiffToText_JSON() throws Exception {

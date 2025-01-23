@@ -8,13 +8,24 @@ import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.JsonReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.writer.MarcWriterException;
-import dk.dbc.rawrepo.dto.*;
+import dk.dbc.rawrepo.dto.EdgeDTO;
+import dk.dbc.rawrepo.dto.RecordEntryDTO;
+import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
+import dk.dbc.rawrepo.dto.RecordHistoryDTO;
+import dk.dbc.rawrepo.dto.RecordIdDTO;
+import dk.dbc.rawrepo.dto.RecordPartsDTO;
+import dk.dbc.rawrepo.dto.RelationDTO;
 import dk.dbc.rawrepo.record.RecordServiceConnector;
 import dk.dbc.rawrepo.record.RecordServiceConnectorException;
 import dk.dbc.rawrepo.utils.RecordDataTransformer;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -30,7 +41,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static dk.dbc.rawrepo.utils.RecordDataTransformer.*;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.SUPPORTED_FORMATS;
 
 @Stateless
 @Path("")
