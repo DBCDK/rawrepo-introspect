@@ -1,6 +1,6 @@
 #!groovy
 
-String workerNode = "devel12"
+String workerNode = "devel11"
 String slackChannel = "meta-notifications"
 
 pipeline {
