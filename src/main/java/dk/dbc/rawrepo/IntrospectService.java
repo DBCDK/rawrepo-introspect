@@ -1,11 +1,9 @@
 package dk.dbc.rawrepo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.dbc.commons.jsonb.JSONBContext;
 import dk.dbc.commons.jsonb.JSONBException;
 import dk.dbc.marc.binding.MarcRecord;
-import dk.dbc.marc.reader.JsonReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.writer.MarcWriterException;
 import dk.dbc.rawrepo.dto.EdgeDTO;
@@ -32,9 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.TransformerException;
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -105,11 +100,11 @@ public class IntrospectService {
                 enrichmentParams.withAllowDeleted(true);
 
                 final RecordEntryDTO enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
-                final MarcRecord commonRecord = entryToMarcRecord(recordData);
-                final MarcRecord enrichmentRecord = entryToMarcRecord(enrichmentData);
+                final MarcRecord commonRecord = mapper.getObjectMapper().treeToValue(recordData.getContent(), MarcRecord.class);
+                final MarcRecord enrichmentRecord = mapper.getObjectMapper().treeToValue(enrichmentData.getContent(), MarcRecord.class);
                 recordPartsDTO = RecordDataTransformer.recordDiffToDTO(commonRecord, enrichmentRecord, format, charset);
             } else {
-                final MarcRecord commonRecord = entryToMarcRecord(recordData);
+                final MarcRecord commonRecord = mapper.getObjectMapper().treeToValue(recordData.getContent(), MarcRecord.class);
                 recordPartsDTO = RecordDataTransformer.recordDataToDTO(commonRecord, format, charset);
             }
 
@@ -160,7 +155,7 @@ public class IntrospectService {
             final RecordEntryDTO recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
-            final MarcRecord marcRecord = entryToMarcRecord(recordData);
+            final MarcRecord marcRecord = mapper.getObjectMapper().treeToValue(recordData.getContent(), MarcRecord.class);
             RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDataToDTO(marcRecord, format, charset);
 
             res = mapper.marshall(recordPartsDTO);
@@ -216,8 +211,8 @@ public class IntrospectService {
             }
 
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
-            final MarcRecord marcRecord1 = entryToMarcRecord(recordData1);
-            final MarcRecord marcRecord2 = entryToMarcRecord(recordData2);
+            final MarcRecord marcRecord1 = mapper.getObjectMapper().treeToValue(recordData1.getContent(), MarcRecord.class);
+            final MarcRecord marcRecord2 = mapper.getObjectMapper().treeToValue(recordData2.getContent(), MarcRecord.class);
             RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDiffToDTO(marcRecord1, marcRecord2, format, charset);
 
             res = mapper.marshall(recordPartsDTO);
@@ -295,17 +290,6 @@ public class IntrospectService {
             LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
-    }
-
-    private MarcRecord entryToMarcRecord(RecordEntryDTO entry) throws MarcReaderException, JsonProcessingException {
-        final ObjectMapper objectMapper = new ObjectMapper();
-        byte[] content = objectMapper.writeValueAsBytes(entry.getContent());
-
-        final InputStream inputStream = new ByteArrayInputStream(content);
-        final BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-        final JsonReader reader = new JsonReader(bufferedInputStream);
-
-        return reader.read();
     }
 
 }
