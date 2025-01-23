@@ -107,7 +107,7 @@ pipeline {
         }
         failure {
             script {
-                if (BRANCH_NAME == "master") {
+                if (BRANCH_NAME == "master-dm2") {
                     slackSend(channel: "${slackChannel}",
                             color: 'warning',
                             message: "${JOB_NAME} #${BUILD_NUMBER} failed and needs attention: ${BUILD_URL}",
@@ -117,7 +117,7 @@ pipeline {
         }
         success {
             script {
-                if (BRANCH_NAME == 'master') {
+                if (BRANCH_NAME == 'master-dm2') {
                     slackSend(channel: "${slackChannel}",
                             color: 'good',
                             message: "${JOB_NAME} #${BUILD_NUMBER} completed, and pushed ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_VERSION} to artifactory.",
@@ -128,7 +128,7 @@ pipeline {
         }
         fixed {
             script {
-                if (BRANCH_NAME == 'master') {
+                if (BRANCH_NAME == 'master-dm2') {
                     slackSend(channel: "${slackChannel}",
                             color: 'good',
                             message: "${JOB_NAME} #${BUILD_NUMBER} back to normal: ${BUILD_URL}",
