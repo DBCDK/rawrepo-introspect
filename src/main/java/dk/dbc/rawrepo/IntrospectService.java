@@ -1,42 +1,36 @@
 package dk.dbc.rawrepo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.dbc.commons.jsonb.JSONBContext;
 import dk.dbc.commons.jsonb.JSONBException;
+import dk.dbc.marc.binding.MarcRecord;
+import dk.dbc.marc.reader.JsonReader;
 import dk.dbc.marc.reader.MarcReaderException;
 import dk.dbc.marc.writer.MarcWriterException;
-import dk.dbc.rawrepo.dto.EdgeDTO;
-import dk.dbc.rawrepo.dto.RecordDTO;
-import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
-import dk.dbc.rawrepo.dto.RecordHistoryDTO;
-import dk.dbc.rawrepo.dto.RecordIdDTO;
-import dk.dbc.rawrepo.dto.RecordPartsDTO;
-import dk.dbc.rawrepo.dto.RelationDTO;
+import dk.dbc.rawrepo.dto.*;
 import dk.dbc.rawrepo.record.RecordServiceConnector;
 import dk.dbc.rawrepo.record.RecordServiceConnectorException;
 import dk.dbc.rawrepo.utils.RecordDataTransformer;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.transform.TransformerException;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
-import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
-import static dk.dbc.rawrepo.utils.RecordDataTransformer.SUPPORTED_FORMATS;
+import static dk.dbc.rawrepo.utils.RecordDataTransformer.*;
 
 @Stateless
 @Path("")
@@ -89,7 +83,7 @@ public class IntrospectService {
             params.withAllowDeleted(true);
 
             RecordPartsDTO recordPartsDTO;
-            final RecordDTO recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
+            final RecordEntryDTO recordData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, params);
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
             if (Arrays.asList("MERGED", "EXPANDED").contains(mode.toUpperCase()) && diffEnrichment) {
@@ -97,10 +91,13 @@ public class IntrospectService {
                 enrichmentParams.withMode(RecordServiceConnector.Params.Mode.RAW);
                 enrichmentParams.withAllowDeleted(true);
 
-                final RecordDTO enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
-                recordPartsDTO = RecordDataTransformer.recordDiffToDTO(recordData, enrichmentData, format, charset);
+                final RecordEntryDTO enrichmentData = rawRepoRecordServiceConnector.getRecordData(agencyId, bibliographicRecordId, enrichmentParams);
+                final MarcRecord commonRecord = entryToMarcRecord(recordData);
+                final MarcRecord enrichmentRecord = entryToMarcRecord(enrichmentData);
+                recordPartsDTO = RecordDataTransformer.recordDiffToDTO(commonRecord, enrichmentRecord, format, charset);
             } else {
-                recordPartsDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
+                final MarcRecord commonRecord = entryToMarcRecord(recordData);
+                recordPartsDTO = RecordDataTransformer.recordDataToDTO(commonRecord, format, charset);
             }
 
             res = mapper.marshall(recordPartsDTO);
@@ -147,16 +144,17 @@ public class IntrospectService {
                 return Response.status(Response.Status.BAD_REQUEST).build();
             }
 
-            final RecordDTO recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
+            final RecordEntryDTO recordData = rawRepoRecordServiceConnector.getHistoricRecord(Integer.toString(agencyId), bibliographicRecordId, modifiedDate);
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 
-            RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDataToDTO(recordData, format, charset);
+            final MarcRecord marcRecord = entryToMarcRecord(recordData);
+            RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDataToDTO(marcRecord, format, charset);
 
             res = mapper.marshall(recordPartsDTO);
 
             return Response.ok(res, MediaType.APPLICATION_JSON).encoding(charset.name()).build();
         } catch (RecordServiceConnectorException | MarcReaderException | MarcWriterException | TransformerException |
-                 JSONBException e) {
+                 JSONBException | JsonProcessingException e) {
             LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
@@ -185,8 +183,8 @@ public class IntrospectService {
             String version1 = versionList[0];
             String version2 = versionList[1];
 
-            RecordDTO recordData1;
-            RecordDTO recordData2;
+            RecordEntryDTO recordData1;
+            RecordEntryDTO recordData2;
 
             final RecordServiceConnector.Params params = new RecordServiceConnector.Params();
             params.withMode(RecordServiceConnector.Params.Mode.RAW);
@@ -205,8 +203,9 @@ public class IntrospectService {
             }
 
             final Charset charset = FORMAT_STDHENTDM2.equalsIgnoreCase(format) ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
-
-            RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDiffToDTO(recordData1, recordData2, format, charset);
+            final MarcRecord marcRecord1 = entryToMarcRecord(recordData1);
+            final MarcRecord marcRecord2 = entryToMarcRecord(recordData2);
+            RecordPartsDTO recordPartsDTO = RecordDataTransformer.recordDiffToDTO(marcRecord1, marcRecord2, format, charset);
 
             res = mapper.marshall(recordPartsDTO);
 
@@ -283,6 +282,17 @@ public class IntrospectService {
             LOGGER.error(e.getMessage(), e);
             return Response.serverError().build();
         }
+    }
+
+    private MarcRecord entryToMarcRecord(RecordEntryDTO entry) throws MarcReaderException, JsonProcessingException {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        byte[] content = objectMapper.writeValueAsBytes(entry.getContent());
+
+        final InputStream inputStream = new ByteArrayInputStream(content);
+        final BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+        final JsonReader reader = new JsonReader(bufferedInputStream);
+
+        return reader.read();
     }
 
 }

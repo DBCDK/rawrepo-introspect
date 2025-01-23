@@ -7,25 +7,17 @@ import dk.dbc.commons.jsonb.JSONBContext;
 import dk.dbc.commons.jsonb.JSONBException;
 import dk.dbc.marc.binding.MarcRecord;
 import dk.dbc.marc.reader.MarcReaderException;
-import dk.dbc.marc.reader.MarcXchangeV1Reader;
-import dk.dbc.marc.writer.DanMarc2LineFormatWriter;
-import dk.dbc.marc.writer.MarcWriterException;
-import dk.dbc.marc.writer.StdHentDM2LineFormatWriter;
-import dk.dbc.rawrepo.dto.ContentDTO;
-import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.marc.writer.*;
 import dk.dbc.rawrepo.dto.RecordPartDTO;
 import dk.dbc.rawrepo.dto.RecordPartsDTO;
 
 import javax.xml.XMLConstants;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -34,8 +26,9 @@ import java.util.List;
 
 public class RecordDataTransformer {
     private static final DanMarc2LineFormatWriter DANMARC_2_LINE_FORMAT_WRITER = new DanMarc2LineFormatWriter();
-    private static final DanMarc2LineFormatWriter STD_HENT_DM2_LINE_FORMAT_WRITER = new StdHentDM2LineFormatWriter();
-
+    private static final StdHentDM2LineFormatWriter STD_HENT_DM2_LINE_FORMAT_WRITER = new StdHentDM2LineFormatWriter();
+    private static final JsonWriter JSON_WRITER = new JsonWriter();
+    private static final MarcXchangeV1Writer MARCXCHANGE_WRITER = new MarcXchangeV1Writer();
     public static final String FORMAT_XML = "XML";
     public static final String FORMAT_LINE = "LINE";
     public static final String FORMAT_STDHENTDM2 = "STDHENTDM2";
@@ -52,21 +45,22 @@ public class RecordDataTransformer {
     }
 
     // Prevent instantiation of class with purely static functions
-    private RecordDataTransformer() {}
+    private RecordDataTransformer() {
+    }
 
-    static byte[] formatRecordDataToLine(RecordDTO recordData, String format, Charset charset) throws MarcWriterException, MarcReaderException {
-        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), StandardCharsets.UTF_8);
-        final MarcRecord record = reader.read();
-
+    static byte[] formatRecordDataToLine(MarcRecord marcRecord, String format, Charset charset) throws MarcWriterException, MarcReaderException {
         if (FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
-            return STD_HENT_DM2_LINE_FORMAT_WRITER.write(record, charset);
+            return STD_HENT_DM2_LINE_FORMAT_WRITER.write(marcRecord, charset);
         } else {
-            return DANMARC_2_LINE_FORMAT_WRITER.write(record, charset);
+            return DANMARC_2_LINE_FORMAT_WRITER.write(marcRecord, charset);
         }
     }
 
-    static byte[] formatRecordDataToXML(RecordDTO recordData) throws TransformerException {
-        final Source xmlInput = new StreamSource(new InputStreamReader(new ByteArrayInputStream(recordData.getContent())));
+    static byte[] formatRecordDataToXML(MarcRecord marcRecord) throws TransformerException {
+        final byte[] marcRecordBytes = MARCXCHANGE_WRITER.write(marcRecord, StandardCharsets.UTF_8);
+        InputStream targetStream = new ByteArrayInputStream(marcRecordBytes);
+
+        final Source xmlInput = new StreamSource(new InputStreamReader(targetStream));
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         final StreamResult xmlOutput = new StreamResult(bos);
         final TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -81,35 +75,26 @@ public class RecordDataTransformer {
         return bos.toByteArray();
     }
 
-    static byte[] formatRecordDataToJson(RecordDTO recordData, Charset charset) throws MarcWriterException, MarcReaderException, JSONBException {
-        final MarcXchangeV1Reader reader = new MarcXchangeV1Reader(new ByteArrayInputStream(recordData.getContent()), charset);
-        final MarcRecord record = reader.read();
-
-        // There exists dbc-commons.marc writers that can write the content as json, but
-        // we do not want to convert the binary content, already converted from json to base64 content,
-        // back to json - instead we extract the raw json content to show the actual content of the record,
-        // instead of a twice-transformed version of it.
-        //
-        // Also, json data comes back from recordservice without a trailing newline, which causes the
-        // "No newline at end of line" warning when generating a diff, so we add the missing newline
-        ContentDTO dto = recordData.getContentJSON();
-        return (mapper.prettyPrint(mapper.marshall(dto)) + "\n").getBytes();
+    static byte[] formatRecordDataToJson(MarcRecord marcRecord, Charset charset) throws MarcWriterException, MarcReaderException, JSONBException {
+        return JSON_WRITER.write(marcRecord, charset);
     }
 
-    public static RecordPartsDTO recordDataToDTO(RecordDTO recordData, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException, JSONBException {
+    public static RecordPartsDTO recordDataToDTO(MarcRecord marcRecord, String format, Charset charset) throws TransformerException, MarcReaderException, MarcWriterException, JSONBException {
         final RecordPartsDTO recordPartsDTO = new RecordPartsDTO();
         final RecordPartDTO part = new RecordPartDTO();
         final List<RecordPartDTO> parts = new ArrayList<>();
 
         if (FORMAT_LINE.equalsIgnoreCase(format) || FORMAT_STDHENTDM2.equalsIgnoreCase(format)) {
-            part.setContent(formatRecordDataToLine(recordData, format, charset));
+            part.setContent(formatRecordDataToLine(marcRecord, format, charset));
         } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
-            part.setContent(formatRecordDataToJson(recordData, charset));
+            part.setContent(formatRecordDataToJson(marcRecord, charset));
         } else {
-            part.setContent(formatRecordDataToXML(recordData));
+            part.setContent(formatRecordDataToXML(marcRecord));
         }
 
-        if (recordData.isDeleted()) {
+        final boolean deleted = marcRecord.getSubFieldValue("004", 'r').orElse("").equals("d");
+
+        if (deleted) {
             part.setType("right"); // 'right' translates to red text color
         } else {
             part.setType("both"); // 'both' translates to black text color
@@ -123,11 +108,11 @@ public class RecordDataTransformer {
         return recordPartsDTO;
     }
 
-    public static RecordPartsDTO recordDiffToDTO(RecordDTO left, RecordDTO right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException, JSONBException {
+    public static RecordPartsDTO recordDiffToDTO(MarcRecord left, MarcRecord right, String format, Charset charset) throws DiffGeneratorException, MarcWriterException, MarcReaderException, TransformerException, JSONBException {
         final RecordPartsDTO result = new RecordPartsDTO();
 
         ExternalToolDiffGenerator.Kind kind;
-        if(FORMAT_XML.equalsIgnoreCase(format)) {
+        if (FORMAT_XML.equalsIgnoreCase(format)) {
             kind = ExternalToolDiffGenerator.Kind.XML;
         } else if (FORMAT_JSON.equalsIgnoreCase(format)) {
             kind = ExternalToolDiffGenerator.Kind.JSON;
