@@ -1,0 +1,699 @@
+{
+  "recordId": {
+    "bibliographicRecordId": "43752022",
+    "agencyId": 870970
+  },
+  "mimetype": "text/marcxchange",
+  "created": "2005-12-04T23:00:00Z",
+  "modified": "2025-01-22T06:11:57.789112Z",
+  "trackingId": "{43752022:870970}-14390709-1-6-{43752022:870970}",
+  "content": {
+    "leader": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "n",
+      " ",
+      " ",
+      " ",
+      " ",
+      "2",
+      "2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      " ",
+      " ",
+      "4",
+      "5",
+      "0",
+      "0"
+    ],
+    "fields": [
+      {
+        "name": "001",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "43752022"
+          },
+          {
+            "name": "b",
+            "value": "870970"
+          },
+          {
+            "name": "c",
+            "value": "20201210193526"
+          },
+          {
+            "name": "d",
+            "value": "20050817"
+          },
+          {
+            "name": "f",
+            "value": "e"
+          },
+          {
+            "name": "o",
+            "value": "a"
+          }
+        ]
+      },
+      {
+        "name": "002",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "x",
+            "value": "(DK-715700)91277972"
+          }
+        ]
+      },
+      {
+        "name": "004",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "r",
+            "value": "a"
+          },
+          {
+            "name": "a",
+            "value": "e"
+          }
+        ]
+      },
+      {
+        "name": "008",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "t",
+            "value": "m"
+          },
+          {
+            "name": "a",
+            "value": "2004"
+          },
+          {
+            "name": "z",
+            "value": "2004"
+          },
+          {
+            "name": "b",
+            "value": "us"
+          },
+          {
+            "name": "l",
+            "value": "eng"
+          },
+          {
+            "name": "v",
+            "value": "b"
+          }
+        ]
+      },
+      {
+        "name": "009",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "a"
+          },
+          {
+            "name": "g",
+            "value": "xx"
+          }
+        ]
+      },
+      {
+        "name": "021",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "e",
+            "value": "9780374117214"
+          }
+        ]
+      },
+      {
+        "name": "021",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "0-374-11721-7"
+          },
+          {
+            "name": "b",
+            "value": "(alk. paper)"
+          }
+        ]
+      },
+      {
+        "name": "040",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "b",
+            "value": "dan"
+          },
+          {
+            "name": "e",
+            "value": "kbsdb"
+          }
+        ]
+      },
+      {
+        "name": "041",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "eng"
+          },
+          {
+            "name": "c",
+            "value": "grc"
+          }
+        ]
+      },
+      {
+        "name": "100",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "Sofokles"
+          }
+        ]
+      },
+      {
+        "name": "245",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "The ¤burial at Thebes"
+          },
+          {
+            "name": "c",
+            "value": "a version of Sophocles' Antigone"
+          },
+          {
+            "name": "e",
+            "value": "[edited by] \\Seamus Heaney\\"
+          },
+          {
+            "name": "ø",
+            "value": "Ved Seamus Heaney"
+          }
+        ]
+      },
+      {
+        "name": "250",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "x",
+            "value": "3. impression"
+          }
+        ]
+      },
+      {
+        "name": "260",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "New York"
+          },
+          {
+            "name": "b",
+            "value": "Farrar, Straus and Giroux"
+          },
+          {
+            "name": "c",
+            "value": "2004"
+          }
+        ]
+      },
+      {
+        "name": "300",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "79 sider"
+          }
+        ]
+      },
+      {
+        "name": "504",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "Oversættelse af tragedien om Antigone og hendes kamp for at hendes to dræbte brødre kan få ligeværdige begravelser. Men statsautoritet, slægt og religion står stejlt, så tragedien fuldendes med selvmord"
+          }
+        ]
+      },
+      {
+        "name": "512",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "Oversat fra oldgræsk af Seamus Heaney"
+          }
+        ]
+      },
+      {
+        "name": "652",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "m",
+            "value": "88.2"
+          }
+        ]
+      },
+      {
+        "name": "660",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "s",
+            "value": "mytologi"
+          },
+          {
+            "name": "2",
+            "value": "local"
+          }
+        ]
+      },
+      {
+        "name": "660",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "s",
+            "value": "følelser"
+          },
+          {
+            "name": "2",
+            "value": "local"
+          }
+        ]
+      },
+      {
+        "name": "660",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "s",
+            "value": "skyld"
+          },
+          {
+            "name": "2",
+            "value": "local"
+          }
+        ]
+      },
+      {
+        "name": "660",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "s",
+            "value": "jalousi"
+          },
+          {
+            "name": "2",
+            "value": "local"
+          }
+        ]
+      },
+      {
+        "name": "700",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "ø",
+            "value": "1"
+          },
+          {
+            "name": "a",
+            "value": "Sofokles"
+          }
+        ]
+      },
+      {
+        "name": "700",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "Heaney"
+          },
+          {
+            "name": "h",
+            "value": "Seamus"
+          }
+        ]
+      },
+      {
+        "name": "730",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "w",
+            "value": "har relateret værk"
+          },
+          {
+            "name": "a",
+            "value": "Antigone"
+          },
+          {
+            "name": "e",
+            "value": "Sofokles"
+          }
+        ]
+      },
+      {
+        "name": "996",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "715700"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "100"
+          },
+          {
+            "name": "a",
+            "value": "Sofokles"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "260"
+          },
+          {
+            "name": "a",
+            "value": "New York"
+          },
+          {
+            "name": "b",
+            "value": "Farrar, Straus and Giroux"
+          },
+          {
+            "name": "c",
+            "value": "2004"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "512"
+          },
+          {
+            "name": "a",
+            "value": "Oversat fra oldgræsk af Seamus Heaney"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "652"
+          },
+          {
+            "name": "m",
+            "value": "88.2"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "666"
+          },
+          {
+            "name": "s",
+            "value": "mytologi"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "666"
+          },
+          {
+            "name": "o",
+            "value": "tragedier"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "666"
+          },
+          {
+            "name": "s",
+            "value": "følelser"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "666"
+          },
+          {
+            "name": "s",
+            "value": "skyld"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "666"
+          },
+          {
+            "name": "s",
+            "value": "jalousi"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "700"
+          },
+          {
+            "name": "a",
+            "value": "Heaney"
+          },
+          {
+            "name": "h",
+            "value": "Seamus"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "700"
+          },
+          {
+            "name": "a",
+            "value": "Sofokles"
+          },
+          {
+            "name": "t",
+            "value": "Antigone"
+          }
+        ]
+      },
+      {
+        "name": "999",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "9",
+            "value": "745"
+          },
+          {
+            "name": "a",
+            "value": "Antigone"
+          }
+        ]
+      }
+    ]
+  },
+  "enrichmentTrail": "870970",
+  "deleted": false
+}

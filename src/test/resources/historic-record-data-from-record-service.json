@@ -1,0 +1,206 @@
+{
+  "recordId": {
+    "bibliographicRecordId": "43752022",
+    "agencyId": 870970
+  },
+  "mimetype": "text/marcxchange",
+  "created": "2005-12-04T23:00:00Z",
+  "modified": "2020-12-10T18:35:26.098047Z",
+  "trackingId": "{43752022:870970}-14390709-1-6-{43752022:870970}",
+  "content": {
+    "leader": [
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "n",
+      " ",
+      " ",
+      " ",
+      " ",
+      "2",
+      "2",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      "0",
+      " ",
+      " ",
+      "4",
+      "5",
+      "0",
+      "0"
+    ],
+    "fields": [
+      {
+        "name": "001",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "43752022"
+          },
+          {
+            "name": "b",
+            "value": "870970"
+          },
+          {
+            "name": "c",
+            "value": "20201210193526"
+          },
+          {
+            "name": "d",
+            "value": "20050817"
+          },
+          {
+            "name": "f",
+            "value": "e"
+          },
+          {
+            "name": "o",
+            "value": "a"
+          }
+        ]
+      },
+      {
+        "name": "004",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "r",
+            "value": "a"
+          },
+          {
+            "name": "a",
+            "value": "e"
+          }
+        ]
+      },
+      {
+        "name": "008",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "t",
+            "value": "m"
+          },
+          {
+            "name": "a",
+            "value": "2004"
+          },
+          {
+            "name": "z",
+            "value": "2004"
+          },
+          {
+            "name": "b",
+            "value": "us"
+          },
+          {
+            "name": "l",
+            "value": "eng"
+          },
+          {
+            "name": "v",
+            "value": "b"
+          }
+        ]
+      },
+      {
+        "name": "009",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "a"
+          },
+          {
+            "name": "g",
+            "value": "xx"
+          }
+        ]
+      },
+      {
+        "name": "021",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "e",
+            "value": "9780374117214"
+          }
+        ]
+      },
+      {
+        "name": "021",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "0-374-11721-7"
+          },
+          {
+            "name": "b",
+            "value": "(alk. paper)"
+          }
+        ]
+      },
+      {
+        "name": "040",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "b",
+            "value": "dan"
+          },
+          {
+            "name": "e",
+            "value": "kbsdb"
+          }
+        ]
+      },
+      {
+        "name": "041",
+        "indicator": [
+          "0",
+          "0"
+        ],
+        "subfields": [
+          {
+            "name": "a",
+            "value": "eng"
+          },
+          {
+            "name": "c",
+            "value": "grc"
+          }
+        ]
+      }
+    ]
+  },
+  "enrichmentTrail": "870970",
+  "deleted": false
+}

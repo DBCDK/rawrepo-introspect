@@ -1,6 +1,7 @@
 package dk.dbc.rawrepo;
 
-import dk.dbc.rawrepo.dto.RecordDTO;
+import dk.dbc.commons.jsonb.JSONBContext;
+import dk.dbc.rawrepo.dto.RecordEntryDTO;
 import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
 import dk.dbc.rawrepo.dto.RecordHistoryDTO;
 import dk.dbc.rawrepo.dto.RecordIdDTO;
@@ -28,6 +29,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class IntrospectServiceTest {
+
+    private static final JSONBContext JSONB = new JSONBContext();
 
     private String loadFileContent(String filename) throws Exception {
         final File file = new File("src/test/resources/" + filename);
@@ -58,10 +61,10 @@ public class IntrospectServiceTest {
 
     @Test
     void testGetRecord() throws Exception {
-        final RecordDTO recordData = new RecordDTO();
-        recordData.setContent(loadFileContent("record-data-from-record-service.xml").getBytes());
+        final String reply = loadFileContent("record-data-from-record-service.json");
+        final RecordEntryDTO recordEntryDTO = JSONB.unmarshall(reply, RecordEntryDTO.class);
 
-        when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordData);
+        when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordEntryDTO);
 
         final Response response = service.getRecord("22058037", 191919, FORMAT_LINE, "EXPANDED", false);
 
@@ -73,10 +76,10 @@ public class IntrospectServiceTest {
 
     @Test
     void testGetRecord_STDHENTDM2() throws Exception {
-        final RecordDTO recordData = new RecordDTO();
-        recordData.setContent(loadFileContent("record-data-from-record-service.xml").getBytes());
+        final String reply = loadFileContent("record-data-from-record-service.json");
+        final RecordEntryDTO recordEntryDTO = JSONB.unmarshall(reply, RecordEntryDTO.class);
 
-        when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordData);
+        when(service.rawRepoRecordServiceConnector.getRecordData(anyInt(), anyString(), any(RecordServiceConnector.Params.class))).thenReturn(recordEntryDTO);
 
         final Response response = service.getRecord("22058037", 191919, FORMAT_STDHENTDM2, "EXPANDED", false);
 
@@ -120,17 +123,17 @@ public class IntrospectServiceTest {
 
     @Test
     void testGetHistoricRecord() throws Exception {
-        final RecordDTO recordData = new RecordDTO();
-        recordData.setContent(loadFileContent("historic-record-data-from-record-service.xml").getBytes());
+        final String reply = loadFileContent("historic-record-data-from-record-service.json");
+        final RecordEntryDTO recordEntryDTO = JSONB.unmarshall(reply, RecordEntryDTO.class);
 
-        when(service.rawRepoRecordServiceConnector.getHistoricRecord("870970", "44783851", "2015-03-16T23:35:30.467032Z")).thenReturn(recordData);
+        when(service.rawRepoRecordServiceConnector.getHistoricRecord("870970", "44783851", "2015-03-16T23:35:30.467032Z")).thenReturn(recordEntryDTO);
 
         final Response response = service.getHistoricRecord("44783851", 870970, "2015-03-16T23:35:30.467032Z", FORMAT_LINE);
 
         assertThat(response, is(notNullValue()));
         assertThat(response.getStatus(), is(200));
         assertThat(response.hasEntity(), is(true));
-        assertThat(response.getEntity(), is(loadFileContent("get-historic-record-output.json")));
+        assertThat(response.getEntity(), is(loadFileContent("get-historic-record-output-line.json")));
     }
 
 }
