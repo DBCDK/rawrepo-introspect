@@ -51,29 +51,7 @@ public class MoreInfoBean {
     }
 
     private List<AttachmentInfoDTO> getAttachmentInfoDTOS(String bibliographicRecordId, DataSource moreinfoUpdate, String attachmentInfoUpdateQuery) throws SQLException {
-        final List<AttachmentInfoDTO> result = new ArrayList<>();
-
-        try (Connection connection = moreinfoUpdate.getConnection();
-             PreparedStatement stmt = connection.prepareStatement(attachmentInfoUpdateQuery)) {
-            stmt.setString(1, bibliographicRecordId);
-            try (ResultSet resultSet = stmt.executeQuery()) {
-                while (resultSet.next()) {
-                    final AttachmentInfoDTO dto = new AttachmentInfoDTO(
-                            resultSet.getString("attachment_type"),
-                            resultSet.getInt("source_id"),
-                            resultSet.getString("ajourdato"),
-                            resultSet.getString("opretdato"),
-                            resultSet.getInt("size")
-                    );
-                    result.add(dto);
-                }
-            }
-        } catch (SQLException ex) {
-            LOGGER.error(ex.getMessage(), ex);
-            throw ex;
-        }
-
-        return result;
+        return List.of();
     }
 
     public AttachmentDataDTO getAttachmentData(String base, String bibliographicRecordId, int sourceId, String attachmentType) throws SQLException, AttachmentException {
