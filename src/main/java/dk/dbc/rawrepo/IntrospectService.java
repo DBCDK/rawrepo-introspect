@@ -231,7 +231,7 @@ public class IntrospectService {
     @Path("v1/record/{bibliographicRecordId}/{agencyId}/relations")
     public Response getRelations(@PathParam("bibliographicRecordId") String bibliographicRecordId,
                                  @PathParam("agencyId") int agencyId,
-                                 @DefaultValue("false") @QueryParam("includeDeletedAttachments") boolean includeDeletedAttachments) {
+                                 @DefaultValue("false") @QueryParam("includeDeletedEnrichments") boolean includeDeletedEnrichments) {
         String res;
 
         try {
@@ -286,8 +286,8 @@ public class IntrospectService {
                 relationDTO.getEdges().add(edgeDTO);
             }
 
-            if (includeDeletedAttachments) {
-                relationDTO.setDeletedAttachments(getDeletedAttachments(currentNode, relationDTO.getNodes()));
+            if (includeDeletedEnrichments) {
+                relationDTO.setDeletedEnrichments(getDeletedEnrichments(currentNode, relationDTO.getNodes()));
             }
             res = mapper.marshall(relationDTO);
 
@@ -298,11 +298,11 @@ public class IntrospectService {
         }
     }
 
-    private List<RecordIdDTO> getDeletedAttachments(RecordIdDTO parent, List<RecordIdDTO> knownRecords)
+    private List<RecordIdDTO> getDeletedEnrichments(RecordIdDTO parent, List<RecordIdDTO> knownRecords)
             throws RecordServiceConnectorException {
         final String recordId = parent.getBibliographicRecordId();
         final Set<RecordIdDTO> seen = new HashSet<>(knownRecords);
-        final List<RecordIdDTO> deletedAttachments = new ArrayList<>();
+        final List<RecordIdDTO> deletedEnrichments = new ArrayList<>();
         for (int agency : rawRepoRecordServiceConnector.getAllAgenciesForBibliographicRecordId(recordId)) {
             final RecordIdDTO candidate = new RecordIdDTO(recordId, agency);
             if (!seen.add(candidate)) {
@@ -317,9 +317,9 @@ public class IntrospectService {
             }
             final RecordIdDTO[] parents = rawRepoRecordServiceConnector.getRecordSiblingsFrom(agency, recordId);
             if (Arrays.asList(parents).contains(parent)) {
-                deletedAttachments.add(candidate);
+                deletedEnrichments.add(candidate);
             }
         }
-        return deletedAttachments;
+        return deletedEnrichments;
     }
 }

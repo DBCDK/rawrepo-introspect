@@ -142,19 +142,19 @@ public class IntrospectServiceTest {
     }
 
     @Test
-    void testRelationsWithoutOptInDoNotLookUpDeletedAttachments() throws Exception {
+    void testRelationsWithoutOptInDoNotLookUpDeletedEnrichments() throws Exception {
         final String recordId = "22252851";
         stubRelations(recordId);
 
         final Response response = service.getRelations(recordId, 870970, false);
 
         assertThat(response.getStatus(), is(200));
-        assertThat(JSONB.getObjectMapper().readTree((String) response.getEntity()).has("deletedAttachments"), is(false));
+        assertThat(JSONB.getObjectMapper().readTree((String) response.getEntity()).has("deletedEnrichments"), is(false));
         verify(service.rawRepoRecordServiceConnector, never()).getAllAgenciesForBibliographicRecordId(recordId);
     }
 
     @Test
-    void testRelationsIncludeOnlyDeletedAttachmentsToTheRequestedParent() throws Exception {
+    void testRelationsIncludeOnlyDeletedEnrichmentsToTheRequestedParent() throws Exception {
         final String recordId = "22252852";
         stubRelations(recordId);
         final RecordServiceConnector connector = service.rawRepoRecordServiceConnector;
@@ -171,7 +171,7 @@ public class IntrospectServiceTest {
 
         assertThat(response.getStatus(), is(200));
         final RelationDTO relations = JSONB.unmarshall((String) response.getEntity(), RelationDTO.class);
-        assertThat(relations.getDeletedAttachments(), is(List.of(new RecordIdDTO(recordId, 300420))));
+        assertThat(relations.getDeletedEnrichments(), is(List.of(new RecordIdDTO(recordId, 300420))));
         assertThat(relations.getEdges().size(), is(1));
         assertThat(relations.getEdges().get(0).getChild(), is(new RecordIdDTO(recordId, 191919)));
         verify(connector, never()).getRecordHistory("191919", recordId);

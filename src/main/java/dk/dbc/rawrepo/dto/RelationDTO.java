@@ -8,7 +8,7 @@ public class RelationDTO {
 
     private List<RecordIdDTO> nodes;
     private List<EdgeDTO> edges;
-    private List<RecordIdDTO> deletedAttachments;
+    private List<RecordIdDTO> deletedEnrichments;
 
     public List<RecordIdDTO> getNodes() {
         return nodes;
@@ -27,11 +27,11 @@ public class RelationDTO {
     }
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    public List<RecordIdDTO> getDeletedAttachments() {
-        return deletedAttachments;
+    public List<RecordIdDTO> getDeletedEnrichments() {
+        return deletedEnrichments;
     }
 
-    public void setDeletedAttachments(List<RecordIdDTO> deletedAttachments) {
-        this.deletedAttachments = deletedAttachments;
+    public void setDeletedEnrichments(List<RecordIdDTO> deletedEnrichments) {
+        this.deletedEnrichments = deletedEnrichments;
     }
 }
