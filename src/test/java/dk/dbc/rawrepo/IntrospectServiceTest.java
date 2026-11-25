@@ -5,6 +5,7 @@ import dk.dbc.rawrepo.dto.RecordEntryDTO;
 import dk.dbc.rawrepo.dto.RecordHistoryCollectionDTO;
 import dk.dbc.rawrepo.dto.RecordHistoryDTO;
 import dk.dbc.rawrepo.dto.RecordIdDTO;
+import dk.dbc.rawrepo.dto.RelationDTO;
 import dk.dbc.rawrepo.record.RecordServiceConnector;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,7 +15,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
@@ -26,6 +29,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class IntrospectServiceTest {
@@ -134,6 +139,63 @@ public class IntrospectServiceTest {
         assertThat(response.getStatus(), is(200));
         assertThat(response.hasEntity(), is(true));
         assertThat(response.getEntity(), is(loadFileContent("get-historic-record-output-line.json")));
+    }
+
+    @Test
+    void testRelationsWithoutOptInDoNotLookUpDeletedAttachments() throws Exception {
+        final String recordId = "22252851";
+        stubRelations(recordId);
+
+        final Response response = service.getRelations(recordId, 870970, false);
+
+        assertThat(response.getStatus(), is(200));
+        assertThat(JSONB.getObjectMapper().readTree((String) response.getEntity()).has("deletedAttachments"), is(false));
+        verify(service.rawRepoRecordServiceConnector, never()).getAllAgenciesForBibliographicRecordId(recordId);
+    }
+
+    @Test
+    void testRelationsIncludeOnlyDeletedAttachmentsToTheRequestedParent() throws Exception {
+        final String recordId = "22252852";
+        stubRelations(recordId);
+        final RecordServiceConnector connector = service.rawRepoRecordServiceConnector;
+        when(connector.getAllAgenciesForBibliographicRecordId(recordId))
+                .thenReturn(new Integer[]{870970, 191919, 300420, 300151, 300153, 300420});
+        when(connector.getRecordHistory("300420", recordId)).thenReturn(history(true));
+        when(connector.getRecordHistory("300151", recordId)).thenReturn(history(true));
+        when(connector.getRecordHistory("300153", recordId)).thenReturn(history(false, true));
+        when(connector.getRecordSiblingsFrom(300420, recordId)).thenReturn(new RecordIdDTO[]{new RecordIdDTO(recordId, 870970)});
+        when(connector.getRecordSiblingsFrom(300151, recordId)).thenReturn(new RecordIdDTO[]{
+                new RecordIdDTO(recordId, 870971), new RecordIdDTO("22252853", 870970)});
+
+        final Response response = service.getRelations(recordId, 870970, true);
+
+        assertThat(response.getStatus(), is(200));
+        final RelationDTO relations = JSONB.unmarshall((String) response.getEntity(), RelationDTO.class);
+        assertThat(relations.getDeletedAttachments(), is(List.of(new RecordIdDTO(recordId, 300420))));
+        assertThat(relations.getEdges().size(), is(1));
+        assertThat(relations.getEdges().get(0).getChild(), is(new RecordIdDTO(recordId, 191919)));
+        verify(connector, never()).getRecordHistory("191919", recordId);
+        verify(connector, never()).getRecordSiblingsFrom(300153, recordId);
+    }
+
+    private void stubRelations(String recordId) throws Exception {
+        final RecordServiceConnector connector = service.rawRepoRecordServiceConnector;
+        when(connector.getRecordChildren(870970, recordId)).thenReturn(new RecordIdDTO[0]);
+        when(connector.getRecordParents(870970, recordId)).thenReturn(new RecordIdDTO[0]);
+        when(connector.getRecordSiblingsFrom(870970, recordId)).thenReturn(new RecordIdDTO[0]);
+        when(connector.getRecordSiblingsTo(870970, recordId)).thenReturn(new RecordIdDTO[]{new RecordIdDTO(recordId, 191919)});
+    }
+
+    private RecordHistoryCollectionDTO history(boolean... deletedVersions) {
+        final List<RecordHistoryDTO> versions = new ArrayList<>();
+        for (boolean deleted : deletedVersions) {
+            final RecordHistoryDTO version = new RecordHistoryDTO();
+            version.setDeleted(deleted);
+            versions.add(version);
+        }
+        final RecordHistoryCollectionDTO history = new RecordHistoryCollectionDTO();
+        history.setRecordHistoryList(versions);
+        return history;
     }
 
 }

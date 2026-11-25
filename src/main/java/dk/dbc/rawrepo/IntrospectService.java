@@ -34,7 +34,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_LINE;
 import static dk.dbc.rawrepo.utils.RecordDataTransformer.FORMAT_STDHENTDM2;
@@ -228,7 +230,8 @@ public class IntrospectService {
     @Produces({MediaType.APPLICATION_JSON})
     @Path("v1/record/{bibliographicRecordId}/{agencyId}/relations")
     public Response getRelations(@PathParam("bibliographicRecordId") String bibliographicRecordId,
-                                 @PathParam("agencyId") int agencyId) {
+                                 @PathParam("agencyId") int agencyId,
+                                 @DefaultValue("false") @QueryParam("includeDeletedAttachments") boolean includeDeletedAttachments) {
         String res;
 
         try {
@@ -283,6 +286,9 @@ public class IntrospectService {
                 relationDTO.getEdges().add(edgeDTO);
             }
 
+            if (includeDeletedAttachments) {
+                relationDTO.setDeletedAttachments(getDeletedAttachments(currentNode, relationDTO.getNodes()));
+            }
             res = mapper.marshall(relationDTO);
 
             return Response.ok(res, MediaType.APPLICATION_JSON).build();
@@ -292,4 +298,28 @@ public class IntrospectService {
         }
     }
 
+    private List<RecordIdDTO> getDeletedAttachments(RecordIdDTO parent, List<RecordIdDTO> knownRecords)
+            throws RecordServiceConnectorException {
+        final String recordId = parent.getBibliographicRecordId();
+        final Set<RecordIdDTO> seen = new HashSet<>(knownRecords);
+        final List<RecordIdDTO> deletedAttachments = new ArrayList<>();
+        for (int agency : rawRepoRecordServiceConnector.getAllAgenciesForBibliographicRecordId(recordId)) {
+            final RecordIdDTO candidate = new RecordIdDTO(recordId, agency);
+            if (!seen.add(candidate)) {
+                continue;
+            }
+
+            // Record service returns the newest version first.
+            final List<RecordHistoryDTO> history = rawRepoRecordServiceConnector
+                    .getRecordHistory(Integer.toString(agency), recordId).getRecordHistoryList();
+            if (history.isEmpty() || !history.get(0).isDeleted()) {
+                continue;
+            }
+            final RecordIdDTO[] parents = rawRepoRecordServiceConnector.getRecordSiblingsFrom(agency, recordId);
+            if (Arrays.asList(parents).contains(parent)) {
+                deletedAttachments.add(candidate);
+            }
+        }
+        return deletedAttachments;
+    }
 }
