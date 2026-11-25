@@ -1,6 +1,6 @@
 #!groovy
 
-String workerNode = "devel11"
+String workerNode = "devel12"
 String slackChannel = "meta-notifications"
 
 pipeline {
@@ -69,31 +69,22 @@ pipeline {
             }
         }
 
-        stage("Bump deploy version") {
-            agent {
-                docker {
-                    label workerNode
-                    image "docker-dbc.artifacts.dbccloud.dk/build-env:latest"
-                    alwaysPull true
-                }
-            }
-
-            when {
-                expression {
-                    currentBuild.result == null || currentBuild.result == 'SUCCESS'
-                }
-            }
-            steps {
-                script {
-
-                    if (env.BRANCH_NAME == 'master') {
-                        sh """
-                            set-new-version rawrepo-introspect-backend.yml ${env.GITLAB_PRIVATE_TOKEN} metascrum/rawrepo-introspect-deploy ${DOCKER_IMAGE_VERSION} -b fbstest-dm3
-                        """
-                    }
-                }
-            }
-        }
+        stage("Update staging version number") {
+           when {
+               branch "master"
+           }
+           steps {
+               script {
+                   withCredentials([sshUserPrivateKey(credentialsId: "gitlab-isworker", keyFileVariable: "sshkeyfile")]) {
+                       env.GIT_SSH_COMMAND = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${sshkeyfile}"
+                       sh """
+                           nix run --refresh git+https://gitlab.dbc.dk/public-de-team/gitops-secrets-set-variables.git \
+                               datawell-staging:RAWREPO_INTROSPECT_BACKEND_VERSION=${env.BRANCH_NAME}-${env.BUILD_NUMBER}
+                       """
+                   }
+               }
+           }
+       }
     }
     post {
         always {
