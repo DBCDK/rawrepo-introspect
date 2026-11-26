@@ -79,7 +79,7 @@ pipeline {
                        env.GIT_SSH_COMMAND = "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -i ${sshkeyfile}"
                        sh """
                            nix run --refresh git+https://gitlab.dbc.dk/public-de-team/gitops-secrets-set-variables.git \
-                               metascrum-staging:RAWREPO_INTROSPECT_BACKEND_VERSION=${env.BRANCH_NAME}-${env.BUILD_NUMBER}
+                               fbstest:RAWREPO_INTROSPECT_BACKEND_VERSION=${env.BRANCH_NAME}-${env.BUILD_NUMBER}
                        """
                    }
                }
